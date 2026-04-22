@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>webcorn — сайты для отелей</title>
+    <meta
+      name="description"
+      content="Выберите демо-сайт отеля от webcorn: Lite, Pro или Signature. Откройте готовый пример и закажите адаптацию под свой объект."
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body class="catalog-page theme-hotel">
+    <header class="site-header">
+      <div class="site-header__inner">
+        <a class="brand" href="index.html" aria-label="webcorn">
+          <span class="brand__mark"><span>W</span></span>
+          <span class="brand__copy">
+            <strong>webcorn</strong>
+            <span>Отели</span>
+          </span>
+        </a>
+
+        <nav class="site-nav" aria-label="Навигация">
+          <a href="index.html">Главная</a>
+          <a href="#levels">Уровни</a>
+          <a href="#contact">Заявка</a>
+          <a href="account.html" data-account-link>Войти</a>
+        </nav>
+
+        <a class="button button--primary site-header__cta" href="#levels">Смотреть уровни</a>
+
+        <button class="nav-toggle" type="button" data-nav-toggle aria-label="Открыть меню">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </header>
+
+    <main class="catalog-main">
+      <section class="container">
+        <div class="catalog-hero">
+          <div class="catalog-hero__copy" data-reveal>
+            <span class="eyebrow">Отели</span>
+            <h1>Выберите сайт для отеля под формат вашего объекта.</h1>
+            <p>
+              Все три уровня уже собраны как реальные демо-сайты. Откройте нужный вариант и
+              посмотрите, как будет выглядеть ваш будущий сайт.
+            </p>
+            <div class="button-row">
+              <a class="button button--primary" href="#levels">Смотреть уровни</a>
+              <a class="button button--ghost" href="preview-hotel-signature.html">Открыть демо Signature</a>
+            </div>
+          </div>
+
+          <div class="catalog-hero__visual" data-reveal>
+            <div class="hero-preview">
+              <div class="hero-preview__bar"><span></span><span></span><span></span></div>
+              <div class="hero-preview__screen">
+                <div class="hero-preview__hero"></div>
+                <div class="hero-preview__rows">
+                  <span></span>
+                  <span></span>
+                </div>
+                <div class="hero-preview__meta">
+                  <span>Номера</span>
+                  <span>Отзывы</span>
+                  <span>Бронь</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="catalog-section" id="levels">
+        <div class="container">
+          <div class="section-head" data-reveal>
+            <span class="eyebrow">Уровни</span>
+            <h2>Три готовых формата для отелей.</h2>
+            <p>Разница в глубине структуры, визуальной подаче и силе пути к прямому бронированию.</p>
+          </div>
+
+          <div class="catalog-grid">
+            <article class="catalog-card catalog-card--lite" data-reveal>
+              <div class="catalog-card__thumb catalog-card__thumb--live">
+                <div class="live-window live-window--catalog theme-hotel">
+                  <div class="live-window__bar">
+                    <div class="live-window__dots"><span></span><span></span><span></span></div>
+                    <span class="live-window__label">Atlas Stay / Lite</span>
+                  </div>
+                  <div class="live-window__viewport">
+                    <iframe
+                      src="preview-hotel-lite.html?embed=1"
+                      title="Встроенное демо Atlas Stay"
+                      loading="lazy"
+                    ></iframe>
+                  </div>
+                </div>
+              </div>
+              <div class="catalog-card__content">
+                <div class="catalog-card__meta">
+                  <span class="catalog-card__badge">Lite</span>
+                  <span class="catalog-card__price">от $1,050</span>
+                </div>
+                <h3>Atlas Stay</h3>
+                <p>Короткий сайт-визитка для небольшого отеля, апарт-отеля или гостевого дома.</p>
+                <ul>
+                  <li><span>Первый экран, номера, галерея, отзывы и форма запроса</span></li>
+                  <li><span>Быстрый запуск и чистая структура</span></li>
+                  <li><span>Для объектов без сложной архитектуры</span></li>
+                </ul>
+                <div class="catalog-card__actions">
+                  <a class="button button--ghost" href="preview-hotel-lite.html">Открыть демо</a>
+                  <button
+                    class="button button--primary"
+                    type="button"
+                    data-pick-package
+                    data-target="contact"
+                    data-niche="Отели"
+                    data-package="Lite"
+                    data-template="Atlas Stay"
+                  >
+                    Выбрать уровень
+                  </button>
+                </div>
+              </div>
+            </article>
+
+            <article class="catalog-card catalog-card--pro" data-reveal>
+              <div class="catalog-card__thumb catalog-card__thumb--live">
+                <div class="live-window live-window--catalog theme-hotel">
+                  <div class="live-window__bar">
+                    <div class="live-window__dots"><span></span><span></span><span></span></div>
+                    <span class="live-window__label">Harbor House / Pro</span>
+                  </div>
+                  <div class="live-window__viewport">
+                    <iframe
+                      src="preview-hotel-pro.html?embed=1"
+                      title="Встроенное демо Harbor House"
+                      loading="lazy"
+                    ></iframe>
+                  </div>
+                </div>
+              </div>
+              <div class="catalog-card__content">
+                <div class="catalog-card__meta">
+                  <span class="catalog-card__badge">Pro</span>
+                  <span class="catalog-card__price">от $1,850</span>
+                </div>
+                <h3>Harbor House</h3>
+                <p>Основной коммерческий формат для отеля, которому нужны доверие, структура и прямые запросы.</p>
+                <ul>
+                  <li><span>Больше экранов под номера, сервис и преимущества</span></li>
+                  <li><span>Сильнее сценарий прямого бронирования</span></li>
+                  <li><span>Лучший баланс цены и результата</span></li>
+                </ul>
+                <div class="catalog-card__actions">
+                  <a class="button button--ghost" href="preview-hotel-pro.html">Открыть демо</a>
+                  <button
+                    class="button button--primary"
+                    type="button"
+                    data-pick-package
+                    data-target="contact"
+                    data-niche="Отели"
+                    data-package="Pro"
+                    data-template="Harbor House"
+                  >
+                    Выбрать уровень
+                  </button>
+                </div>
+              </div>
+            </article>
+
+            <article class="catalog-card catalog-card--signature" data-reveal>
+              <div class="catalog-card__thumb catalog-card__thumb--live">
+                <div class="live-window live-window--catalog theme-hotel">
+                  <div class="live-window__bar">
+                    <div class="live-window__dots"><span></span><span></span><span></span></div>
+                    <span class="live-window__label">Maison Orbit / Signature</span>
+                  </div>
+                  <div class="live-window__viewport">
+                    <iframe
+                      src="preview-hotel-signature.html?embed=1"
+                      title="Встроенное демо Maison Orbit"
+                      loading="lazy"
+                    ></iframe>
+                  </div>
+                </div>
+              </div>
+              <div class="catalog-card__content">
+                <div class="catalog-card__meta">
+                  <span class="catalog-card__badge">Signature</span>
+                  <span class="catalog-card__price">от $3,450</span>
+                </div>
+                <h3>Maison Orbit</h3>
+                <p>Флагманский сайт для брендовых объектов, где сайт должен усиливать класс отеля.</p>
+                <ul>
+                  <li><span>Премиальная подача, номера высокого класса, галерея и сервис</span></li>
+                  <li><span>Сильный визуальный образ и больше контента</span></li>
+                  <li><span>Для бутик- и премиальных отелей</span></li>
+                </ul>
+                <div class="catalog-card__actions">
+                  <a class="button button--ghost" href="preview-hotel-signature.html">Открыть демо</a>
+                  <button
+                    class="button button--primary"
+                    type="button"
+                    data-pick-package
+                    data-target="contact"
+                    data-niche="Отели"
+                    data-package="Signature"
+                    data-template="Maison Orbit"
+                  >
+                    Выбрать уровень
+                  </button>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="container" id="contact">
+        <div class="catalog-request">
+          <div class="section-head" data-reveal>
+            <span class="eyebrow">Заявка</span>
+            <h2>Выберите уровень и отправьте короткий бриф.</h2>
+            <p>После заявки webcorn свяжется и подготовит адаптацию выбранного демо под ваш объект.</p>
+          </div>
+
+          <div class="catalog-request__grid catalog-request__grid--single">
+            <div class="catalog-form catalog-form--wide" data-reveal>
+              <div class="catalog-form__selection">
+                <span class="summary-badge">Выбранный пакет</span>
+                <div class="catalog-summary__title" data-selection-title>Выберите уровень выше</div>
+                <div class="summary-card__row">
+                  <span class="chip" data-selection-niche>Отели</span>
+                  <span class="chip" data-selection-tier>Без пакета</span>
+                </div>
+              </div>
+              <strong>Форма для отеля</strong>
+              <p>Оставьте контакт, название объекта и что важно для нового сайта.</p>
+
+              <form class="lead-form" data-lead-form data-requires-selection data-source="Страница Отели">
+                <div class="form-grid">
+                  <div class="field">
+                    <label for="hotel-name">Имя</label>
+                    <input id="hotel-name" name="fullName" type="text" required />
+                  </div>
+                  <div class="field">
+                    <label for="hotel-business">Название объекта</label>
+                    <input id="hotel-business" name="businessName" type="text" required />
+                  </div>
+                  <div class="field">
+                    <label for="hotel-email">Почта</label>
+                    <input id="hotel-email" name="email" type="email" required />
+                  </div>
+                  <div class="field">
+                    <label for="hotel-phone">WhatsApp / телефон</label>
+                    <input id="hotel-phone" name="phone" type="text" required />
+                  </div>
+                  <div class="field">
+                    <label for="hotel-country">Страна</label>
+                    <input id="hotel-country" name="country" type="text" required />
+                  </div>
+                  <div class="field">
+                    <label for="hotel-site">Текущий сайт</label>
+                    <input id="hotel-site" name="currentWebsite" type="text" placeholder="Если уже есть" />
+                  </div>
+                  <div class="field">
+                    <label for="hotel-budget">Бюджет</label>
+                    <select id="hotel-budget" name="budgetRange">
+                      <option value="">Не выбрано</option>
+                      <option>до $1500</option>
+                      <option>$1500–$3000</option>
+                      <option>$3000–$5000</option>
+                      <option>$5000+</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label for="hotel-timeline">Срок</label>
+                    <select id="hotel-timeline" name="timeline">
+                      <option value="">Не выбрано</option>
+                      <option>Как можно скорее</option>
+                      <option>В течение 2 недель</option>
+                      <option>В течение месяца</option>
+                      <option>Гибкий срок</option>
+                    </select>
+                  </div>
+                  <div class="field field--full">
+                    <label for="hotel-template">Выбранное демо</label>
+                    <input id="hotel-template" name="selectedTemplate" type="text" readonly />
+                  </div>
+                  <input type="hidden" name="niche" value="Отели" />
+                  <input type="hidden" name="packageTier" value="" />
+                  <div class="field field--full">
+                    <label for="hotel-details">Что важно для сайта</label>
+                    <textarea
+                      id="hotel-details"
+                      name="projectDetails"
+                      placeholder="Например: усилить прямые бронирования, показать номера, добавить доверие и FAQ."
+                      required
+                    ></textarea>
+                  </div>
+                </div>
+
+                <div class="form-note">
+                  Чтобы отправить заявку и видеть ее статус, войдите в личный кабинет. Если пакет еще не выбран, нажмите «Выбрать уровень» на карточке выше.
+                </div>
+                <div class="form-success" aria-live="polite"></div>
+                <button class="button button--primary button--full" type="submit">Отправить заявку</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <div class="site-footer__panel">
+          <div class="site-footer__top">
+            <a class="brand" href="index.html">
+              <span class="brand__mark"><span>W</span></span>
+              <span class="brand__copy">
+                <strong>webcorn</strong>
+                <span>Сайты для отелей</span>
+              </span>
+            </a>
+            <div class="site-footer__links">
+              <a href="index.html">Главная</a>
+              <a href="clinic.html">Клиники</a>
+              <a href="restaurant.html">Рестораны</a>
+              <a href="account.html" data-account-link>Войти</a>
+            </div>
+          </div>
+          <div class="site-footer__bottom">
+            <div class="site-footer__contacts">
+              <span>florencya08090@gmail.com</span>
+              <span>+7 776 907 9717</span>
+            </div>
+            <span>© 2026 webcorn</span>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script src="i18n.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>

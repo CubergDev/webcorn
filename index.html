@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>webcorn — сайты по нишам с реальными демо</title>
+    <meta
+      name="description"
+      content="webcorn показывает реальные демо-сайты для отелей, клиник и ресторанов. Выберите нишу, откройте уровень и закажите адаптацию под свой бизнес."
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body class="landing-page page-home">
+    <div class="page-backdrop" aria-hidden="true">
+      <canvas id="space-canvas"></canvas>
+      <div class="page-backdrop__glow page-backdrop__glow--one"></div>
+      <div class="page-backdrop__glow page-backdrop__glow--two"></div>
+      <div class="space-overlay"></div>
+      <div class="page-noise"></div>
+    </div>
+
+    <header class="site-header">
+      <div class="site-header__inner">
+        <a class="brand" href="index.html" aria-label="webcorn">
+          <span class="brand__mark"><span>W</span></span>
+          <span class="brand__copy">
+            <strong>webcorn</strong>
+            <span>Готовые сайты под ниши</span>
+          </span>
+        </a>
+
+        <nav class="site-nav" aria-label="Главная навигация">
+          <a href="#hero">Старт</a>
+          <a href="#niches">Ниши</a>
+          <a href="hotel.html">Отели</a>
+          <a href="clinic.html">Клиники</a>
+          <a href="restaurant.html">Рестораны</a>
+          <a href="account.html" data-account-link>Войти</a>
+        </nav>
+
+        <a class="button button--primary site-header__cta" href="#niches">Смотреть сайты</a>
+
+        <button class="nav-toggle" type="button" data-nav-toggle aria-label="Открыть меню">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </header>
+
+    <main class="landing-main">
+      <section class="container" id="hero">
+        <div class="landing-hero">
+          <div class="landing-hero__copy" data-reveal>
+            <span class="eyebrow">webcorn</span>
+            <h1>Выберите нишу. Откройте демо. Закажите свой сайт.</h1>
+            <p>
+              Не карточки-заглушки, а реальные мини-сайты для отелей, клиник и ресторанов. Сразу
+              видно, что получит ваш бизнес в Lite, Pro и Signature.
+            </p>
+
+            <div class="button-row">
+              <a class="button button--primary" href="#niches">Смотреть сайты</a>
+              <a class="button button--ghost" href="mailto:florencya08090@gmail.com">Обсудить проект</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="landing-strip" data-reveal>
+        <div class="landing-strip__item">
+          <strong>1 шаг</strong>
+          <span>Выбираете нишу</span>
+        </div>
+        <div class="landing-strip__item">
+          <strong>2 шаг</strong>
+          <span>Смотрите уровень</span>
+        </div>
+        <div class="landing-strip__item">
+          <strong>3 шаг</strong>
+          <span>Открываете демо</span>
+        </div>
+        <div class="landing-strip__item">
+          <strong>4 шаг</strong>
+          <span>Заказываете адаптацию</span>
+        </div>
+      </div>
+
+      <section class="landing-section" id="niches">
+        <div class="container">
+          <div class="section-head" data-reveal>
+            <span class="eyebrow">Ниши</span>
+            <h2>Три направления, где уже есть готовые сайты.</h2>
+            <p>Открывайте подборку, сравнивайте уровни и переходите в реальные демо-страницы.</p>
+          </div>
+
+          <div class="landing-grid">
+            <article class="landing-card theme-hotel" data-reveal>
+              <div class="landing-card__content">
+                <span class="landing-card__eyebrow">Отели</span>
+                <h2>Сайты для отелей и апарт-отелей.</h2>
+                <p>Подача номеров, прямые бронирования, сервис и дорогой образ объекта.</p>
+                <a class="button button--primary" href="hotel.html">Смотреть сайты</a>
+              </div>
+              <div class="landing-card__window">
+                <div class="live-window live-window--landing theme-hotel">
+                  <div class="live-window__bar">
+                    <div class="live-window__dots"><span></span><span></span><span></span></div>
+                    <span class="live-window__label">Отель / Signature</span>
+                  </div>
+                  <div class="live-window__viewport">
+                    <iframe
+                      src="preview-hotel-signature.html?embed=1"
+                      title="Встроенное демо сайта для отеля"
+                      loading="lazy"
+                    ></iframe>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="landing-card theme-clinic" data-reveal>
+              <div class="landing-card__content">
+                <span class="landing-card__eyebrow">Клиники</span>
+                <h2>Сайты для клиник и частных кабинетов.</h2>
+                <p>Услуги, врачи, доверие и запись в спокойной медицинской стилистике.</p>
+                <a class="button button--primary" href="clinic.html">Смотреть сайты</a>
+              </div>
+              <div class="landing-card__window">
+                <div class="live-window live-window--landing theme-clinic">
+                  <div class="live-window__bar">
+                    <div class="live-window__dots"><span></span><span></span><span></span></div>
+                    <span class="live-window__label">Клиника / Signature</span>
+                  </div>
+                  <div class="live-window__viewport">
+                    <iframe
+                      src="preview-clinic-signature.html?embed=1"
+                      title="Встроенное демо сайта для клиники"
+                      loading="lazy"
+                    ></iframe>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="landing-card theme-restaurant" data-reveal>
+              <div class="landing-card__content">
+                <span class="landing-card__eyebrow">Рестораны</span>
+                <h2>Сайты для ресторанов, кафе и гастро-брендов.</h2>
+                <p>Меню, атмосфера, бронь и подача заведения как полноценного бренда.</p>
+                <a class="button button--primary" href="restaurant.html">Смотреть сайты</a>
+              </div>
+              <div class="landing-card__window">
+                <div class="live-window live-window--landing theme-restaurant">
+                  <div class="live-window__bar">
+                    <div class="live-window__dots"><span></span><span></span><span></span></div>
+                    <span class="live-window__label">Ресторан / Signature</span>
+                  </div>
+                  <div class="live-window__viewport">
+                    <iframe
+                      src="preview-restaurant-signature.html?embed=1"
+                      title="Встроенное демо сайта для ресторана"
+                      loading="lazy"
+                    ></iframe>
+                  </div>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="landing-section">
+        <div class="container">
+          <div class="section-head" data-reveal>
+            <span class="eyebrow">Уровни</span>
+            <h2>Одна логика для всех ниш.</h2>
+            <p>Lite для быстрого старта, Pro для основного коммерческого сценария, Signature для дорогой подачи бренда.</p>
+          </div>
+
+          <div class="feature-band">
+            <article class="feature-band__card" data-reveal>
+              <strong>Lite</strong>
+              <p>Минимум экранов, быстрый запуск, чистая структура.</p>
+            </article>
+            <article class="feature-band__card" data-reveal>
+              <strong>Pro</strong>
+              <p>Больше разделов, сильнее доверие, заметнее путь к заявке.</p>
+            </article>
+            <article class="feature-band__card" data-reveal>
+              <strong>Signature</strong>
+              <p>Премиальная подача, больше контента и самый сильный образ бренда.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <div class="site-footer__panel">
+          <div class="site-footer__top">
+            <a class="brand" href="index.html">
+              <span class="brand__mark"><span>W</span></span>
+              <span class="brand__copy">
+                <strong>webcorn</strong>
+                <span>Нишевые сайты с демо</span>
+              </span>
+            </a>
+            <div class="site-footer__links">
+              <a href="hotel.html">Отели</a>
+              <a href="clinic.html">Клиники</a>
+              <a href="restaurant.html">Рестораны</a>
+              <a href="account.html" data-account-link>Войти</a>
+            </div>
+          </div>
+          <div class="site-footer__bottom">
+            <div class="site-footer__contacts">
+              <span>florencya08090@gmail.com</span>
+              <span>+7 776 907 9717</span>
+            </div>
+            <span>© 2026 webcorn</span>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script src="i18n.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>

@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>webcorn CRM</title>
+    <link rel="stylesheet" href="admin.css" />
+  </head>
+  <body>
+    <main class="crm-shell">
+      <header class="crm-topbar">
+          <div class="crm-brand">
+            <span class="crm-brand__mark">W</span>
+            <div>
+              <strong>webcorn CRM</strong>
+              <span>Лиды клиентов, статусы проектов и заметки команды</span>
+            </div>
+          </div>
+
+        <div class="crm-topbar__actions">
+          <span id="staff-name" class="crm-user-badge">Сотрудник</span>
+          <a class="crm-button crm-button--ghost" href="index.html">Открыть сайт</a>
+          <button id="staff-logout" class="crm-button crm-button--primary" type="button">Выйти</button>
+        </div>
+      </header>
+
+      <section class="crm-summary">
+        <article class="crm-summary__card">
+          <span>Всего лидов</span>
+          <strong id="total-leads">0</strong>
+        </article>
+        <article class="crm-summary__card">
+          <span>Новые</span>
+          <strong id="new-leads">0</strong>
+        </article>
+        <article class="crm-summary__card">
+          <span>В работе</span>
+          <strong id="active-leads">0</strong>
+        </article>
+        <article class="crm-summary__card">
+          <span>Оплачено</span>
+          <strong id="won-leads">0</strong>
+        </article>
+      </section>
+
+      <section class="crm-layout">
+        <aside class="crm-panel crm-panel--list">
+          <div class="crm-panel__head">
+            <div>
+              <span class="crm-eyebrow">Входящий поток</span>
+              <h1>Лиды</h1>
+            </div>
+            <p id="integration-note" class="crm-note is-info">
+              CRM подключается к серверным лидам и статусам заявок.
+            </p>
+          </div>
+
+          <div class="crm-controls">
+            <label class="crm-field">
+              <span>Поиск</span>
+              <input id="lead-search" type="search" placeholder="Имя, компания, ниша" />
+            </label>
+            <label class="crm-field">
+              <span>Статус</span>
+              <select id="status-filter">
+                <option value="Все">Все</option>
+                <option value="Новый">Новый</option>
+                <option value="Контакт">Контакт</option>
+                <option value="КП отправлено">КП отправлено</option>
+                <option value="В работе">В работе</option>
+                <option value="Успешно">Успешно</option>
+                <option value="Закрыт">Закрыт</option>
+              </select>
+            </label>
+          </div>
+
+          <div id="status-chips" class="crm-status-chips"></div>
+          <div id="lead-list" class="lead-list"></div>
+        </aside>
+
+        <section class="crm-panel crm-panel--detail">
+          <div class="crm-panel__head">
+            <div>
+              <span class="crm-eyebrow">Карточка лида</span>
+              <h2 id="detail-title">Выберите лид</h2>
+            </div>
+            <label class="crm-field crm-field--status">
+              <span>Статус</span>
+              <select id="lead-status">
+                <option value="Новый">Новый</option>
+                <option value="Контакт">Контакт</option>
+                <option value="КП отправлено">КП отправлено</option>
+                <option value="В работе">В работе</option>
+                <option value="Успешно">Успешно</option>
+                <option value="Закрыт">Закрыт</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="detail-hero">
+            <strong id="detail-client">Лид не выбран</strong>
+            <span id="detail-company">Откройте карточку слева, чтобы увидеть детали.</span>
+          </div>
+
+          <div class="detail-grid">
+            <div class="detail-card">
+              <span>Почта</span>
+              <strong id="detail-email">—</strong>
+            </div>
+            <div class="detail-card">
+              <span>Телефон / WhatsApp</span>
+              <strong id="detail-phone">—</strong>
+            </div>
+            <div class="detail-card">
+              <span>Ниша</span>
+              <strong id="detail-niche">—</strong>
+            </div>
+            <div class="detail-card">
+              <span>Пакет</span>
+              <strong id="detail-package">—</strong>
+            </div>
+            <div class="detail-card">
+              <span>Выбранное демо</span>
+              <strong id="detail-template">—</strong>
+            </div>
+            <div class="detail-card">
+              <span>Страна</span>
+              <strong id="detail-country">—</strong>
+            </div>
+            <div class="detail-card">
+              <span>Бюджет</span>
+              <strong id="detail-budget">—</strong>
+            </div>
+            <div class="detail-card">
+              <span>Срок</span>
+              <strong id="detail-timeline">—</strong>
+            </div>
+            <div class="detail-card">
+              <span>Статус оплаты</span>
+              <strong id="detail-payment-status">—</strong>
+            </div>
+            <div class="detail-card">
+              <span>Invoice ID</span>
+              <strong id="detail-invoice">—</strong>
+            </div>
+            <div class="detail-card">
+              <span>Сумма оплаты</span>
+              <strong id="detail-payment-amount">—</strong>
+            </div>
+          </div>
+
+          <div class="detail-blocks">
+            <article class="detail-block">
+              <span>Текущий сайт</span>
+              <p id="detail-current-site">—</p>
+            </article>
+            <article class="detail-block">
+              <span>Описание задачи</span>
+              <p id="detail-project">—</p>
+            </article>
+            <article class="detail-block">
+              <span>Источник и дата</span>
+              <p id="detail-meta">—</p>
+            </article>
+          </div>
+
+          <div class="detail-notes">
+            <label class="crm-field crm-field--full">
+              <span>Заметки</span>
+              <textarea id="detail-notes" placeholder="Что обсудили, какой следующий шаг, когда вернуться к лиду."></textarea>
+            </label>
+            <button id="save-notes" class="crm-button crm-button--primary" type="button">Сохранить заметки</button>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="i18n.js"></script>
+    <script src="admin.js"></script>
+  </body>
+</html>

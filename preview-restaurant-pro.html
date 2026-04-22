@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Atelier Dining — демо-сайт ресторана</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body class="site-demo-page theme-restaurant tier-medium">
+    <div class="site-demo-bar">
+      <div class="site-demo-bar__links">
+        <a href="restaurant.html">← К подборке ресторанов</a>
+        <span>Демо ресторана / Pro</span>
+      </div>
+      <a
+        class="button button--primary"
+        href="restaurant.html?niche=Рестораны&paket=Pro&demo=Atelier Dining#contact"
+        data-niche="Рестораны"
+        data-package="Pro"
+        data-template="Atelier Dining"
+      >
+        Заказать такой сайт
+      </a>
+    </div>
+
+    <div class="site-demo-shell">
+      <header class="site-demo-nav">
+        <div class="site-demo-nav__brand">Atelier Dining</div>
+        <nav class="site-demo-nav__menu">
+          <a href="#menu">Меню</a>
+          <a href="#events">События</a>
+          <a href="#gallery">Галерея</a>
+          <a href="#reservation">Бронь</a>
+        </nav>
+      </header>
+
+      <main>
+        <section class="site-demo-hero">
+          <div class="site-demo-hero__copy">
+            <span class="eyebrow">Pro / Ресторан</span>
+            <h1>Ресторан, который выглядит как полноценный бренд.</h1>
+            <p>Больше разделов, сильнее атмосфера, отдельные экраны под события и более убедительный путь к брони.</p>
+            <div class="site-demo-kpis">
+              <span>Сезонное меню</span>
+              <span>Частные события</span>
+              <span>Путь к брони</span>
+            </div>
+            <div class="button-row">
+              <a class="button button--primary" href="#reservation">Забронировать стол</a>
+              <a class="button button--ghost" href="#events">Смотреть события</a>
+            </div>
+          </div>
+
+          <div class="site-demo-hero__media">
+            <div class="site-demo-hero__panel site-demo-hero__panel--visual">
+              <strong>Ужин от шефа</strong>
+              <p>Отдельный сценарий под ужины, специальные даты и закрытые брони.</p>
+            </div>
+            <div class="site-demo-pane">
+              <strong>Что усиливает Pro</strong>
+              <p>Сайт удерживает внимание дольше и дает ресторану больше поводов перевести интерес в бронь.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="site-demo-section" id="menu">
+          <div class="site-demo-section__head">
+            <h2>Меню</h2>
+            <p>Разделы меню уже подаются не как список, а как отобранная подача ресторана.</p>
+          </div>
+          <div class="site-demo-grid site-demo-grid--three">
+            <article class="site-demo-card">
+              <div class="site-demo-card__visual"></div>
+              <h3>Авторские закуски</h3>
+              <p>Небольшие тарелки и закуски для начала вечера.</p>
+            </article>
+            <article class="site-demo-card">
+              <div class="site-demo-card__visual"></div>
+              <h3>Основная подача</h3>
+              <p>Основные блюда с сезонным акцентом и подачей шефа.</p>
+            </article>
+            <article class="site-demo-card">
+              <div class="site-demo-card__visual"></div>
+              <h3>Десерт и вино</h3>
+              <p>Сладкий финал и пара по напиткам в одном сценарии.</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="site-demo-section" id="events">
+          <div class="site-demo-grid site-demo-grid--two">
+            <article class="site-demo-pane">
+              <h3>События</h3>
+              <ul>
+                <li><span>Стол шефа по пятницам</span></li>
+                <li><span>Винные ужины и закрытые форматы</span></li>
+                <li><span>Корпоративные и камерные вечера</span></li>
+              </ul>
+            </article>
+            <article class="site-demo-pane">
+              <h3>Что получает ресторан</h3>
+              <ul>
+                <li><span>Более взрослый образ заведения</span></li>
+                <li><span>Отдельные поводы для брони</span></li>
+                <li><span>Лучше визуальная глубина и атмосфера</span></li>
+              </ul>
+            </article>
+          </div>
+        </section>
+
+        <section class="site-demo-section" id="gallery">
+          <div class="site-demo-section__head">
+            <h2>Галерея ресторана</h2>
+            <p>Интерьер, блюда и свет работают как часть ресторанного бренда.</p>
+          </div>
+          <div class="site-demo-gallery">
+            <div class="site-demo-photo site-demo-photo--wide"></div>
+            <div class="site-demo-photo"></div>
+            <div class="site-demo-photo"></div>
+            <div class="site-demo-photo"></div>
+          </div>
+        </section>
+
+        <section class="site-demo-section" id="reservation">
+          <div class="site-demo-grid site-demo-grid--two">
+            <div class="site-demo-quote">
+              «После просмотра сайта захотелось не только забронировать стол, но и прийти именно на специальный ужин. Видно, что у ресторана есть характер.»
+              <strong>Гость Atelier Dining</strong>
+            </div>
+            <form class="site-demo-form">
+              <div class="form-grid">
+                <div class="field">
+                  <label for="atelier-date">Дата</label>
+                  <input id="atelier-date" type="date" />
+                </div>
+                <div class="field">
+                  <label for="atelier-time">Время</label>
+                  <input id="atelier-time" type="time" />
+                </div>
+                <div class="field">
+                  <label for="atelier-format">Формат</label>
+                  <select id="atelier-format">
+                    <option>Основной зал</option>
+                    <option>Стол шефа</option>
+                    <option>Закрытый ужин</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="atelier-phone">Телефон</label>
+                  <input id="atelier-phone" type="text" placeholder="+7 / WhatsApp" />
+                </div>
+              </div>
+              <button class="button button--primary" type="button">Отправить бронь</button>
+            </form>
+          </div>
+        </section>
+
+        <section class="site-demo-order">
+          <div class="site-demo-order__panel">
+            <h2>Нужен такой же Pro-сайт для ресторана?</h2>
+            <p>webcorn адаптирует это демо под ваше меню, атмосферу, события и реальный формат бронирования.</p>
+            <a
+              class="button button--primary"
+              href="restaurant.html?niche=Рестораны&paket=Pro&demo=Atelier Dining#contact"
+              data-niche="Рестораны"
+              data-package="Pro"
+              data-template="Atelier Dining"
+            >
+              Заказать такой сайт
+            </a>
+          </div>
+          <div class="site-demo-order__side">
+            <strong>Что усиливает Pro</strong>
+            <span>Сайт выглядит взрослее и дает больше поводов дойти до брони.</span>
+          </div>
+        </section>
+      </main>
+    </div>
+    <script src="i18n.js"></script>
+  </body>
+</html>

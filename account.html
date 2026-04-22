@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>webcorn — личный кабинет</title>
+    <meta
+      name="description"
+      content="Личный кабинет webcorn: вход, регистрация и отслеживание статуса заявок на сайт."
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body class="account-page">
+    <header class="site-header">
+      <div class="site-header__inner">
+        <a class="brand" href="index.html" aria-label="webcorn">
+          <span class="brand__mark"><span>W</span></span>
+          <span class="brand__copy">
+            <strong>webcorn</strong>
+            <span>Личный кабинет</span>
+          </span>
+        </a>
+
+        <nav class="site-nav" aria-label="Навигация">
+          <a href="index.html">Главная</a>
+          <a href="hotel.html">Отели</a>
+          <a href="clinic.html">Клиники</a>
+          <a href="restaurant.html">Рестораны</a>
+          <a href="account.html" data-account-link>Кабинет</a>
+        </nav>
+
+        <a class="button button--primary site-header__cta" href="#account-dashboard">Мои заявки</a>
+
+        <button class="nav-toggle" type="button" data-nav-toggle aria-label="Открыть меню">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </header>
+
+    <main class="account-main" data-account-page>
+      <section class="container">
+        <div class="account-hero">
+          <div class="section-head" data-reveal>
+            <span class="eyebrow">Личный кабинет</span>
+            <h1>Войдите, чтобы отправлять заявки и следить за их статусом.</h1>
+            <p>
+              После входа все ваши заявки на сайт будут собраны в одном месте: с выбранным демо,
+              пакетом и текущим статусом.
+            </p>
+            <div class="button-row">
+              <a class="button button--primary" href="hotel.html">Оставить заявку</a>
+              <a class="button button--ghost" href="restaurant.html">Смотреть демо</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="account-section" id="account-dashboard">
+        <div class="container">
+          <div class="account-layout">
+            <section class="account-panel account-panel--auth" data-account-auth>
+              <div class="account-panel__head">
+                <span class="summary-badge">Доступ</span>
+                <h2>Вход или регистрация</h2>
+                <p>Создайте аккаунт один раз, чтобы видеть все свои заявки и их статусы.</p>
+              </div>
+
+              <div class="auth-tabs" role="tablist" aria-label="Выбор формы входа">
+                <button class="auth-tab is-active" type="button" data-auth-tab="login">Вход</button>
+                <button class="auth-tab" type="button" data-auth-tab="register">Регистрация</button>
+              </div>
+
+              <div class="account-message" data-account-message hidden></div>
+
+              <form class="lead-form" data-login-form>
+                <div class="form-grid">
+                  <div class="field field--full">
+                    <label for="account-login-email">Почта</label>
+                    <input id="account-login-email" name="email" type="email" required />
+                  </div>
+                  <div class="field field--full">
+                    <label for="account-login-password">Пароль</label>
+                    <input id="account-login-password" name="password" type="password" required />
+                  </div>
+                </div>
+                <button class="button button--primary button--full" type="submit">Войти в кабинет</button>
+              </form>
+
+              <form class="lead-form" data-register-form hidden>
+                <div class="form-grid">
+                  <div class="field">
+                    <label for="account-register-name">Имя</label>
+                    <input id="account-register-name" name="fullName" type="text" required />
+                  </div>
+                  <div class="field">
+                    <label for="account-register-business">Компания / проект</label>
+                    <input id="account-register-business" name="businessName" type="text" />
+                  </div>
+                  <div class="field field--full">
+                    <label for="account-register-email">Почта</label>
+                    <input id="account-register-email" name="email" type="email" required />
+                  </div>
+                  <div class="field field--full">
+                    <label for="account-register-password">Пароль</label>
+                    <input
+                      id="account-register-password"
+                      name="password"
+                      type="password"
+                      minlength="8"
+                      required
+                    />
+                  </div>
+                </div>
+                <div class="form-note">Пароль должен содержать минимум 8 символов.</div>
+                <button class="button button--primary button--full" type="submit">Создать аккаунт</button>
+              </form>
+            </section>
+
+            <section class="account-panel account-panel--dashboard" data-account-dashboard hidden>
+              <div class="account-panel__head">
+                <span class="summary-badge">Мои заявки</span>
+                <h2 data-account-user-title>Кабинет клиента</h2>
+                <p data-account-user-copy>Здесь появятся ваши заявки и их актуальные статусы.</p>
+              </div>
+
+              <div class="account-profile">
+                <div>
+                  <strong data-account-user-name>—</strong>
+                  <span data-account-user-email>—</span>
+                </div>
+                <button class="button button--ghost" type="button" data-account-logout>Выйти</button>
+              </div>
+
+              <div class="account-toolbar">
+                <a class="button button--quiet" href="hotel.html">Отели</a>
+                <a class="button button--quiet" href="clinic.html">Клиники</a>
+                <a class="button button--quiet" href="restaurant.html">Рестораны</a>
+              </div>
+
+              <div class="account-message" data-account-dashboard-message hidden></div>
+              <div class="account-lead-list" data-account-leads></div>
+            </section>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <div class="site-footer__panel">
+          <div class="site-footer__top">
+            <a class="brand" href="index.html">
+              <span class="brand__mark"><span>W</span></span>
+              <span class="brand__copy">
+                <strong>webcorn</strong>
+                <span>Кабинет клиента</span>
+              </span>
+            </a>
+            <div class="site-footer__links">
+              <a href="hotel.html">Отели</a>
+              <a href="clinic.html">Клиники</a>
+              <a href="restaurant.html">Рестораны</a>
+              <a href="account.html" data-account-link>Кабинет</a>
+            </div>
+          </div>
+          <div class="site-footer__bottom">
+            <div class="site-footer__contacts">
+              <span>florencya08090@gmail.com</span>
+              <span>+7 776 907 9717</span>
+            </div>
+            <span>© 2026 webcorn</span>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script src="i18n.js"></script>
+    <script src="script.js"></script>
+    <script src="account.js"></script>
+  </body>
+</html>

@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Foundry Table — демо-сайт ресторана</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body class="site-demo-page theme-restaurant tier-lite">
+    <div class="site-demo-bar">
+      <div class="site-demo-bar__links">
+        <a href="restaurant.html">← К подборке ресторанов</a>
+        <span>Демо ресторана / Lite</span>
+      </div>
+      <a
+        class="button button--primary"
+        href="restaurant.html?niche=Рестораны&paket=Lite&demo=Foundry Table#contact"
+        data-niche="Рестораны"
+        data-package="Lite"
+        data-template="Foundry Table"
+      >
+        Заказать такой сайт
+      </a>
+    </div>
+
+    <div class="site-demo-shell">
+      <header class="site-demo-nav">
+        <div class="site-demo-nav__brand">Foundry Table</div>
+        <nav class="site-demo-nav__menu">
+          <a href="#menu">Меню</a>
+          <a href="#about">О нас</a>
+          <a href="#gallery">Галерея</a>
+          <a href="#reservation">Бронь</a>
+        </nav>
+      </header>
+
+      <main>
+        <section class="site-demo-hero">
+          <div class="site-demo-hero__copy">
+            <span class="eyebrow">Lite / Ресторан</span>
+            <h1>Теплое место для ужина в центре города.</h1>
+            <p>Базовый ресторанный сайт: меню, блок о заведении, галерея и быстрая бронь стола без лишних переходов.</p>
+            <div class="site-demo-kpis">
+              <span>Европейская кухня</span>
+              <span>12:00–23:00</span>
+              <span>Бронь за 1 минуту</span>
+            </div>
+            <div class="button-row">
+              <a class="button button--primary" href="#reservation">Забронировать стол</a>
+              <a class="button button--ghost" href="#menu">Смотреть меню</a>
+            </div>
+          </div>
+
+          <div class="site-demo-hero__media">
+            <div class="site-demo-hero__panel site-demo-hero__panel--visual">
+              <strong>Блюдо вечера</strong>
+              <p>Подача блюда и атмосферы уже на первом экране.</p>
+            </div>
+            <div class="site-demo-pane">
+              <strong>Что показывает Lite</strong>
+              <p>Сайт быстро объясняет формат заведения и приводит гостя к брони без лишнего контента.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="site-demo-section" id="menu">
+          <div class="site-demo-section__head">
+            <h2>Хиты меню</h2>
+            <p>Короткая и вкусная подача нескольких ключевых позиций.</p>
+          </div>
+          <div class="site-demo-grid site-demo-grid--three">
+            <article class="site-demo-card">
+              <div class="site-demo-card__visual"></div>
+              <h3>Паста с трюфелем</h3>
+              <p>Домашняя паста, сливочный соус и мягкий трюфельный акцент.</p>
+            </article>
+            <article class="site-demo-card">
+              <div class="site-demo-card__visual"></div>
+              <h3>Гриль-лосось</h3>
+              <p>Теплая овощная подача и легкий цитрусовый соус.</p>
+            </article>
+            <article class="site-demo-card">
+              <div class="site-demo-card__visual"></div>
+              <h3>Шоколадный тарт</h3>
+              <p>Финальный акцент для вечернего визита или свидания.</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="site-demo-section" id="about">
+          <div class="site-demo-grid site-demo-grid--two">
+            <article class="site-demo-pane">
+              <h3>О заведении</h3>
+              <p>Небольшой ресторан с открытой кухней, теплым светом и простым маршрутом от сайта до стола.</p>
+            </article>
+            <article class="site-demo-pane">
+              <h3>Формат</h3>
+              <ul>
+                <li><span>Вечерние ужины</span></li>
+                <li><span>Небольшие встречи</span></li>
+                <li><span>Быстрая бронь без длинной истории бренда</span></li>
+              </ul>
+            </article>
+          </div>
+        </section>
+
+        <section class="site-demo-section" id="gallery">
+          <div class="site-demo-section__head">
+            <h2>Галерея</h2>
+            <p>Несколько кадров еды и зала, чтобы гость сразу понял атмосферу.</p>
+          </div>
+          <div class="site-demo-gallery">
+            <div class="site-demo-photo"></div>
+            <div class="site-demo-photo"></div>
+            <div class="site-demo-photo"></div>
+          </div>
+        </section>
+
+        <section class="site-demo-section" id="reservation">
+          <div class="site-demo-section__head">
+            <h2>Бронь стола</h2>
+            <p>Простой сценарий для ресторана, которому важно не потерять гостя на пути к действию.</p>
+          </div>
+          <form class="site-demo-form">
+            <div class="form-grid">
+              <div class="field">
+                <label for="foundry-date">Дата</label>
+                <input id="foundry-date" type="date" />
+              </div>
+              <div class="field">
+                <label for="foundry-time">Время</label>
+                <input id="foundry-time" type="time" />
+              </div>
+              <div class="field">
+                <label for="foundry-guests">Гости</label>
+                <select id="foundry-guests">
+                  <option>2 гостя</option>
+                  <option>4 гостя</option>
+                  <option>6 гостей</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="foundry-phone">Телефон</label>
+                <input id="foundry-phone" type="text" placeholder="+7 / WhatsApp" />
+              </div>
+            </div>
+            <button class="button button--primary" type="button">Отправить бронь</button>
+          </form>
+        </section>
+
+        <section class="site-demo-order">
+          <div class="site-demo-order__panel">
+            <h2>Нужен такой же Lite-сайт для заведения?</h2>
+            <p>webcorn адаптирует это демо под ваше меню, часы работы, бренд и реальный формат брони.</p>
+            <a
+              class="button button--primary"
+              href="restaurant.html?niche=Рестораны&paket=Lite&demo=Foundry Table#contact"
+              data-niche="Рестораны"
+              data-package="Lite"
+              data-template="Foundry Table"
+            >
+              Заказать такой сайт
+            </a>
+          </div>
+          <div class="site-demo-order__side">
+            <strong>Что входит в Lite</strong>
+            <span>Первый экран, меню, блок о заведении, галерея и базовая форма брони.</span>
+          </div>
+        </section>
+      </main>
+    </div>
+    <script src="i18n.js"></script>
+  </body>
+</html>

@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>webcorn — вход для сотрудников</title>
+    <meta
+      name="description"
+      content="Вход сотрудников webcorn в CRM."
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body class="auth-page">
+    <main class="auth-main" data-staff-login-page>
+      <section class="container">
+        <div class="staff-login-card">
+          <a class="brand" href="index.html" aria-label="webcorn">
+            <span class="brand__mark"><span>W</span></span>
+            <span class="brand__copy">
+              <strong>webcorn</strong>
+              <span>Только для сотрудников</span>
+            </span>
+          </a>
+
+          <div class="section-head">
+            <span class="eyebrow">Вход сотрудников</span>
+            <h1>CRM закрыта для клиентов и доступна только команде.</h1>
+            <p>Используйте служебный email и пароль, чтобы открыть CRM и работать с заявками.</p>
+          </div>
+
+          <div class="account-message" data-staff-message hidden></div>
+
+          <form class="lead-form" data-staff-login-form>
+            <div class="form-grid">
+              <div class="field field--full">
+                <label for="staff-email">Почта сотрудника</label>
+                <input id="staff-email" name="email" type="email" required />
+              </div>
+              <div class="field field--full">
+                <label for="staff-password">Пароль</label>
+                <input id="staff-password" name="password" type="password" required />
+              </div>
+            </div>
+            <button class="button button--primary button--full" type="submit">Войти в CRM</button>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <script src="i18n.js"></script>
+    <script src="script.js"></script>
+    <script src="account.js"></script>
+  </body>
+</html>

@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>webcorn — сайты для ресторанов</title>
+    <meta
+      name="description"
+      content="Выберите демо-сайт ресторана от webcorn: Lite, Pro или Signature. Откройте готовый пример и закажите адаптацию под свое заведение."
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body class="catalog-page theme-restaurant">
+    <header class="site-header">
+      <div class="site-header__inner">
+        <a class="brand" href="index.html" aria-label="webcorn">
+          <span class="brand__mark"><span>W</span></span>
+          <span class="brand__copy">
+            <strong>webcorn</strong>
+            <span>Рестораны</span>
+          </span>
+        </a>
+
+        <nav class="site-nav" aria-label="Навигация">
+          <a href="index.html">Главная</a>
+          <a href="#levels">Уровни</a>
+          <a href="#contact">Заявка</a>
+          <a href="account.html" data-account-link>Войти</a>
+        </nav>
+
+        <a class="button button--primary site-header__cta" href="#levels">Смотреть уровни</a>
+
+        <button class="nav-toggle" type="button" data-nav-toggle aria-label="Открыть меню">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </header>
+
+    <main class="catalog-main">
+      <section class="container">
+        <div class="catalog-hero">
+          <div class="catalog-hero__copy" data-reveal>
+            <span class="eyebrow">Рестораны</span>
+            <h1>Выберите сайт для ресторана под класс вашего заведения.</h1>
+            <p>
+              От короткой визитки с меню и бронью до премиального сайта с атмосферой, историей
+              бренда и частными форматами. Все варианты уже доступны как демо.
+            </p>
+            <div class="button-row">
+              <a class="button button--primary" href="#levels">Смотреть уровни</a>
+              <a class="button button--ghost" href="preview-restaurant-signature.html">Открыть демо Signature</a>
+            </div>
+          </div>
+
+          <div class="catalog-hero__visual" data-reveal>
+            <div class="hero-preview">
+              <div class="hero-preview__bar"><span></span><span></span><span></span></div>
+              <div class="hero-preview__screen">
+                <div class="hero-preview__hero"></div>
+                <div class="hero-preview__rows">
+                  <span></span>
+                  <span></span>
+                </div>
+                <div class="hero-preview__meta">
+                  <span>Меню</span>
+                  <span>Галерея</span>
+                  <span>Бронь</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="catalog-section" id="levels">
+        <div class="container">
+          <div class="section-head" data-reveal>
+            <span class="eyebrow">Уровни</span>
+            <h2>Три готовых формата для ресторанного сайта.</h2>
+            <p>Разница в атмосфере, глубине структуры и том, насколько сильно сайт продает бронь и бренд.</p>
+          </div>
+
+          <div class="catalog-grid">
+            <article class="catalog-card catalog-card--lite" data-reveal>
+              <div class="catalog-card__thumb catalog-card__thumb--live">
+                <div class="live-window live-window--catalog theme-restaurant">
+                  <div class="live-window__bar">
+                    <div class="live-window__dots"><span></span><span></span><span></span></div>
+                    <span class="live-window__label">Foundry Table / Lite</span>
+                  </div>
+                  <div class="live-window__viewport">
+                    <iframe
+                      src="preview-restaurant-lite.html?embed=1"
+                      title="Встроенное демо Foundry Table"
+                      loading="lazy"
+                    ></iframe>
+                  </div>
+                </div>
+              </div>
+              <div class="catalog-card__content">
+                <div class="catalog-card__meta">
+                  <span class="catalog-card__badge">Lite</span>
+                  <span class="catalog-card__price">от $950</span>
+                </div>
+                <h3>Foundry Table</h3>
+                <p>Лаконичный сайт для ресторана или кафе: первый экран, меню, блок о заведении, галерея и бронь.</p>
+                <ul>
+                  <li><span>Подходит для быстрого запуска без сложной структуры</span></li>
+                  <li><span>Меню и контакт видны сразу</span></li>
+                  <li><span>Хорош для небольших заведений и кафе</span></li>
+                </ul>
+                <div class="catalog-card__actions">
+                  <a class="button button--ghost" href="preview-restaurant-lite.html">Открыть демо</a>
+                  <button
+                    class="button button--primary"
+                    type="button"
+                    data-pick-package
+                    data-target="contact"
+                    data-niche="Рестораны"
+                    data-package="Lite"
+                    data-template="Foundry Table"
+                  >
+                    Выбрать уровень
+                  </button>
+                </div>
+              </div>
+            </article>
+
+            <article class="catalog-card catalog-card--pro" data-reveal>
+              <div class="catalog-card__thumb catalog-card__thumb--live">
+                <div class="live-window live-window--catalog theme-restaurant">
+                  <div class="live-window__bar">
+                    <div class="live-window__dots"><span></span><span></span><span></span></div>
+                    <span class="live-window__label">Atelier Dining / Pro</span>
+                  </div>
+                  <div class="live-window__viewport">
+                    <iframe
+                      src="preview-restaurant-pro.html?embed=1"
+                      title="Встроенное демо Atelier Dining"
+                      loading="lazy"
+                    ></iframe>
+                  </div>
+                </div>
+              </div>
+              <div class="catalog-card__content">
+                <div class="catalog-card__meta">
+                  <span class="catalog-card__badge">Pro</span>
+                  <span class="catalog-card__price">от $1,690</span>
+                </div>
+                <h3>Atelier Dining</h3>
+                <p>Основной формат с меню, событиями, галереей, блоком о заведении и удобной бронью.</p>
+                <ul>
+                  <li><span>Больше экранов и больше контента</span></li>
+                  <li><span>Сильнее путь от атмосферы к бронированию</span></li>
+                  <li><span>Подходит большинству ресторанов</span></li>
+                </ul>
+                <div class="catalog-card__actions">
+                  <a class="button button--ghost" href="preview-restaurant-pro.html">Открыть демо</a>
+                  <button
+                    class="button button--primary"
+                    type="button"
+                    data-pick-package
+                    data-target="contact"
+                    data-niche="Рестораны"
+                    data-package="Pro"
+                    data-template="Atelier Dining"
+                  >
+                    Выбрать уровень
+                  </button>
+                </div>
+              </div>
+            </article>
+
+            <article class="catalog-card catalog-card--signature" data-reveal>
+              <div class="catalog-card__thumb catalog-card__thumb--live">
+                <div class="live-window live-window--catalog theme-restaurant">
+                  <div class="live-window__bar">
+                    <div class="live-window__dots"><span></span><span></span><span></span></div>
+                    <span class="live-window__label">Noir Atelier / Signature</span>
+                  </div>
+                  <div class="live-window__viewport">
+                    <iframe
+                      src="preview-restaurant-signature.html?embed=1"
+                      title="Встроенное демо Noir Atelier"
+                      loading="lazy"
+                    ></iframe>
+                  </div>
+                </div>
+              </div>
+              <div class="catalog-card__content">
+                <div class="catalog-card__meta">
+                  <span class="catalog-card__badge">Signature</span>
+                  <span class="catalog-card__price">от $3,150</span>
+                </div>
+                <h3>Noir Atelier</h3>
+                <p>Премиальный сайт с атмосферой бренда, историей шефа, дегустационным меню, галереей и сильной бронью.</p>
+                <ul>
+                  <li><span>Сильная эмоциональная подача и дорогой образ заведения</span></li>
+                  <li><span>Для заведений с высокой визуальной ставкой</span></li>
+                  <li><span>Самый богатый контент и структура</span></li>
+                </ul>
+                <div class="catalog-card__actions">
+                  <a class="button button--ghost" href="preview-restaurant-signature.html">Открыть демо</a>
+                  <button
+                    class="button button--primary"
+                    type="button"
+                    data-pick-package
+                    data-target="contact"
+                    data-niche="Рестораны"
+                    data-package="Signature"
+                    data-template="Noir Atelier"
+                  >
+                    Выбрать уровень
+                  </button>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="container" id="contact">
+        <div class="catalog-request">
+          <div class="section-head" data-reveal>
+            <span class="eyebrow">Заявка</span>
+            <h2>Выберите уровень и отправьте бриф по заведению.</h2>
+            <p>webcorn адаптирует выбранное демо под меню, атмосферу, бронь и реальный формат вашего заведения.</p>
+          </div>
+
+          <div class="catalog-request__grid catalog-request__grid--single">
+            <div class="catalog-form catalog-form--wide" data-reveal>
+              <div class="catalog-form__selection">
+                <span class="summary-badge">Выбранный пакет</span>
+                <div class="catalog-summary__title" data-selection-title>Выберите уровень выше</div>
+                <div class="summary-card__row">
+                  <span class="chip" data-selection-niche>Рестораны</span>
+                  <span class="chip" data-selection-tier>Без пакета</span>
+                </div>
+              </div>
+              <strong>Форма для ресторана</strong>
+              <p>Оставьте контакт, формат заведения и что важно для нового сайта.</p>
+
+              <form class="lead-form" data-lead-form data-requires-selection data-source="Страница Рестораны">
+                <div class="form-grid">
+                  <div class="field">
+                    <label for="restaurant-name">Имя</label>
+                    <input id="restaurant-name" name="fullName" type="text" required />
+                  </div>
+                  <div class="field">
+                    <label for="restaurant-business">Название заведения</label>
+                    <input id="restaurant-business" name="businessName" type="text" required />
+                  </div>
+                  <div class="field">
+                    <label for="restaurant-email">Почта</label>
+                    <input id="restaurant-email" name="email" type="email" required />
+                  </div>
+                  <div class="field">
+                    <label for="restaurant-phone">WhatsApp / телефон</label>
+                    <input id="restaurant-phone" name="phone" type="text" required />
+                  </div>
+                  <div class="field">
+                    <label for="restaurant-country">Страна</label>
+                    <input id="restaurant-country" name="country" type="text" required />
+                  </div>
+                  <div class="field">
+                    <label for="restaurant-site">Текущий сайт</label>
+                    <input id="restaurant-site" name="currentWebsite" type="text" placeholder="Если уже есть" />
+                  </div>
+                  <div class="field">
+                    <label for="restaurant-budget">Бюджет</label>
+                    <select id="restaurant-budget" name="budgetRange">
+                      <option value="">Не выбрано</option>
+                      <option>до $1500</option>
+                      <option>$1500–$3000</option>
+                      <option>$3000–$5000</option>
+                      <option>$5000+</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label for="restaurant-timeline">Срок</label>
+                    <select id="restaurant-timeline" name="timeline">
+                      <option value="">Не выбрано</option>
+                      <option>Как можно скорее</option>
+                      <option>В течение 2 недель</option>
+                      <option>В течение месяца</option>
+                      <option>Гибкий срок</option>
+                    </select>
+                  </div>
+                  <div class="field field--full">
+                    <label for="restaurant-template">Выбранное демо</label>
+                    <input id="restaurant-template" name="selectedTemplate" type="text" readonly />
+                  </div>
+                  <input type="hidden" name="niche" value="Рестораны" />
+                  <input type="hidden" name="packageTier" value="" />
+                  <div class="field field--full">
+                    <label for="restaurant-details">Что важно для сайта</label>
+                    <textarea
+                      id="restaurant-details"
+                      name="projectDetails"
+                      placeholder="Например: показать меню, усилить атмосферу бренда, добавить удобную бронь и блоки событий."
+                      required
+                    ></textarea>
+                  </div>
+                </div>
+
+                <div class="form-note">
+                  Чтобы отправить заявку и видеть ее статус, войдите в личный кабинет. Если пакет еще не выбран, нажмите «Выбрать уровень» на карточке выше.
+                </div>
+                <div class="form-success" aria-live="polite"></div>
+                <button class="button button--primary button--full" type="submit">Отправить заявку</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <div class="site-footer__panel">
+          <div class="site-footer__top">
+            <a class="brand" href="index.html">
+              <span class="brand__mark"><span>W</span></span>
+              <span class="brand__copy">
+                <strong>webcorn</strong>
+                <span>Сайты для ресторанов</span>
+              </span>
+            </a>
+            <div class="site-footer__links">
+              <a href="index.html">Главная</a>
+              <a href="hotel.html">Отели</a>
+              <a href="clinic.html">Клиники</a>
+              <a href="account.html" data-account-link>Войти</a>
+            </div>
+          </div>
+          <div class="site-footer__bottom">
+            <div class="site-footer__contacts">
+              <span>florencya08090@gmail.com</span>
+              <span>+7 776 907 9717</span>
+            </div>
+            <span>© 2026 webcorn</span>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script src="i18n.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>

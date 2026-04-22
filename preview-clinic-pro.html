@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nordic Care — демо-сайт клиники</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body class="site-demo-page theme-clinic tier-medium">
+    <div class="site-demo-bar">
+      <div class="site-demo-bar__links">
+        <a href="clinic.html">← К подборке клиник</a>
+        <span>Демо клиники / Pro</span>
+      </div>
+      <a
+        class="button button--primary"
+        href="clinic.html?niche=Клиники&paket=Pro&demo=Nordic Care#contact"
+        data-niche="Клиники"
+        data-package="Pro"
+        data-template="Nordic Care"
+      >
+        Заказать такой сайт
+      </a>
+    </div>
+
+    <div class="site-demo-shell">
+      <header class="site-demo-nav">
+        <div class="site-demo-nav__brand">Nordic Care</div>
+        <nav class="site-demo-nav__menu">
+          <a href="#services">Услуги</a>
+          <a href="#doctors">Врачи</a>
+          <a href="#trust">Доверие</a>
+          <a href="#appointment">Запись</a>
+        </nav>
+      </header>
+
+      <main>
+        <section class="site-demo-hero">
+          <div class="site-demo-hero__copy">
+            <span class="eyebrow">Pro / Клиника</span>
+            <h1>Клиника, которой доверяют еще до первого звонка.</h1>
+            <p>Более сильная структура: услуги, врачи, блоки доверия, отзывы и уверенный путь к записи.</p>
+            <div class="site-demo-kpis">
+              <span>3 направления</span>
+              <span>4 врача</span>
+              <span>Запись в 1 экран</span>
+            </div>
+            <div class="button-row">
+              <a class="button button--primary" href="#appointment">Записаться</a>
+              <a class="button button--ghost" href="#doctors">Наша команда</a>
+            </div>
+          </div>
+
+          <div class="site-demo-hero__media">
+            <div class="site-demo-hero__panel site-demo-hero__panel--visual">
+              <strong>Кардиологическое направление</strong>
+              <p>Услуги упакованы как понятное направление, а не как сухой список процедур.</p>
+            </div>
+            <div class="site-demo-pane">
+              <strong>Почему Pro сильнее</strong>
+              <p>Больше доверия, больше экранов и заметно взрослее подача для частной клиники.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="site-demo-section" id="services">
+          <div class="site-demo-section__head">
+            <h2>Направления</h2>
+            <p>Услуги поданы как понятные маршруты пациента с ясным CTA.</p>
+          </div>
+          <div class="site-demo-grid site-demo-grid--three">
+            <article class="site-demo-card">
+              <div class="site-demo-card__visual"></div>
+              <h3>Кардиология</h3>
+              <p>Профилактика, диагностика и наблюдение с понятным входом в запись.</p>
+            </article>
+            <article class="site-demo-card">
+              <div class="site-demo-card__visual"></div>
+              <h3>Диагностика</h3>
+              <p>Оборудование, подготовка и расшифровка результатов без перегруза.</p>
+            </article>
+            <article class="site-demo-card">
+              <div class="site-demo-card__visual"></div>
+              <h3>Терапия</h3>
+              <p>Базовые обращения и системный подход к пациенту в частной клинике.</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="site-demo-section" id="doctors">
+          <div class="site-demo-section__head">
+            <h2>Команда врачей</h2>
+            <p>Врачи — часть системы доверия, а не просто декоративные карточки.</p>
+          </div>
+          <div class="site-demo-grid site-demo-grid--two">
+            <article class="site-demo-card">
+              <div class="site-demo-card__visual"></div>
+              <h3>Анна Соколова</h3>
+              <p>Кардиолог, 12 лет практики, сопровождение пациентов с хроническими случаями.</p>
+            </article>
+            <article class="site-demo-card">
+              <div class="site-demo-card__visual"></div>
+              <h3>Дмитрий Норден</h3>
+              <p>Терапевт, профилактические осмотры и построение маршрута обследования.</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="site-demo-section" id="trust">
+          <div class="site-demo-grid site-demo-grid--two">
+            <article class="site-demo-pane">
+              <h3>Почему пациенты доверяют</h3>
+              <ul>
+                <li><span>Четкая подача услуг и врачей</span></li>
+                <li><span>Блоки доверия и отзывов встроены в нужных местах</span></li>
+                <li><span>Запись заметна, но не мешает чтению</span></li>
+              </ul>
+            </article>
+            <div class="site-demo-quote">
+              «Здесь все выглядит серьезно и спокойно. Я сразу увидела врача, направление и форму записи, не пришлось ничего искать.»
+              <strong>Пациент Nordic Care</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="site-demo-section" id="appointment">
+          <div class="site-demo-section__head">
+            <h2>Форма записи на прием</h2>
+            <p>Форма уже встроена в коммерческий маршрут клиники и закрывает базовый сценарий обращения.</p>
+          </div>
+          <form class="site-demo-form">
+            <div class="form-grid">
+              <div class="field">
+                <label for="nordic-name">Имя</label>
+                <input id="nordic-name" type="text" />
+              </div>
+              <div class="field">
+                <label for="nordic-phone">Телефон</label>
+                <input id="nordic-phone" type="text" placeholder="+7 / WhatsApp" />
+              </div>
+              <div class="field">
+                <label for="nordic-direction">Направление</label>
+                <select id="nordic-direction">
+                  <option>Кардиология</option>
+                  <option>Диагностика</option>
+                  <option>Терапия</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="nordic-doctor">Врач</label>
+                <select id="nordic-doctor">
+                  <option>Анна Соколова</option>
+                  <option>Дмитрий Норден</option>
+                </select>
+              </div>
+              <div class="field field--full">
+                <label for="nordic-note">Комментарий</label>
+                <textarea id="nordic-note" placeholder="Коротко опишите причину обращения"></textarea>
+              </div>
+            </div>
+            <button class="button button--primary" type="button">Отправить заявку</button>
+          </form>
+        </section>
+
+        <section class="site-demo-order">
+          <div class="site-demo-order__panel">
+            <h2>Нужен такой же Pro-сайт для клиники?</h2>
+            <p>webcorn адаптирует это демо под ваши направления, врачей, отзывы и реальный сценарий записи.</p>
+            <a
+              class="button button--primary"
+              href="clinic.html?niche=Клиники&paket=Pro&demo=Nordic Care#contact"
+              data-niche="Клиники"
+              data-package="Pro"
+              data-template="Nordic Care"
+            >
+              Заказать такой сайт
+            </a>
+          </div>
+          <div class="site-demo-order__side">
+            <strong>Что усиливает Pro</strong>
+            <span>Больше доверия, понятнее структура и лучше путь к записи для клиники.</span>
+          </div>
+        </section>
+      </main>
+    </div>
+    <script src="i18n.js"></script>
+  </body>
+</html>

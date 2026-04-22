@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>webcorn — сайты для клиник</title>
+    <meta
+      name="description"
+      content="Выберите демо-сайт клиники от webcorn: Lite, Pro или Signature. Откройте готовый пример и закажите адаптацию под свою клинику."
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body class="catalog-page theme-clinic">
+    <header class="site-header">
+      <div class="site-header__inner">
+        <a class="brand" href="index.html" aria-label="webcorn">
+          <span class="brand__mark"><span>W</span></span>
+          <span class="brand__copy">
+            <strong>webcorn</strong>
+            <span>Клиники</span>
+          </span>
+        </a>
+
+        <nav class="site-nav" aria-label="Навигация">
+          <a href="index.html">Главная</a>
+          <a href="#levels">Уровни</a>
+          <a href="#contact">Заявка</a>
+          <a href="account.html" data-account-link>Войти</a>
+        </nav>
+
+        <a class="button button--primary site-header__cta" href="#levels">Смотреть уровни</a>
+
+        <button class="nav-toggle" type="button" data-nav-toggle aria-label="Открыть меню">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </header>
+
+    <main class="catalog-main">
+      <section class="container">
+        <div class="catalog-hero">
+          <div class="catalog-hero__copy" data-reveal>
+            <span class="eyebrow">Клиники</span>
+            <h1>Выберите сайт для клиники под ваш уровень подачи.</h1>
+            <p>
+              Все уровни уже открываются как реальные демо-сайты: с услугами, врачами, блоками
+              доверия и записью. Выберите формат и переходите в демо.
+            </p>
+            <div class="button-row">
+              <a class="button button--primary" href="#levels">Смотреть уровни</a>
+              <a class="button button--ghost" href="preview-clinic-signature.html">Открыть демо Signature</a>
+            </div>
+          </div>
+
+          <div class="catalog-hero__visual" data-reveal>
+            <div class="hero-preview">
+              <div class="hero-preview__bar"><span></span><span></span><span></span></div>
+              <div class="hero-preview__screen">
+                <div class="hero-preview__hero"></div>
+                <div class="hero-preview__rows">
+                  <span></span>
+                  <span></span>
+                </div>
+                <div class="hero-preview__meta">
+                  <span>Услуги</span>
+                  <span>Врачи</span>
+                  <span>Запись</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="catalog-section" id="levels">
+        <div class="container">
+          <div class="section-head" data-reveal>
+            <span class="eyebrow">Уровни</span>
+            <h2>Три формата для медицинского сайта.</h2>
+            <p>От быстрого сайта услуг до сильного брендового решения для частной клиники.</p>
+          </div>
+
+          <div class="catalog-grid">
+            <article class="catalog-card catalog-card--lite" data-reveal>
+              <div class="catalog-card__thumb catalog-card__thumb--live">
+                <div class="live-window live-window--catalog theme-clinic">
+                  <div class="live-window__bar">
+                    <div class="live-window__dots"><span></span><span></span><span></span></div>
+                    <span class="live-window__label">Northline Care / Lite</span>
+                  </div>
+                  <div class="live-window__viewport">
+                    <iframe
+                      src="preview-clinic-lite.html?embed=1"
+                      title="Встроенное демо Northline Care"
+                      loading="lazy"
+                    ></iframe>
+                  </div>
+                </div>
+              </div>
+              <div class="catalog-card__content">
+                <div class="catalog-card__meta">
+                  <span class="catalog-card__badge">Lite</span>
+                  <span class="catalog-card__price">от $990</span>
+                </div>
+                <h3>Northline Care</h3>
+                <p>Базовый медицинский сайт с услугами, карточкой врача, блоком доверия и записью.</p>
+                <ul>
+                  <li><span>Подходит для кабинета, врача или маленькой клиники</span></li>
+                  <li><span>Чистая структура без перегруза</span></li>
+                  <li><span>Быстрый запуск и понятный контакт</span></li>
+                </ul>
+                <div class="catalog-card__actions">
+                  <a class="button button--ghost" href="preview-clinic-lite.html">Открыть демо</a>
+                  <button
+                    class="button button--primary"
+                    type="button"
+                    data-pick-package
+                    data-target="contact"
+                    data-niche="Клиники"
+                    data-package="Lite"
+                    data-template="Northline Care"
+                  >
+                    Выбрать уровень
+                  </button>
+                </div>
+              </div>
+            </article>
+
+            <article class="catalog-card catalog-card--pro" data-reveal>
+              <div class="catalog-card__thumb catalog-card__thumb--live">
+                <div class="live-window live-window--catalog theme-clinic">
+                  <div class="live-window__bar">
+                    <div class="live-window__dots"><span></span><span></span><span></span></div>
+                    <span class="live-window__label">Nordic Care / Pro</span>
+                  </div>
+                  <div class="live-window__viewport">
+                    <iframe
+                      src="preview-clinic-pro.html?embed=1"
+                      title="Встроенное демо Nordic Care"
+                      loading="lazy"
+                    ></iframe>
+                  </div>
+                </div>
+              </div>
+              <div class="catalog-card__content">
+                <div class="catalog-card__meta">
+                  <span class="catalog-card__badge">Pro</span>
+                  <span class="catalog-card__price">от $1,780</span>
+                </div>
+                <h3>Nordic Care</h3>
+                <p>Основной формат для клиники с врачами, услугами, доверием и записью.</p>
+                <ul>
+                  <li><span>Больше экранов под направления и команду</span></li>
+                  <li><span>Больше доверия и лучше путь к записи</span></li>
+                  <li><span>Подходит большинству частных клиник</span></li>
+                </ul>
+                <div class="catalog-card__actions">
+                  <a class="button button--ghost" href="preview-clinic-pro.html">Открыть демо</a>
+                  <button
+                    class="button button--primary"
+                    type="button"
+                    data-pick-package
+                    data-target="contact"
+                    data-niche="Клиники"
+                    data-package="Pro"
+                    data-template="Nordic Care"
+                  >
+                    Выбрать уровень
+                  </button>
+                </div>
+              </div>
+            </article>
+
+            <article class="catalog-card catalog-card--signature" data-reveal>
+              <div class="catalog-card__thumb catalog-card__thumb--live">
+                <div class="live-window live-window--catalog theme-clinic">
+                  <div class="live-window__bar">
+                    <div class="live-window__dots"><span></span><span></span><span></span></div>
+                    <span class="live-window__label">Verde Medical / Signature</span>
+                  </div>
+                  <div class="live-window__viewport">
+                    <iframe
+                      src="preview-clinic-signature.html?embed=1"
+                      title="Встроенное демо Verde Medical"
+                      loading="lazy"
+                    ></iframe>
+                  </div>
+                </div>
+              </div>
+              <div class="catalog-card__content">
+                <div class="catalog-card__meta">
+                  <span class="catalog-card__badge">Signature</span>
+                  <span class="catalog-card__price">от $3,250</span>
+                </div>
+                <h3>Verde Medical</h3>
+                <p>Премиальный сайт клиники с сильной подачей бренда, технологий и маршрута пациента.</p>
+                <ul>
+                  <li><span>Программы, специалисты, технологии и сильные блоки доверия</span></li>
+                  <li><span>Для клиник с высоким уровнем сервиса</span></li>
+                  <li><span>Самая сильная визуальная подача</span></li>
+                </ul>
+                <div class="catalog-card__actions">
+                  <a class="button button--ghost" href="preview-clinic-signature.html">Открыть демо</a>
+                  <button
+                    class="button button--primary"
+                    type="button"
+                    data-pick-package
+                    data-target="contact"
+                    data-niche="Клиники"
+                    data-package="Signature"
+                    data-template="Verde Medical"
+                  >
+                    Выбрать уровень
+                  </button>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="container" id="contact">
+        <div class="catalog-request">
+          <div class="section-head" data-reveal>
+            <span class="eyebrow">Заявка</span>
+            <h2>Отправьте бриф по клинике и выбранному уровню.</h2>
+            <p>Сначала можно открыть демо, затем вернуться и заказать адаптацию той же структуры под свою клинику.</p>
+          </div>
+
+          <div class="catalog-request__grid catalog-request__grid--single">
+            <div class="catalog-form catalog-form--wide" data-reveal>
+              <div class="catalog-form__selection">
+                <span class="summary-badge">Выбранный пакет</span>
+                <div class="catalog-summary__title" data-selection-title>Выберите уровень выше</div>
+                <div class="summary-card__row">
+                  <span class="chip" data-selection-niche>Клиники</span>
+                  <span class="chip" data-selection-tier>Без пакета</span>
+                </div>
+              </div>
+              <strong>Форма для клиники</strong>
+              <p>Оставьте контакты, формат клиники и основные задачи для сайта.</p>
+
+              <form class="lead-form" data-lead-form data-requires-selection data-source="Страница Клиники">
+                <div class="form-grid">
+                  <div class="field">
+                    <label for="clinic-name">Имя</label>
+                    <input id="clinic-name" name="fullName" type="text" required />
+                  </div>
+                  <div class="field">
+                    <label for="clinic-business">Название клиники</label>
+                    <input id="clinic-business" name="businessName" type="text" required />
+                  </div>
+                  <div class="field">
+                    <label for="clinic-email">Почта</label>
+                    <input id="clinic-email" name="email" type="email" required />
+                  </div>
+                  <div class="field">
+                    <label for="clinic-phone">WhatsApp / телефон</label>
+                    <input id="clinic-phone" name="phone" type="text" required />
+                  </div>
+                  <div class="field">
+                    <label for="clinic-country">Страна</label>
+                    <input id="clinic-country" name="country" type="text" required />
+                  </div>
+                  <div class="field">
+                    <label for="clinic-site">Текущий сайт</label>
+                    <input id="clinic-site" name="currentWebsite" type="text" placeholder="Если уже есть" />
+                  </div>
+                  <div class="field">
+                    <label for="clinic-budget">Бюджет</label>
+                    <select id="clinic-budget" name="budgetRange">
+                      <option value="">Не выбрано</option>
+                      <option>до $1500</option>
+                      <option>$1500–$3000</option>
+                      <option>$3000–$5000</option>
+                      <option>$5000+</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label for="clinic-timeline">Срок</label>
+                    <select id="clinic-timeline" name="timeline">
+                      <option value="">Не выбрано</option>
+                      <option>Как можно скорее</option>
+                      <option>В течение 2 недель</option>
+                      <option>В течение месяца</option>
+                      <option>Гибкий срок</option>
+                    </select>
+                  </div>
+                  <div class="field field--full">
+                    <label for="clinic-template">Выбранное демо</label>
+                    <input id="clinic-template" name="selectedTemplate" type="text" readonly />
+                  </div>
+                  <input type="hidden" name="niche" value="Клиники" />
+                  <input type="hidden" name="packageTier" value="" />
+                  <div class="field field--full">
+                    <label for="clinic-details">Что важно для сайта</label>
+                    <textarea
+                      id="clinic-details"
+                      name="projectDetails"
+                      placeholder="Например: показать направления, усилить доверие, улучшить запись и мобильную подачу."
+                      required
+                    ></textarea>
+                  </div>
+                </div>
+
+                <div class="form-note">
+                  Чтобы отправить заявку и видеть ее статус, войдите в личный кабинет. Если пакет еще не выбран, нажмите «Выбрать уровень» на карточке выше.
+                </div>
+                <div class="form-success" aria-live="polite"></div>
+                <button class="button button--primary button--full" type="submit">Отправить заявку</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <div class="site-footer__panel">
+          <div class="site-footer__top">
+            <a class="brand" href="index.html">
+              <span class="brand__mark"><span>W</span></span>
+              <span class="brand__copy">
+                <strong>webcorn</strong>
+                <span>Сайты для клиник</span>
+              </span>
+            </a>
+            <div class="site-footer__links">
+              <a href="index.html">Главная</a>
+              <a href="hotel.html">Отели</a>
+              <a href="restaurant.html">Рестораны</a>
+              <a href="account.html" data-account-link>Войти</a>
+            </div>
+          </div>
+          <div class="site-footer__bottom">
+            <div class="site-footer__contacts">
+              <span>florencya08090@gmail.com</span>
+              <span>+7 776 907 9717</span>
+            </div>
+            <span>© 2026 webcorn</span>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script src="i18n.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
