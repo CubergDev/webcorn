@@ -68,6 +68,7 @@ const EARTH_ASSETS = {
   clouds: "assets/space/earth-clouds-1024.png",
   specular: "assets/space/earth-specular-2048.jpg",
   normal: "assets/space/earth-normal-2048.jpg",
+  moon: "assets/space/moon-1024.jpg",
 };
 
 const initSpaceScene = () => {
@@ -118,8 +119,37 @@ const initSpaceScene = () => {
     return texture;
   };
 
+  const createStarField = (count, baseRadius, depthOffset, verticalSpread) => {
+    const geometry = new THREE.BufferGeometry();
+    const positions = new Float32Array(count * 3);
+
+    for (let i = 0; i < count; i += 1) {
+      const angle = i * 2.399963;
+      const radius = baseRadius + (i % 97) * 0.095;
+      const depth = depthOffset - (i % 41) * 0.55;
+
+      positions[i * 3] = Math.cos(angle) * radius;
+      positions[i * 3 + 1] = ((i % 53) - 26) * verticalSpread;
+      positions[i * 3 + 2] = depth + Math.sin(angle) * 2.6;
+    }
+
+    geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    return geometry;
+  };
+
+  const deepStars = new THREE.Points(
+    createStarField(1150, 8.4, -12, 0.34),
+    new THREE.PointsMaterial({
+      color: 0xdaf6ff,
+      size: 0.014,
+      transparent: true,
+      opacity: 0.56,
+    })
+  );
+  group.add(deepStars);
+
   const starGeometry = new THREE.BufferGeometry();
-  const starCount = 520;
+  const starCount = 680;
   const starPositions = new Float32Array(starCount * 3);
 
   for (let i = 0; i < starCount; i += 1) {
@@ -150,6 +180,7 @@ const initSpaceScene = () => {
   const cloudTexture = loadTexture(EARTH_ASSETS.clouds, true);
   const specularTexture = loadTexture(EARTH_ASSETS.specular);
   const normalTexture = loadTexture(EARTH_ASSETS.normal);
+  const moonTexture = loadTexture(EARTH_ASSETS.moon, true);
   const lightDirection = new THREE.Vector3(7.2, 3.4, 5.7).normalize();
 
   const earth = new THREE.Mesh(
@@ -227,6 +258,56 @@ const initSpaceScene = () => {
   clouds.position.copy(earth.position);
   clouds.rotation.copy(earth.rotation);
   group.add(clouds);
+
+  const hazeMaterial = new THREE.ShaderMaterial({
+    uniforms: {
+      glowColor: { value: new THREE.Color(0x72dcff) },
+      lightDirection: { value: lightDirection },
+      opacity: { value: 0.52 },
+    },
+    vertexShader: `
+      varying vec3 vNormal;
+      varying vec3 vViewPosition;
+      varying vec3 vWorldNormal;
+
+      void main() {
+        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+        vNormal = normalize(normalMatrix * normal);
+        vViewPosition = -mvPosition.xyz;
+        vWorldNormal = normalize(mat3(modelMatrix) * normal);
+        gl_Position = projectionMatrix * mvPosition;
+      }
+    `,
+    fragmentShader: `
+      uniform vec3 glowColor;
+      uniform vec3 lightDirection;
+      uniform float opacity;
+      varying vec3 vNormal;
+      varying vec3 vViewPosition;
+      varying vec3 vWorldNormal;
+
+      void main() {
+        float viewRim = 1.0 - max(dot(normalize(vNormal), normalize(vViewPosition)), 0.0);
+        float sunSide = smoothstep(-0.18, 0.82, dot(normalize(vWorldNormal), normalize(lightDirection)));
+        float horizon = pow(viewRim, 2.1) * 0.74;
+        float dayHaze = pow(sunSide, 4.0) * 0.08;
+        float alpha = (horizon + dayHaze) * opacity;
+
+        gl_FragColor = vec4(glowColor, alpha);
+      }
+    `,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  });
+
+  const atmosphereHaze = new THREE.Mesh(
+    new THREE.SphereGeometry(2.34, 128, 128),
+    hazeMaterial
+  );
+  atmosphereHaze.position.copy(earth.position);
+  atmosphereHaze.rotation.copy(earth.rotation);
+  group.add(atmosphereHaze);
 
   const rimAtmosphereMaterial = new THREE.ShaderMaterial({
     uniforms: {
@@ -308,6 +389,57 @@ const initSpaceScene = () => {
   surfaceGlow.rotation.copy(earth.rotation);
   group.add(surfaceGlow);
 
+  const moon = new THREE.Mesh(
+    new THREE.SphereGeometry(0.55, 64, 64),
+    new THREE.MeshPhongMaterial({
+      map: moonTexture,
+      color: 0xf4f6ff,
+      emissive: new THREE.Color(0x111827),
+      emissiveIntensity: 0.08,
+      shininess: 5,
+    })
+  );
+  moon.position.set(-4.8, 2.15, -7.4);
+  moon.rotation.set(0.18, -0.65, 0.08);
+  group.add(moon);
+
+  const moonGlow = new THREE.Mesh(
+    new THREE.SphereGeometry(0.74, 48, 48),
+    new THREE.ShaderMaterial({
+      uniforms: {
+        glowColor: { value: new THREE.Color(0xaedfff) },
+      },
+      vertexShader: `
+        varying vec3 vNormal;
+        varying vec3 vViewPosition;
+
+        void main() {
+          vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+          vNormal = normalize(normalMatrix * normal);
+          vViewPosition = -mvPosition.xyz;
+          gl_Position = projectionMatrix * mvPosition;
+        }
+      `,
+      fragmentShader: `
+        uniform vec3 glowColor;
+        varying vec3 vNormal;
+        varying vec3 vViewPosition;
+
+        void main() {
+          float rim = 1.0 - max(dot(normalize(vNormal), normalize(vViewPosition)), 0.0);
+          float glow = pow(rim, 2.8) * 0.34;
+          gl_FragColor = vec4(glowColor, glow);
+        }
+      `,
+      transparent: true,
+      depthWrite: false,
+      side: THREE.BackSide,
+      blending: THREE.AdditiveBlending,
+    })
+  );
+  moonGlow.position.copy(moon.position);
+  group.add(moonGlow);
+
   scene.add(new THREE.AmbientLight(0xcfeaff, 0.5));
   const keyLight = new THREE.DirectionalLight(0xffffff, 3.65);
   keyLight.position.set(7.2, 3.4, 5.7);
@@ -320,6 +452,7 @@ const initSpaceScene = () => {
   scene.add(rimLight);
 
   let scrollProgress = 0;
+  let renderedProgress = 0;
   let frameId;
 
   const updateScroll = () => {
@@ -330,29 +463,39 @@ const initSpaceScene = () => {
   };
 
   const render = () => {
-    const eased = 1 - Math.pow(1 - scrollProgress, 3);
-    const cameraZoom = 11.5 - eased * 6.9;
+    renderedProgress += (scrollProgress - renderedProgress) * 0.055;
+    const eased = renderedProgress * renderedProgress * (3 - 2 * renderedProgress);
+    const cameraZoom = 11.8 - eased * 4.45;
 
     camera.position.z = cameraZoom;
-    camera.position.x = eased * 1.1;
-    camera.position.y = 0.4 - eased * 0.52;
+    camera.position.x = eased * 0.72;
+    camera.position.y = 0.42 - eased * 0.32;
 
-    earth.scale.setScalar(1 + eased * 2.15);
-    cityLights.scale.setScalar(1 + eased * 2.155);
-    clouds.scale.setScalar(1 + eased * 2.17);
-    atmosphere.scale.setScalar(1 + eased * 2.18);
-    surfaceGlow.scale.setScalar(1 + eased * 2.28);
+    earth.scale.setScalar(1 + eased * 1.42);
+    cityLights.scale.setScalar(1 + eased * 1.435);
+    clouds.scale.setScalar(1 + eased * 1.46);
+    atmosphereHaze.scale.setScalar(1 + eased * 1.49);
+    atmosphere.scale.setScalar(1 + eased * 1.52);
+    surfaceGlow.scale.setScalar(1 + eased * 1.62);
+    moon.position.x = -4.8 + eased * 0.62;
+    moon.position.y = 2.15 - eased * 0.16;
+    moonGlow.position.copy(moon.position);
 
     earth.rotation.y += 0.0018;
     cityLights.rotation.y = earth.rotation.y;
     clouds.rotation.y += 0.00235;
+    atmosphereHaze.rotation.y = earth.rotation.y - 0.02;
     atmosphere.rotation.y = earth.rotation.y - 0.04;
     surfaceGlow.rotation.y = earth.rotation.y - 0.08;
+    moon.rotation.y += 0.00085;
+    deepStars.rotation.y += 0.00012;
     stars.rotation.y += 0.00025;
     group.rotation.x = -eased * 0.08;
 
-    atmosphere.material.uniforms.intensity.value = 0.78 + eased * 0.4;
-    cityLights.material.uniforms.opacity.value = 0.7 + eased * 0.34;
+    atmosphereHaze.material.uniforms.opacity.value = 0.46 + eased * 0.18;
+    atmosphere.material.uniforms.intensity.value = 0.84 + eased * 0.34;
+    cityLights.material.uniforms.opacity.value = 0.74 + eased * 0.22;
+    deepStars.material.opacity = 0.58 - eased * 0.12;
     stars.material.opacity = 0.72 - eased * 0.28;
 
     renderer.render(scene, camera);
