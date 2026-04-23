@@ -129,7 +129,7 @@ const initSpaceScene = async () => {
   }
   if (THREE.ACESFilmicToneMapping) {
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.34;
+    renderer.toneMappingExposure = 1.48;
   }
   scene.background = new THREE.Color(0x020713);
   scene.fog = new THREE.FogExp2(0x020713, 0.026);
@@ -177,7 +177,7 @@ const initSpaceScene = async () => {
       roughness: 0.86,
       metalness: 0.02,
       emissive: new THREE.Color(0x1f160b),
-      emissiveIntensity: 0.28,
+      emissiveIntensity: 0.36,
       color: 0xffffff,
     }),
     rings: new THREE.MeshStandardMaterial({
@@ -193,7 +193,7 @@ const initSpaceScene = async () => {
       opacity: 0.98,
       side: THREE.DoubleSide,
       emissive: new THREE.Color(0x241404),
-      emissiveIntensity: 0.16,
+      emissiveIntensity: 0.22,
       color: 0xffffff,
     }),
     moon: new THREE.MeshStandardMaterial({
@@ -264,7 +264,7 @@ const initSpaceScene = async () => {
     new THREE.ShaderMaterial({
       uniforms: {
         glowColor: { value: new THREE.Color(0x80caff) },
-        intensity: { value: 0.32 },
+        intensity: { value: 0.4 },
       },
       vertexShader: `
         varying vec3 vNormal;
@@ -346,7 +346,7 @@ const initSpaceScene = async () => {
 
     model.position.sub(center);
     model.scale.multiplyScalar(4.8 / maxSize);
-    model.rotation.set(-0.14, -0.34, -0.18);
+    model.rotation.set(-0.28, -0.4, -0.3);
 
     return model;
   };
@@ -368,7 +368,7 @@ const initSpaceScene = async () => {
     ringLineA.rotation.x = Math.PI * 0.5;
     ringLineB.rotation.x = Math.PI * 0.5;
     fallback.add(body, rings, ringLineA, ringLineB);
-    fallback.rotation.set(-0.34, -0.18, -0.34);
+    fallback.rotation.set(-0.52, -0.18, -0.42);
 
     return fallback;
   };
@@ -411,14 +411,14 @@ const initSpaceScene = async () => {
     saturnGroup.add(saturnModel);
   });
 
-  scene.add(new THREE.AmbientLight(0xffead0, 0.92));
-  const keyLight = new THREE.DirectionalLight(0xffffff, 5.2);
+  scene.add(new THREE.AmbientLight(0xffead0, 1.06));
+  const keyLight = new THREE.DirectionalLight(0xffffff, 5.8);
   keyLight.position.set(5.8, 3.2, 4.8);
   scene.add(keyLight);
-  const fillLight = new THREE.DirectionalLight(0x9edbff, 1.55);
+  const fillLight = new THREE.DirectionalLight(0xb6e6ff, 1.9);
   fillLight.position.set(-3.2, 1.8, 3.4);
   scene.add(fillLight);
-  const rimLight = new THREE.DirectionalLight(0x8ce4ff, 2.15);
+  const rimLight = new THREE.DirectionalLight(0x9ce8ff, 2.45);
   rimLight.position.set(-4, 1.6, -2);
   scene.add(rimLight);
 
@@ -459,19 +459,30 @@ const initSpaceScene = async () => {
     updateScroll();
   }
 
+  const applyScrollSpinInput = (delta) => {
+    if (!delta) {
+      return;
+    }
+
+    targetScrollSpinVelocity += Math.max(-42, Math.min(42, delta)) * 0.00058;
+  };
+
   const updateScrollSpin = () => {
     const currentScrollY = window.scrollY;
     const delta = currentScrollY - lastScrollY;
     lastScrollY = currentScrollY;
 
-    if (delta === 0) {
-      return;
-    }
-
-    targetScrollSpinVelocity += Math.max(-55, Math.min(55, delta)) * 0.00095;
+    applyScrollSpinInput(delta);
   };
 
   window.addEventListener("scroll", updateScrollSpin, { passive: true });
+  window.addEventListener(
+    "wheel",
+    (event) => {
+      applyScrollSpinInput(event.deltaY);
+    },
+    { passive: true }
+  );
 
   const render = () => {
     renderedProgress += (motion.progress - renderedProgress) * 0.025;
@@ -487,14 +498,14 @@ const initSpaceScene = async () => {
     camera.lookAt(0, -0.04, -5.3);
 
     autoRotationY += 0.00078;
-    scrollSpinVelocity += (targetScrollSpinVelocity - scrollSpinVelocity) * 0.075;
+    scrollSpinVelocity += (targetScrollSpinVelocity - scrollSpinVelocity) * 0.06;
     scrollRotationY += scrollSpinVelocity;
-    targetScrollSpinVelocity *= 0.88;
-    scrollSpinVelocity *= 0.94;
+    targetScrollSpinVelocity *= 0.84;
+    scrollSpinVelocity *= 0.95;
 
     saturnGroup.rotation.y = autoRotationY + scrollRotationY;
-    saturnGroup.rotation.x = -0.02 + eased * 0.03;
-    saturnGroup.rotation.z = -0.015 - eased * 0.02;
+    saturnGroup.rotation.x = -0.08 + eased * 0.025;
+    saturnGroup.rotation.z = -0.055 - eased * 0.014;
     saturnGroup.position.x = 0;
     saturnGroup.position.y = (narrowScreen ? -0.28 : -0.12) + eased * 0.03;
     saturnGroup.position.z = -5.35 + eased * 0.1;
@@ -503,7 +514,7 @@ const initSpaceScene = async () => {
     glow.position.y = saturnGroup.position.y;
     glow.position.z = saturnGroup.position.z;
     glow.scale.setScalar(narrowScreen ? 0.74 : 0.96);
-    glow.material.uniforms.intensity.value = 0.26 + eased * 0.1;
+    glow.material.uniforms.intensity.value = 0.34 + eased * 0.12;
 
     deepStars.rotation.y += 0.00012;
     stars.rotation.y += 0.00025;
