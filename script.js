@@ -1198,10 +1198,11 @@ window.addEventListener("webfactory:languagechange", () => {
   });
 });
 
-const createPlanetTexture = () => {
+const createPlanetTexture = (size = 2048) => {
   const canvas = document.createElement("canvas");
-  canvas.width = 2048;
-  canvas.height = 1024;
+  const scale = size / 2048;
+  canvas.width = size;
+  canvas.height = Math.round(size / 2);
   const context = canvas.getContext("2d");
 
   const ocean = context.createLinearGradient(0, 0, canvas.width, canvas.height);
@@ -1214,9 +1215,9 @@ const createPlanetTexture = () => {
 
   const drawLand = (x, y, radiusX, radiusY, rotation, color) => {
     context.save();
-    context.translate(x, y);
+    context.translate(x * scale, y * scale);
     context.rotate(rotation);
-    context.scale(radiusX, radiusY);
+    context.scale(radiusX * scale, radiusY * scale);
     context.beginPath();
     context.moveTo(0.1, -0.8);
     context.bezierCurveTo(0.88, -0.56, 0.86, 0.18, 0.38, 0.88);
@@ -1235,17 +1236,30 @@ const createPlanetTexture = () => {
   drawLand(1750, 270, 170, 110, 0.3, "#597e5a");
 
   context.globalAlpha = 0.25;
-  const heat = context.createRadialGradient(1480, 430, 40, 1480, 430, 260);
+  const heat = context.createRadialGradient(
+    1480 * scale,
+    430 * scale,
+    40 * scale,
+    1480 * scale,
+    430 * scale,
+    260 * scale
+  );
   heat.addColorStop(0, "#d9b97e");
   heat.addColorStop(1, "rgba(217, 185, 126, 0)");
   context.fillStyle = heat;
-  context.fillRect(1160, 180, 640, 520);
+  context.fillRect(1160 * scale, 180 * scale, 640 * scale, 520 * scale);
 
   context.globalAlpha = 1;
-  for (let i = 0; i < 120; i += 1) {
+  for (let i = 0; i < Math.max(48, Math.round(120 * scale)); i += 1) {
     context.fillStyle = `rgba(255, 255, 255, ${Math.random() * 0.06})`;
     context.beginPath();
-    context.arc(Math.random() * canvas.width, Math.random() * canvas.height, Math.random() * 2.6, 0, Math.PI * 2);
+    context.arc(
+      Math.random() * canvas.width,
+      Math.random() * canvas.height,
+      Math.random() * 2.6 * scale,
+      0,
+      Math.PI * 2
+    );
     context.fill();
   }
 
@@ -1254,16 +1268,17 @@ const createPlanetTexture = () => {
   return texture;
 };
 
-const createCloudTexture = () => {
+const createCloudTexture = (size = 2048, density = 420) => {
   const canvas = document.createElement("canvas");
-  canvas.width = 2048;
-  canvas.height = 1024;
+  const scale = size / 2048;
+  canvas.width = size;
+  canvas.height = Math.round(size / 2);
   const context = canvas.getContext("2d");
 
-  for (let i = 0; i < 420; i += 1) {
+  for (let i = 0; i < density; i += 1) {
     const x = Math.random() * canvas.width;
     const y = Math.random() * canvas.height;
-    const radius = 18 + Math.random() * 120;
+    const radius = (18 + Math.random() * 120) * scale;
     const gradient = context.createRadialGradient(x, y, radius * 0.12, x, y, radius);
     gradient.addColorStop(0, `rgba(255, 255, 255, ${0.26 + Math.random() * 0.2})`);
     gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
@@ -1563,7 +1578,7 @@ const initHomeSpaceJourney = async () => {
   const compact = window.matchMedia("(max-width: 900px)").matches;
   const deviceMemory = Number(window.navigator?.deviceMemory || 8);
   const lowPower = compact || reducedMotion || deviceMemory <= 4;
-  const targetFrameDuration = 1000 / (lowPower ? 30 : 48);
+  const targetFrameDuration = 1000 / (lowPower ? 28 : 46);
   const maxPixelRatio = lowPower ? 1 : 1.2;
   const renderer = new THREE.WebGLRenderer({
     canvas,
@@ -1577,316 +1592,202 @@ const initHomeSpaceJourney = async () => {
   renderer.setClearColor(0x000000, 0);
 
   const scene = new THREE.Scene();
-  scene.fog = new THREE.Fog(0x050914, 7.6, 18.6);
-  const camera = new THREE.PerspectiveCamera(compact ? 42 : 34, window.innerWidth / window.innerHeight, 0.1, 100);
-  camera.position.set(-0.4, 0.18, 8.9);
+  scene.fog = new THREE.Fog(0x030711, 8.4, 23);
+  const camera = new THREE.PerspectiveCamera(compact ? 38 : 32, window.innerWidth / window.innerHeight, 0.1, 100);
+  camera.position.set(-0.32, 0.16, 10.4);
 
-  scene.add(new THREE.AmbientLight(0xbfd2ff, 0.78));
+  scene.add(new THREE.AmbientLight(0xa1b7df, 0.72));
 
-  const sun = new THREE.DirectionalLight(0xf5fbff, 2.9);
-  sun.position.set(4.8, 2.2, 6.4);
+  const sun = new THREE.DirectionalLight(0xf6fbff, lowPower ? 2.1 : 2.9);
+  sun.position.set(6.4, 2.8, 7.2);
   scene.add(sun);
 
-  const rim = new THREE.DirectionalLight(0x73d7ff, 1.28);
-  rim.position.set(-4.4, -1.8, 4.2);
+  const rim = new THREE.DirectionalLight(0x76d7ff, lowPower ? 0.72 : 1.08);
+  rim.position.set(-5.4, -2.2, 2.2);
   scene.add(rim);
 
-  const stage = new THREE.Group();
-  stage.position.set(2.18, 0.3, -4.9);
-  scene.add(stage);
+  const spaceFill = new THREE.PointLight(0x345dff, lowPower ? 1.2 : 1.8, 40, 2);
+  spaceFill.position.set(2.4, 2.8, -5.4);
+  scene.add(spaceFill);
 
-  const shell = new THREE.Group();
-  stage.add(shell);
+  const earthGroup = new THREE.Group();
+  earthGroup.position.set(3.25, 0.8, -6.6);
+  earthGroup.rotation.z = THREE.MathUtils.degToRad(23.5);
+  scene.add(earthGroup);
 
-  const ringMaterial = new THREE.MeshStandardMaterial({
-    color: 0xe7eeff,
-    metalness: 0.76,
-    roughness: 0.2,
-    emissive: 0x243c84,
-    emissiveIntensity: 0.34,
-  });
-  const outerRing = new THREE.Mesh(
-    new THREE.TorusGeometry(2.62, 0.22, lowPower ? 16 : 24, lowPower ? 120 : 180),
-    ringMaterial
-  );
-
-  const innerRing = new THREE.Mesh(
-    new THREE.TorusGeometry(2.2, 0.06, 12, lowPower ? 96 : 150),
+  const sphereRadius = compact ? 1.92 : 2.28;
+  const earth = new THREE.Mesh(
+    new THREE.SphereGeometry(sphereRadius, lowPower ? 28 : 42, lowPower ? 28 : 42),
     new THREE.MeshStandardMaterial({
-      color: 0xb9cfff,
-      metalness: 0.62,
-      roughness: 0.18,
-      emissive: 0x102958,
-      emissiveIntensity: 0.62,
+      map: createPlanetTexture(lowPower ? 1024 : 2048),
+      metalness: 0.02,
+      roughness: 0.88,
+      emissive: 0x061321,
+      emissiveIntensity: 0.18,
     })
   );
+  earth.rotation.x = 0.14;
+  earthGroup.add(earth);
 
-  const arcMaterial = new THREE.MeshBasicMaterial({
-    color: 0x9bcbff,
-    transparent: true,
-    opacity: 0.34,
-    depthWrite: false,
-  });
-  const arcOne = new THREE.Mesh(
-    new THREE.TorusGeometry(1.84, 0.03, 10, lowPower ? 80 : 140, Math.PI * 1.34),
-    arcMaterial
-  );
-  arcOne.rotation.set(0.9, 0.28, 0.14);
-
-  const arcTwo = new THREE.Mesh(
-    new THREE.TorusGeometry(1.54, 0.024, 10, lowPower ? 70 : 130, Math.PI * 1.12),
-    new THREE.MeshBasicMaterial({
-      color: 0xa7f0ff,
+  const clouds = new THREE.Mesh(
+    new THREE.SphereGeometry(sphereRadius * 1.017, lowPower ? 22 : 34, lowPower ? 22 : 34),
+    new THREE.MeshPhongMaterial({
+      map: createCloudTexture(lowPower ? 768 : 1536, lowPower ? 180 : 320),
       transparent: true,
-      opacity: 0.28,
+      opacity: lowPower ? 0.18 : 0.26,
       depthWrite: false,
     })
   );
-  arcTwo.rotation.set(1.22, -0.48, 0.74);
+  clouds.rotation.x = 0.14;
+  earthGroup.add(clouds);
 
-  const viewportMaterial = new THREE.MeshBasicMaterial({
-    color: 0x9abfff,
-    transparent: true,
-    opacity: 0.07,
-    side: THREE.DoubleSide,
-    depthWrite: false,
-  });
-  const viewportDisc = new THREE.Mesh(
-    new THREE.CircleGeometry(2.14, lowPower ? 48 : 80),
-    viewportMaterial
-  );
-  viewportDisc.position.z = -0.08;
-
-  shell.add(outerRing, innerRing, arcOne, arcTwo, viewportDisc);
-
-  const braceMaterial = new THREE.MeshStandardMaterial({
-    color: 0xf5f8ff,
-    metalness: 0.64,
-    roughness: 0.28,
-    emissive: 0x183976,
-    emissiveIntensity: 0.36,
-  });
-  for (let index = 0; index < 6; index += 1) {
-    const angle = (index / 6) * Math.PI * 2;
-    const brace = new THREE.Mesh(
-      new THREE.BoxGeometry(0.42, 0.12, 0.52),
-      braceMaterial
-    );
-    brace.position.set(Math.cos(angle) * 2.38, Math.sin(angle) * 2.38, 0.12);
-    brace.rotation.z = angle;
-    shell.add(brace);
-  }
-
-  const coreGroup = new THREE.Group();
-  coreGroup.position.z = 0.42;
-  stage.add(coreGroup);
-
-  const core = new THREE.Mesh(
-    new THREE.IcosahedronGeometry(lowPower ? 0.88 : 1.02, lowPower ? 1 : 2),
-    new THREE.MeshStandardMaterial({
-      color: 0x92eeff,
-      emissive: 0x3b6dff,
-      emissiveIntensity: 1.08,
-      metalness: 0.12,
-      roughness: 0.12,
-      flatShading: true,
-    })
-  );
-
-  const coreShell = new THREE.Mesh(
-    new THREE.SphereGeometry(1.18, lowPower ? 20 : 36, lowPower ? 20 : 36),
+  const atmosphere = new THREE.Mesh(
+    new THREE.SphereGeometry(sphereRadius * 1.11, lowPower ? 20 : 32, lowPower ? 20 : 32),
     new THREE.MeshBasicMaterial({
-      color: 0x88d8ff,
+      color: 0x89d4ff,
       transparent: true,
-      opacity: 0.08,
+      opacity: 0.16,
+      side: THREE.BackSide,
+      blending: THREE.AdditiveBlending,
       depthWrite: false,
     })
   );
+  earthGroup.add(atmosphere);
 
-  const halo = new THREE.Sprite(
+  const earthHalo = new THREE.Sprite(
     new THREE.SpriteMaterial({
       map: createGlowTexture(),
-      color: 0xd2deff,
+      color: 0xb6dcff,
       transparent: true,
-      opacity: 0.38,
+      opacity: 0.34,
       depthWrite: false,
       blending: THREE.AdditiveBlending,
     })
   );
-  halo.scale.set(5.9, 5.9, 1);
-  halo.position.set(0, 0, -0.3);
+  earthHalo.scale.set(sphereRadius * 4.7, sphereRadius * 4.7, 1);
+  earthHalo.position.set(0.08, 0, -0.7);
+  earthGroup.add(earthHalo);
 
-  const orbitRingPrimary = new THREE.Mesh(
-    new THREE.TorusGeometry(1.46, 0.018, 8, lowPower ? 80 : 120),
+  const orbitGroup = new THREE.Group();
+  scene.add(orbitGroup);
+
+  const orbitLineOne = new THREE.Mesh(
+    new THREE.TorusGeometry(sphereRadius * 1.46, 0.018, 8, lowPower ? 64 : 110),
     new THREE.MeshBasicMaterial({
-      color: 0xaed8ff,
+      color: 0x9cd2ff,
       transparent: true,
-      opacity: 0.34,
+      opacity: 0.24,
       depthWrite: false,
     })
   );
-  orbitRingPrimary.rotation.set(1.04, 0.18, 0.24);
+  orbitLineOne.rotation.set(1.04, 0.12, 0.24);
+  orbitGroup.add(orbitLineOne);
 
-  const orbitRingSecondary = new THREE.Mesh(
-    new THREE.TorusGeometry(1.18, 0.014, 8, lowPower ? 64 : 110),
+  const orbitLineTwo = new THREE.Mesh(
+    new THREE.TorusGeometry(sphereRadius * 1.72, 0.012, 8, lowPower ? 56 : 100),
     new THREE.MeshBasicMaterial({
-      color: 0x99fff0,
+      color: 0x97fff1,
+      transparent: true,
+      opacity: 0.18,
+      depthWrite: false,
+    })
+  );
+  orbitLineTwo.rotation.set(0.58, -0.42, 0.86);
+  orbitGroup.add(orbitLineTwo);
+
+  const satellite = new THREE.Group();
+  const satelliteBody = new THREE.Mesh(
+    new THREE.BoxGeometry(0.2, 0.16, 0.28),
+    new THREE.MeshStandardMaterial({
+      color: 0xe7efff,
+      metalness: 0.7,
+      roughness: 0.34,
+      emissive: 0x19356d,
+      emissiveIntensity: 0.2,
+    })
+  );
+  const satellitePanelMaterial = new THREE.MeshBasicMaterial({
+    color: 0x89cbff,
+    transparent: true,
+    opacity: 0.8,
+    depthWrite: false,
+  });
+  const satellitePanelLeft = new THREE.Mesh(new THREE.BoxGeometry(0.54, 0.04, 0.22), satellitePanelMaterial);
+  satellitePanelLeft.position.x = -0.38;
+  const satellitePanelRight = satellitePanelLeft.clone();
+  satellitePanelRight.position.x = 0.38;
+  satellite.add(satelliteBody, satellitePanelLeft, satellitePanelRight);
+  orbitGroup.add(satellite);
+
+  const moonRig = new THREE.Group();
+  scene.add(moonRig);
+  const moon = new THREE.Mesh(
+    new THREE.SphereGeometry(compact ? 0.3 : 0.36, lowPower ? 16 : 24, lowPower ? 16 : 24),
+    new THREE.MeshStandardMaterial({
+      color: 0xe8edf5,
+      roughness: 0.94,
+      metalness: 0.04,
+    })
+  );
+  moonRig.add(moon);
+
+  const moonGlow = new THREE.Sprite(
+    new THREE.SpriteMaterial({
+      map: createGlowTexture(),
+      color: 0xcddcff,
       transparent: true,
       opacity: 0.22,
       depthWrite: false,
+      blending: THREE.AdditiveBlending,
     })
   );
-  orbitRingSecondary.rotation.set(0.58, -0.68, 0.82);
+  moonGlow.scale.set(2.6, 2.6, 1);
+  moon.add(moonGlow);
 
-  coreGroup.add(halo, orbitRingPrimary, orbitRingSecondary, coreShell, core);
-
-  const coreLight = new THREE.PointLight(0x92deff, lowPower ? 4.2 : 6.4, 16, 2);
-  coreLight.position.set(0, 0, 1);
-  stage.add(coreLight);
-
-  const panelRefs = [];
-  const panelGroup = new THREE.Group();
-  stage.add(panelGroup);
-  const panelConfigs = [
-    {
-      accent: "#9fd4ff",
-      edge: 0x9fd4ff,
-      size: [1.56, 0.96, 0.08],
-      position: { x: -2.28, y: 1.1, z: 0.88 },
-      rotation: { x: -0.26, y: 0.56, z: -0.2 },
-      floatOffset: 0.4,
-    },
-    {
-      accent: "#96fff1",
-      edge: 0x96fff1,
-      size: [1.18, 0.72, 0.06],
-      position: { x: -2.74, y: -1.08, z: 0.54 },
-      rotation: { x: 0.24, y: -0.64, z: 0.2 },
-      floatOffset: 1.9,
-    },
-    {
-      accent: "#ffd0ac",
-      edge: 0xffcb9d,
-      size: [1.02, 0.64, 0.05],
-      position: { x: 1.68, y: -2.08, z: 0.36 },
-      rotation: { x: -0.34, y: 0.3, z: 0.38 },
-      floatOffset: 3.2,
-    },
+  const nebulaGroup = new THREE.Group();
+  scene.add(nebulaGroup);
+  const nebulaConfigs = [
+    { position: { x: -5.2, y: 2.8, z: -11.6 }, scale: 8.2, color: 0x5679ff, opacity: 0.12 },
+    { position: { x: 5.8, y: -2.1, z: -12.8 }, scale: 9.6, color: 0x58d6ff, opacity: 0.1 },
   ];
-
-  const tunnelGroup = new THREE.Group();
-  tunnelGroup.position.set(0.08, 0.02, -0.52);
-  stage.add(tunnelGroup);
-  const tunnelRings = [];
-  const tunnelRingGeometry = new THREE.TorusGeometry(3.08, 0.052, 10, lowPower ? 56 : 92);
-  const tunnelSpacing = 1.42;
-  for (let index = 0; index < (lowPower ? 5 : 8); index += 1) {
-    const opacity = Math.max(0.05, 0.18 - index * 0.014);
-    const ring = new THREE.Mesh(
-      tunnelRingGeometry,
-      new THREE.MeshBasicMaterial({
-        color: index % 2 === 0 ? 0x9dcfff : 0x94fff2,
+  nebulaConfigs.forEach((config) => {
+    const sprite = new THREE.Sprite(
+      new THREE.SpriteMaterial({
+        map: createGlowTexture(),
+        color: config.color,
         transparent: true,
-        opacity,
+        opacity: config.opacity,
         depthWrite: false,
+        blending: THREE.AdditiveBlending,
       })
     );
-    const baseScale = 1 + index * 0.14;
-    ring.position.z = -2.36 - index * tunnelSpacing;
-    ring.scale.setScalar(baseScale);
-    ring.rotation.set(0.22 + index * 0.06, -0.16 + index * 0.08, index * 0.18);
-    tunnelGroup.add(ring);
-    tunnelRings.push({
-      mesh: ring,
-      baseZ: ring.position.z,
-      baseScale,
-      baseRotationZ: ring.rotation.z,
-      opacity,
-      drift: index * 0.68,
-    });
-  }
-
-  const shardGroup = new THREE.Group();
-  stage.add(shardGroup);
-  const shardRefs = [];
-  const shardGeometry = new THREE.PlaneGeometry(0.28, 1.12);
-  const shardPalette = [0xc8dcff, 0xa6f2ff, 0xffd3ac];
-  const shardCount = lowPower ? 5 : 9;
-  for (let index = 0; index < shardCount; index += 1) {
-    const opacity = 0.06 + (index % 3) * 0.02;
-    const material = new THREE.MeshBasicMaterial({
-      color: shardPalette[index % shardPalette.length],
-      transparent: true,
-      opacity,
-      side: THREE.DoubleSide,
-      depthWrite: false,
-    });
-    const shard = new THREE.Mesh(shardGeometry, material);
-    const radius = 3.18 + (index % 3) * 0.34;
-    const angle = (index / shardCount) * Math.PI * 2;
-    const baseY = Math.sin(index * 1.6) * 1.18;
-    const baseZ = -0.48 - (index % 4) * 0.74;
-    const baseRotation = {
-      x: 0.3 + (index % 3) * 0.12,
-      y: angle,
-      z: 0.18 + index * 0.16,
-    };
-    shard.position.set(Math.cos(angle) * radius, baseY, baseZ);
-    shard.rotation.set(baseRotation.x, baseRotation.y, baseRotation.z);
-    shardGroup.add(shard);
-    shardRefs.push({
-      mesh: shard,
-      angle,
-      radius,
-      baseY,
-      baseZ,
-      baseRotation,
-      opacity,
-      floatOffset: index * 0.76,
-    });
-  }
-
-  panelConfigs.forEach((config) => {
-    const panel = createPortalPanel(
-      createPortalPanelTexture(config.accent),
-      config.edge,
-      config.size[0],
-      config.size[1],
-      config.size[2]
-    );
-    panel.position.set(config.position.x, config.position.y, config.position.z);
-    panel.rotation.set(config.rotation.x, config.rotation.y, config.rotation.z);
-    panelGroup.add(panel);
-    panelRefs.push({
-      group: panel,
-      basePosition: config.position,
-      baseRotation: config.rotation,
-      floatOffset: config.floatOffset,
-    });
+    sprite.position.set(config.position.x, config.position.y, config.position.z);
+    sprite.scale.set(config.scale, config.scale, 1);
+    nebulaGroup.add(sprite);
   });
 
   const distantStars = createStarField(
-    compact ? 680 : lowPower ? 980 : 1480,
-    compact ? 20 : 24,
-    compact ? 0.02 : 0.026,
+    compact ? 560 : lowPower ? 900 : 1420,
+    compact ? 22 : 28,
+    compact ? 0.018 : 0.022,
     0xf7fbff,
     18
   );
   const nearStars = createStarField(
-    compact ? 150 : lowPower ? 220 : 320,
+    compact ? 120 : lowPower ? 180 : 260,
     compact ? 10 : 12,
-    compact ? 0.028 : 0.042,
+    compact ? 0.028 : 0.038,
     0xbed7ff,
-    7
+    8
   );
   const dustField = createStarField(
-    compact ? 52 : lowPower ? 84 : 132,
-    compact ? 9 : 10.5,
-    compact ? 0.024 : 0.032,
+    compact ? 36 : lowPower ? 68 : 110,
+    compact ? 9 : 10,
+    compact ? 0.022 : 0.028,
     0x8fe5ff,
-    5.6
+    6.2
   );
-  dustField.material.opacity = 0.14;
+  dustField.material.opacity = lowPower ? 0.08 : 0.12;
   scene.add(distantStars, nearStars, dustField);
 
   const state = {
@@ -1906,76 +1807,62 @@ const initHomeSpaceJourney = async () => {
   const desktopFrames = [
     {
       p: 0,
-      camera: { x: -0.62, y: 0.42, z: 9.2 },
-      stage: { x: 2.42, y: 0.54, z: -5.24 },
-      rotation: { x: -0.12, y: 0.44, z: -0.12 },
-      lookAt: { x: 0.52, y: 0.08, z: -3.2 },
-      coreScale: 0.9,
-      glow: 0.2,
-      panelSpread: 1,
+      camera: { x: -0.82, y: 0.24, z: 10.9 },
+      earth: { x: 3.52, y: 0.98, z: -7.1 },
+      lookAt: { x: 1.54, y: 0.24, z: -6.04 },
+      scale: 1.02,
+      glow: 0.16,
     },
     {
-      p: 0.34,
-      camera: { x: -0.42, y: 0.18, z: 7.9 },
-      stage: { x: 1.84, y: 0.38, z: -4.56 },
-      rotation: { x: -0.06, y: 0.72, z: 0.02 },
-      lookAt: { x: 0.42, y: 0.04, z: -2.8 },
-      coreScale: 0.98,
-      glow: 0.24,
-      panelSpread: 0.94,
+      p: 0.36,
+      camera: { x: -0.48, y: 0.14, z: 9.74 },
+      earth: { x: 3.02, y: 0.7, z: -6.46 },
+      lookAt: { x: 1.32, y: 0.12, z: -5.56 },
+      scale: 1.06,
+      glow: 0.22,
     },
     {
-      p: 0.68,
-      camera: { x: -0.18, y: 0.04, z: 6.66 },
-      stage: { x: 1.08, y: 0.16, z: -3.84 },
-      rotation: { x: 0.02, y: 0.98, z: 0.16 },
-      lookAt: { x: 0.28, y: 0, z: -2.18 },
-      coreScale: 1.08,
-      glow: 0.3,
-      panelSpread: 0.88,
+      p: 0.72,
+      camera: { x: -0.14, y: 0.02, z: 8.52 },
+      earth: { x: 2.44, y: 0.34, z: -5.78 },
+      lookAt: { x: 1.02, y: 0.02, z: -4.98 },
+      scale: 1.1,
+      glow: 0.28,
     },
     {
       p: 1,
-      camera: { x: 0.06, y: -0.1, z: 5.7 },
-      stage: { x: 0.46, y: 0.04, z: -3.12 },
-      rotation: { x: 0.08, y: 1.18, z: 0.26 },
-      lookAt: { x: 0.1, y: -0.04, z: -1.58 },
-      coreScale: 1.16,
-      glow: 0.36,
-      panelSpread: 0.82,
+      camera: { x: 0.08, y: -0.08, z: 7.62 },
+      earth: { x: 1.86, y: 0.06, z: -5.08 },
+      lookAt: { x: 0.76, y: -0.06, z: -4.3 },
+      scale: 1.14,
+      glow: 0.34,
     },
   ];
 
   const compactFrames = [
     {
       p: 0,
-      camera: { x: -0.12, y: 0.24, z: 8.14 },
-      stage: { x: 1.34, y: 0.24, z: -4.46 },
-      rotation: { x: -0.08, y: 0.48, z: -0.06 },
-      lookAt: { x: 0.18, y: 0, z: -2.46 },
-      coreScale: 0.86,
-      glow: 0.18,
-      panelSpread: 0.92,
+      camera: { x: -0.22, y: 0.22, z: 9.34 },
+      earth: { x: 2.2, y: 0.82, z: -6.24 },
+      lookAt: { x: 0.9, y: 0.18, z: -5.34 },
+      scale: 0.98,
+      glow: 0.16,
     },
     {
       p: 0.5,
-      camera: { x: 0, y: 0.02, z: 6.56 },
-      stage: { x: 0.82, y: 0.12, z: -3.62 },
-      rotation: { x: 0.02, y: 0.84, z: 0.08 },
-      lookAt: { x: 0.06, y: -0.04, z: -1.94 },
-      coreScale: 0.98,
-      glow: 0.26,
-      panelSpread: 0.84,
+      camera: { x: -0.06, y: 0.06, z: 8.18 },
+      earth: { x: 1.7, y: 0.42, z: -5.58 },
+      lookAt: { x: 0.62, y: 0.04, z: -4.74 },
+      scale: 1.04,
+      glow: 0.24,
     },
     {
       p: 1,
-      camera: { x: 0.06, y: -0.08, z: 5.84 },
-      stage: { x: 0.38, y: 0.02, z: -2.96 },
-      rotation: { x: 0.06, y: 1.08, z: 0.16 },
-      lookAt: { x: -0.02, y: -0.06, z: -1.48 },
-      coreScale: 1.08,
-      glow: 0.32,
-      panelSpread: 0.76,
+      camera: { x: 0.04, y: -0.06, z: 7.3 },
+      earth: { x: 1.3, y: 0.08, z: -4.92 },
+      lookAt: { x: 0.42, y: -0.04, z: -4.16 },
+      scale: 1.1,
+      glow: 0.3,
     },
   ];
 
@@ -2022,89 +1909,55 @@ const initHomeSpaceJourney = async () => {
           state.degraded = true;
           renderer.setPixelRatio(1);
           dustField.visible = false;
-          shardGroup.visible = false;
-          const lastPanel = panelRefs[panelRefs.length - 1];
-          if (lastPanel) {
-            lastPanel.group.visible = false;
-          }
+          nearStars.visible = false;
+          clouds.visible = false;
+          nebulaGroup.visible = false;
         }
       }
     }
 
     state.progress += (state.targetProgress - state.progress) * Math.min(0.18 * frameDelta, 0.34);
-    const frame = sampleImmersiveFrame(getFrames(), state.progress);
-    const driftX = reducedMotion ? 0 : state.pointerX * 0.14;
-    const driftY = reducedMotion ? 0 : state.pointerY * 0.1;
+    const frame = sampleFrames(getFrames(), state.progress);
+    const driftX = reducedMotion ? 0 : state.pointerX * 0.12;
+    const driftY = reducedMotion ? 0 : state.pointerY * 0.08;
 
     camera.position.set(frame.camera.x + driftX, frame.camera.y + driftY, frame.camera.z);
-    stage.position.set(frame.stage.x - driftX * 0.72, frame.stage.y - driftY * 0.52, frame.stage.z);
-    stage.rotation.set(
-      frame.rotation.x + driftY * 0.05,
-      frame.rotation.y + driftX * 0.08,
-      frame.rotation.z - driftX * 0.04
-    );
+    earthGroup.position.set(frame.earth.x - driftX * 0.42, frame.earth.y - driftY * 0.26, frame.earth.z);
+    earthGroup.scale.setScalar(frame.scale);
     camera.lookAt(frame.lookAt.x, frame.lookAt.y, frame.lookAt.z);
 
-    shell.rotation.z += 0.00042 * frameDelta;
-    tunnelGroup.rotation.z -= 0.00024 * frameDelta;
-    tunnelGroup.rotation.x = 0.04 + driftY * 0.04;
-    outerRing.rotation.x += 0.00018 * frameDelta;
-    outerRing.rotation.y += 0.00054 * frameDelta;
-    arcOne.rotation.z += 0.0011 * frameDelta;
-    arcTwo.rotation.z -= 0.00084 * frameDelta;
-    core.rotation.x += 0.0015 * frameDelta;
-    core.rotation.y += 0.0022 * frameDelta;
-    orbitRingPrimary.rotation.x += 0.00076 * frameDelta;
-    orbitRingPrimary.rotation.y += 0.00112 * frameDelta;
-    orbitRingSecondary.rotation.x -= 0.00064 * frameDelta;
-    orbitRingSecondary.rotation.z += 0.00136 * frameDelta;
-    coreGroup.scale.setScalar(frame.coreScale);
-    halo.material.opacity = 0.28 + frame.glow * 0.78;
-    ringMaterial.emissiveIntensity = 0.28 + frame.glow * 0.62;
-    viewportMaterial.opacity = 0.05 + frame.glow * 0.08;
-    coreLight.intensity = (lowPower ? 4.2 : 6.2) + frame.glow * (lowPower ? 4 : 6);
+    earth.rotation.x = 0.14 + driftY * 0.06;
+    earth.rotation.y = timestamp * 0.0001 + state.progress * 1.95;
+    clouds.rotation.x = earth.rotation.x;
+    clouds.rotation.y = earth.rotation.y * 1.06 + timestamp * 0.00005;
+    earthHalo.material.opacity = 0.22 + frame.glow * 0.48;
+    atmosphere.material.opacity = 0.12 + frame.glow * 0.12;
+    spaceFill.intensity = (lowPower ? 1.2 : 1.8) + frame.glow * 1.2;
 
-    tunnelRings.forEach((ring, index) => {
-      const pulse = 1 + Math.sin(timestamp * 0.00054 + ring.drift) * 0.026;
-      const z = ring.baseZ + state.progress * 3.8;
-      const fade = THREE.MathUtils.clamp(1 - Math.max(0, z + 0.7) * 0.24, 0.02, 1);
-      ring.mesh.position.z = z;
-      ring.mesh.scale.setScalar((ring.baseScale + frame.glow * 0.26) * pulse);
-      ring.mesh.rotation.z =
-        ring.baseRotationZ + state.progress * 0.54 + timestamp * 0.00018 * (index % 2 === 0 ? 1 : -1);
-      ring.mesh.material.opacity = Math.max(0.02, ring.opacity * fade + frame.glow * 0.08);
-    });
+    orbitGroup.position.copy(earthGroup.position);
+    orbitGroup.rotation.y = state.progress * 0.8 + driftX * 0.14;
+    orbitLineOne.rotation.z += 0.00042 * frameDelta;
+    orbitLineTwo.rotation.z -= 0.00028 * frameDelta;
+    orbitLineOne.material.opacity = 0.18 + frame.glow * 0.2;
+    orbitLineTwo.material.opacity = 0.12 + frame.glow * 0.16;
 
-    panelRefs.forEach((panel, index) => {
-      const phase = timestamp * 0.00042 + panel.floatOffset;
-      panel.group.position.set(
-        panel.basePosition.x * frame.panelSpread + Math.cos(phase) * 0.16,
-        panel.basePosition.y * frame.panelSpread + Math.sin(phase * 1.12) * 0.12,
-        panel.basePosition.z + Math.sin(phase * 0.84) * 0.16
-      );
-      panel.group.rotation.set(
-        panel.baseRotation.x + Math.sin(phase * 0.74) * 0.08 + driftY * 0.05,
-        panel.baseRotation.y + Math.cos(phase * 0.82) * 0.12 + driftX * 0.08,
-        panel.baseRotation.z + Math.sin(phase * 0.54) * 0.06
-      );
-    });
+    const satellitePhase = timestamp * 0.00036 + state.progress * 3.4;
+    satellite.position.set(
+      Math.cos(satellitePhase) * sphereRadius * 2.1,
+      Math.sin(satellitePhase * 1.18) * 0.78,
+      Math.sin(satellitePhase) * sphereRadius * 1.26
+    );
+    satellite.rotation.y = satellitePhase + Math.PI / 2;
+    satellite.rotation.x = 0.32 + Math.sin(satellitePhase) * 0.18;
 
-    shardRefs.forEach((shard) => {
-      const phase = timestamp * 0.00034 + shard.floatOffset;
-      const orbitAngle = shard.angle + state.progress * 0.68 + Math.sin(phase * 0.72) * 0.08;
-      const radius = shard.radius + Math.sin(phase) * 0.12;
-      shard.mesh.position.set(
-        Math.cos(orbitAngle) * radius,
-        shard.baseY + Math.sin(phase * 1.22) * 0.16,
-        shard.baseZ + Math.cos(phase * 0.86) * 0.22
-      );
-      shard.mesh.rotation.set(
-        shard.baseRotation.x + Math.sin(phase) * 0.12,
-        shard.baseRotation.y + phase * 0.16,
-        shard.baseRotation.z + Math.cos(phase * 0.68) * 0.14
-      );
-      shard.mesh.material.opacity = Math.min(0.22, shard.opacity + frame.glow * 0.05);
-    });
+    moonRig.position.copy(earthGroup.position);
+    const moonPhase = 1.2 + timestamp * 0.00012 + state.progress * 1.16;
+    moon.position.set(
+      Math.cos(moonPhase) * sphereRadius * 2.95,
+      1.22 + Math.sin(moonPhase * 0.82) * 0.46,
+      -sphereRadius * 1.96 + Math.sin(moonPhase) * 1.12
+    );
+    moonGlow.material.opacity = 0.14 + frame.glow * 0.18;
 
     distantStars.rotation.y += 0.000012 * frameDelta;
     distantStars.rotation.x -= 0.000004 * frameDelta;
@@ -2180,7 +2033,10 @@ const initHomeSpaceJourney = async () => {
     window.removeEventListener("pointermove", handlePointer);
     window.removeEventListener("resize", handleResize);
     document.removeEventListener("visibilitychange", handleVisibilityChange);
-    disposeSceneGraph(stage);
+    disposeSceneGraph(earthGroup);
+    disposeSceneGraph(orbitGroup);
+    disposeSceneGraph(moonRig);
+    disposeSceneGraph(nebulaGroup);
     disposeSceneGraph(distantStars);
     disposeSceneGraph(nearStars);
     disposeSceneGraph(dustField);
