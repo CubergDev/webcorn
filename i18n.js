@@ -1720,6 +1720,56 @@
     )
   });
 
+  Object.assign(TEXTS, {
+    "Демо": entry("Demos"),
+    "Смотреть примеры демо": entry("View demo examples"),
+    "Премиальный сайт должен выглядеть как опыт, а не как шаблон.": entry(
+      "A premium website should feel like an experience, not a template."
+    ),
+    "Сильный 3D-фон, отдельный каталог демо и ясный переход к нужной нише. Сначала клиент чувствует уровень, потом открывает примеры и выбирает формат под свой бизнес.": entry(
+      "A strong 3D background, a separate demo catalog, and a clear path into the right niche. First the client feels the level, then opens examples and chooses the format for the business."
+    ),
+    "3 ниши / 9 демо": entry("3 niches / 9 demos"),
+    "Сначала показываем уровень, потом продаем разработку.": entry(
+      "First we show the level, then we sell the build."
+    ),
+    "На главной только атмосфера и направление. Примеры демо открываются отдельным маршрутом, без перегруженных встроенных экранов.": entry(
+      "The homepage now keeps only the atmosphere and direction. Demo examples open through a separate route, without overloaded embedded screens."
+    ),
+    "Прямые бронирования и сильный образ объекта": entry(
+      "Direct bookings and a strong property image"
+    ),
+    "Спокойное доверие и понятный путь к записи": entry(
+      "Calm trust and a clear path to appointment"
+    ),
+    "Атмосфера бренда, меню и бронирование": entry(
+      "Brand atmosphere, menu, and booking"
+    ),
+    "Примеры демо": entry("Demo examples"),
+    "Посмотрите примеры демо по нишам.": entry(
+      "Browse demo examples by niche."
+    ),
+    "Каждое направление открывает отдельную подборку с Lite, Pro и Signature. На главной остается только атмосфера и выбор маршрута.": entry(
+      "Each direction opens its own collection with Lite, Pro, and Signature. The homepage keeps only the atmosphere and the route selection."
+    ),
+    "Примеры для отелей.": entry("Examples for hotels."),
+    "Номерной фонд, сервис, прямые запросы и визуал уровня boutique/premium.": entry(
+      "Room inventory, service, direct inquiries, and a boutique/premium-level visual language."
+    ),
+    "Открыть примеры отелей": entry("Open hotel examples"),
+    "3 демо": entry("3 demos"),
+    "Примеры для клиник.": entry("Examples for clinics."),
+    "Услуги, врачи, доверие, технологии и маршрут пациента без визуального шума.": entry(
+      "Services, doctors, trust, technology, and the patient journey without visual noise."
+    ),
+    "Открыть примеры клиник": entry("Open clinic examples"),
+    "Примеры для ресторанов.": entry("Examples for restaurants."),
+    "Меню, бронирование, события и премиальная атмосфера бренда.": entry(
+      "Menu, booking, events, and a premium brand atmosphere."
+    ),
+    "Открыть примеры ресторанов": entry("Open restaurant examples")
+  });
+
   const getStoredLanguage = () => {
     const value = window.localStorage?.getItem(STORAGE_KEY) ?? "ru";
     return LANGUAGES.includes(value) ? value : "ru";

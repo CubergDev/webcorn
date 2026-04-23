@@ -31,14 +31,14 @@
 
         <nav class="site-nav" aria-label="Главная навигация">
           <a href="#hero">Старт</a>
-          <a href="#niches">Ниши</a>
+          <a href="#demo-examples">Демо</a>
           <a href="hotel.html">Отели</a>
           <a href="clinic.html">Клиники</a>
           <a href="restaurant.html">Рестораны</a>
           <a href="account.html" data-account-link>Войти</a>
         </nav>
 
-        <a class="button button--primary site-header__cta" href="#niches">Смотреть сайты</a>
+        <a class="button button--primary site-header__cta" href="#demo-examples">Смотреть примеры демо</a>
 
         <button class="nav-toggle" type="button" data-nav-toggle aria-label="Открыть меню">
           <span></span>
@@ -53,17 +53,43 @@
         <div class="landing-hero">
           <div class="landing-hero__copy" data-reveal>
             <span class="eyebrow">webcorn</span>
-            <h1>Выберите нишу. Откройте демо. Закажите свой сайт.</h1>
+            <h1>Премиальный сайт должен выглядеть как опыт, а не как шаблон.</h1>
             <p>
-              Не карточки-заглушки, а реальные мини-сайты для отелей, клиник и ресторанов. Сразу
-              видно, что получит ваш бизнес в Lite, Pro и Signature.
+              Сильный 3D-фон, отдельный каталог демо и ясный переход к нужной нише. Сначала
+              клиент чувствует уровень, потом открывает примеры и выбирает формат под свой бизнес.
             </p>
 
             <div class="button-row">
-              <a class="button button--primary" href="#niches">Смотреть сайты</a>
+              <a class="button button--primary" href="#demo-examples">Смотреть примеры демо</a>
               <a class="button button--ghost" href="mailto:florencya08090@gmail.com">Обсудить проект</a>
             </div>
           </div>
+
+          <aside class="hero-console" data-reveal>
+            <div class="hero-console__lead">
+              <span class="summary-badge">3 ниши / 9 демо</span>
+              <strong>Сначала показываем уровень, потом продаем разработку.</strong>
+              <p>
+                На главной только атмосфера и направление. Примеры демо открываются отдельным
+                маршрутом, без перегруженных встроенных экранов.
+              </p>
+            </div>
+
+            <div class="hero-console__grid">
+              <article class="hero-console__item">
+                <strong>Отели</strong>
+                <span>Прямые бронирования и сильный образ объекта</span>
+              </article>
+              <article class="hero-console__item">
+                <strong>Клиники</strong>
+                <span>Спокойное доверие и понятный путь к записи</span>
+              </article>
+              <article class="hero-console__item">
+                <strong>Рестораны</strong>
+                <span>Атмосфера бренда, меню и бронирование</span>
+              </article>
+            </div>
+          </aside>
         </div>
       </section>
 
@@ -86,34 +112,41 @@
         </div>
       </div>
 
-      <section class="landing-section" id="niches">
+      <section class="landing-section" id="demo-examples">
         <div class="container">
           <div class="section-head" data-reveal>
-            <span class="eyebrow">Ниши</span>
-            <h2>Три направления, где уже есть готовые сайты.</h2>
-            <p>Открывайте подборку, сравнивайте уровни и переходите в реальные демо-страницы.</p>
+            <span class="eyebrow">Примеры демо</span>
+            <h2>Посмотрите примеры демо по нишам.</h2>
+            <p>
+              Каждое направление открывает отдельную подборку с Lite, Pro и Signature. На главной
+              остается только атмосфера и выбор маршрута.
+            </p>
           </div>
 
           <div class="landing-grid">
             <article class="landing-card theme-hotel" data-reveal>
               <div class="landing-card__content">
                 <span class="landing-card__eyebrow">Отели</span>
-                <h2>Сайты для отелей и апарт-отелей.</h2>
-                <p>Подача номеров, прямые бронирования, сервис и дорогой образ объекта.</p>
-                <a class="button button--primary" href="hotel.html">Смотреть сайты</a>
+                <h2>Примеры для отелей.</h2>
+                <p>Номерной фонд, сервис, прямые запросы и визуал уровня boutique/premium.</p>
+                <a class="button button--primary" href="hotel.html">Открыть примеры отелей</a>
               </div>
               <div class="landing-card__window">
-                <div class="live-window live-window--landing theme-hotel">
-                  <div class="live-window__bar">
-                    <div class="live-window__dots"><span></span><span></span><span></span></div>
-                    <span class="live-window__label">Отель / Signature</span>
+                <div class="demo-teaser theme-hotel" aria-hidden="true">
+                  <div class="demo-teaser__aura"></div>
+                  <div class="demo-teaser__frame">
+                    <div class="demo-teaser__bar">
+                      <span></span><span></span><span></span>
+                    </div>
+                    <div class="demo-teaser__grid">
+                      <span class="is-hero"></span>
+                      <span></span>
+                      <span></span>
+                    </div>
                   </div>
-                  <div class="live-window__viewport">
-                    <iframe
-                      src="preview-hotel-signature.html?embed=1"
-                      title="Встроенное демо сайта для отеля"
-                      loading="lazy"
-                    ></iframe>
+                  <div class="demo-teaser__meta">
+                    <strong>3 демо</strong>
+                    <span>Lite / Pro / Signature</span>
                   </div>
                 </div>
               </div>
@@ -122,22 +155,26 @@
             <article class="landing-card theme-clinic" data-reveal>
               <div class="landing-card__content">
                 <span class="landing-card__eyebrow">Клиники</span>
-                <h2>Сайты для клиник и частных кабинетов.</h2>
-                <p>Услуги, врачи, доверие и запись в спокойной медицинской стилистике.</p>
-                <a class="button button--primary" href="clinic.html">Смотреть сайты</a>
+                <h2>Примеры для клиник.</h2>
+                <p>Услуги, врачи, доверие, технологии и маршрут пациента без визуального шума.</p>
+                <a class="button button--primary" href="clinic.html">Открыть примеры клиник</a>
               </div>
               <div class="landing-card__window">
-                <div class="live-window live-window--landing theme-clinic">
-                  <div class="live-window__bar">
-                    <div class="live-window__dots"><span></span><span></span><span></span></div>
-                    <span class="live-window__label">Клиника / Signature</span>
+                <div class="demo-teaser theme-clinic" aria-hidden="true">
+                  <div class="demo-teaser__aura"></div>
+                  <div class="demo-teaser__frame">
+                    <div class="demo-teaser__bar">
+                      <span></span><span></span><span></span>
+                    </div>
+                    <div class="demo-teaser__grid">
+                      <span class="is-hero"></span>
+                      <span></span>
+                      <span></span>
+                    </div>
                   </div>
-                  <div class="live-window__viewport">
-                    <iframe
-                      src="preview-clinic-signature.html?embed=1"
-                      title="Встроенное демо сайта для клиники"
-                      loading="lazy"
-                    ></iframe>
+                  <div class="demo-teaser__meta">
+                    <strong>3 демо</strong>
+                    <span>Lite / Pro / Signature</span>
                   </div>
                 </div>
               </div>
@@ -146,22 +183,26 @@
             <article class="landing-card theme-restaurant" data-reveal>
               <div class="landing-card__content">
                 <span class="landing-card__eyebrow">Рестораны</span>
-                <h2>Сайты для ресторанов, кафе и гастро-брендов.</h2>
-                <p>Меню, атмосфера, бронь и подача заведения как полноценного бренда.</p>
-                <a class="button button--primary" href="restaurant.html">Смотреть сайты</a>
+                <h2>Примеры для ресторанов.</h2>
+                <p>Меню, бронирование, события и премиальная атмосфера бренда.</p>
+                <a class="button button--primary" href="restaurant.html">Открыть примеры ресторанов</a>
               </div>
               <div class="landing-card__window">
-                <div class="live-window live-window--landing theme-restaurant">
-                  <div class="live-window__bar">
-                    <div class="live-window__dots"><span></span><span></span><span></span></div>
-                    <span class="live-window__label">Ресторан / Signature</span>
+                <div class="demo-teaser theme-restaurant" aria-hidden="true">
+                  <div class="demo-teaser__aura"></div>
+                  <div class="demo-teaser__frame">
+                    <div class="demo-teaser__bar">
+                      <span></span><span></span><span></span>
+                    </div>
+                    <div class="demo-teaser__grid">
+                      <span class="is-hero"></span>
+                      <span></span>
+                      <span></span>
+                    </div>
                   </div>
-                  <div class="live-window__viewport">
-                    <iframe
-                      src="preview-restaurant-signature.html?embed=1"
-                      title="Встроенное демо сайта для ресторана"
-                      loading="lazy"
-                    ></iframe>
+                  <div class="demo-teaser__meta">
+                    <strong>3 демо</strong>
+                    <span>Lite / Pro / Signature</span>
                   </div>
                 </div>
               </div>
