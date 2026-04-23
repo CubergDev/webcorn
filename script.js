@@ -374,7 +374,7 @@ const initSpaceScene = async () => {
   const loadSaturnModel = () =>
     new Promise((resolve) => {
       if (!ColladaLoader) {
-        resolve(createFallbackSaturn());
+        resolve(null);
         return;
       }
 
@@ -384,16 +384,21 @@ const initSpaceScene = async () => {
         SATURN_ASSETS.model,
         (collada) => resolve(prepareSaturnModel(collada.scene)),
         undefined,
-        () => resolve(createFallbackSaturn())
+        () => resolve(null)
       );
     });
 
   const fallbackSaturn = createFallbackSaturn();
   saturnGroup.add(fallbackSaturn);
-  saturnGroup.position.set(2.7, -0.1, -5.25);
-  saturnGroup.scale.setScalar(1.2);
+  saturnGroup.position.set(3.28, -0.08, -5.82);
+  saturnGroup.scale.setScalar(1.02);
 
   loadSaturnModel().then((saturnModel) => {
+    if (!saturnModel) {
+      return;
+    }
+
+    saturnGroup.remove(fallbackSaturn);
     saturnModel.scale.multiplyScalar(1.18);
     saturnModel.position.set(0, 0, 0);
     saturnModel.traverse((object) => {
@@ -452,21 +457,27 @@ const initSpaceScene = async () => {
     renderedProgress += (motion.progress - renderedProgress) * 0.04;
     const eased = renderedProgress * renderedProgress * (3 - 2 * renderedProgress);
 
-    camera.position.x = 0.02 + eased * 0.18;
-    camera.position.y = 0.18 - eased * 0.06;
-    camera.position.z = 8.55 - eased * 0.95;
-    camera.lookAt(0.24 + eased * 0.16, -0.04, -5.05);
+    const narrowScreen = window.innerWidth < 760;
+    const baseSaturnX = narrowScreen ? 1.42 : 3.28;
+    const baseSaturnY = narrowScreen ? -0.28 : -0.08;
+    const baseSaturnScale = narrowScreen ? 0.78 : 1.02;
+
+    camera.position.x = 0.02 + eased * 0.14;
+    camera.position.y = 0.18 - eased * 0.04;
+    camera.position.z = 8.75 - eased * 0.62;
+    camera.lookAt(0.34 + eased * 0.12, -0.04, -5.4);
 
     autoRotationY += 0.00072;
     saturnGroup.rotation.y = autoRotationY + eased * Math.PI * 1.35;
     saturnGroup.rotation.x = -0.02 + eased * 0.035;
     saturnGroup.rotation.z = -0.015 - eased * 0.025;
-    saturnGroup.position.x = 2.7 - eased * 0.18;
-    saturnGroup.position.y = -0.1 + eased * 0.04;
-    saturnGroup.scale.setScalar(1.2 + eased * 0.12);
+    saturnGroup.position.x = baseSaturnX - eased * 0.12;
+    saturnGroup.position.y = baseSaturnY + eased * 0.035;
+    saturnGroup.scale.setScalar(baseSaturnScale + eased * 0.08);
     glow.position.x = saturnGroup.position.x;
     glow.position.y = saturnGroup.position.y;
-    glow.material.uniforms.intensity.value = 0.18 + eased * 0.08;
+    glow.scale.setScalar(narrowScreen ? 0.72 : 0.9);
+    glow.material.uniforms.intensity.value = 0.13 + eased * 0.055;
 
     deepStars.rotation.y += 0.00012;
     stars.rotation.y += 0.00025;
