@@ -1,5 +1,12 @@
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+const setRevealFallback = () => {
+  document.querySelectorAll("[data-reveal]").forEach((item) => {
+    item.style.opacity = "1";
+    item.style.transform = "none";
+  });
+};
+
 const initSmoothScroll = () => {
   document.querySelectorAll('a[href^="#"]').forEach((link) => {
     link.addEventListener("click", (event) => {
@@ -14,9 +21,9 @@ const initSmoothScroll = () => {
       if (window.gsap && window.ScrollToPlugin && !prefersReducedMotion) {
         gsap.registerPlugin(ScrollToPlugin);
         gsap.to(window, {
-          duration: 0.9,
+          duration: 1,
           ease: "power3.out",
-          scrollTo: { y: target, offsetY: 24 },
+          scrollTo: { y: target, offsetY: 20 },
         });
         return;
       }
@@ -30,10 +37,7 @@ const initRevealAnimations = () => {
   const items = Array.from(document.querySelectorAll("[data-reveal]"));
 
   if (!window.gsap || !window.ScrollTrigger || prefersReducedMotion) {
-    items.forEach((item) => {
-      item.style.opacity = 1;
-      item.style.transform = "none";
-    });
+    setRevealFallback();
     return;
   }
 
@@ -42,11 +46,11 @@ const initRevealAnimations = () => {
   items.forEach((item) => {
     gsap.fromTo(
       item,
-      { opacity: 0, y: 28 },
+      { opacity: 0, y: 34 },
       {
         opacity: 1,
         y: 0,
-        duration: 0.8,
+        duration: 0.9,
         ease: "power3.out",
         scrollTrigger: {
           trigger: item,
@@ -58,76 +62,169 @@ const initRevealAnimations = () => {
   });
 };
 
-const initScene = () => {
-  const canvas = document.getElementById("scene");
+const createEarthTexture = () => {
+  const size = 1024;
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const context = canvas.getContext("2d");
+  const gradient = context.createLinearGradient(0, 0, size, size);
+
+  gradient.addColorStop(0, "#113d76");
+  gradient.addColorStop(0.45, "#0b79b8");
+  gradient.addColorStop(1, "#05224f");
+  context.fillStyle = gradient;
+  context.fillRect(0, 0, size, size);
+
+  context.fillStyle = "rgba(44, 140, 92, 0.72)";
+  for (let i = 0; i < 24; i += 1) {
+    const x = ((i * 191) % size) - 80;
+    const y = ((i * 313) % size) - 40;
+    const width = 130 + (i % 5) * 36;
+    const height = 54 + (i % 4) * 24;
+
+    context.beginPath();
+    context.ellipse(x, y, width, height, (i % 7) * 0.42, 0, Math.PI * 2);
+    context.fill();
+  }
+
+  context.fillStyle = "rgba(255, 255, 255, 0.18)";
+  for (let i = 0; i < 30; i += 1) {
+    const x = (i * 149) % size;
+    const y = (i * 97) % size;
+    context.beginPath();
+    context.ellipse(x, y, 96, 18, (i % 9) * 0.32, 0, Math.PI * 2);
+    context.fill();
+  }
+
+  context.fillStyle = "rgba(255, 210, 126, 0.62)";
+  for (let i = 0; i < 150; i += 1) {
+    const x = (i * 89) % size;
+    const y = (i * 233) % size;
+    context.fillRect(x, y, 2, 2);
+  }
+
+  return new THREE.CanvasTexture(canvas);
+};
+
+const initSpaceScene = () => {
+  const canvas = document.getElementById("space-canvas");
 
   if (!canvas || !window.THREE || prefersReducedMotion) {
     return;
   }
 
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 100);
   const renderer = new THREE.WebGLRenderer({
     canvas,
     alpha: true,
     antialias: true,
     powerPreference: "high-performance",
   });
-
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  camera.position.z = 8;
-
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 100);
   const group = new THREE.Group();
+
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.35));
+  renderer.setSize(window.innerWidth, window.innerHeight);
   scene.add(group);
+  camera.position.set(0, 0.4, 11.5);
 
-  const geometry = new THREE.BufferGeometry();
-  const count = 180;
-  const positions = new Float32Array(count * 3);
+  const starGeometry = new THREE.BufferGeometry();
+  const starCount = 520;
+  const starPositions = new Float32Array(starCount * 3);
 
-  for (let i = 0; i < count; i += 1) {
+  for (let i = 0; i < starCount; i += 1) {
     const angle = i * 2.399963;
-    const layer = (i % 18) / 18;
-    const radius = 2.4 + layer * 6.4;
+    const radius = 6 + (i % 64) * 0.13;
+    const depth = -9 - (i % 28) * 0.8;
 
-    positions[i * 3] = Math.cos(angle) * radius;
-    positions[i * 3 + 1] = ((i % 13) - 6) * 0.42;
-    positions[i * 3 + 2] = Math.sin(angle) * radius - 3;
+    starPositions[i * 3] = Math.cos(angle) * radius;
+    starPositions[i * 3 + 1] = ((i % 37) - 18) * 0.32;
+    starPositions[i * 3 + 2] = depth + Math.sin(angle) * 2.2;
   }
 
-  geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-
-  const material = new THREE.PointsMaterial({
-    color: 0xf2c57c,
-    size: 0.022,
-    transparent: true,
-    opacity: 0.48,
-  });
-
-  const particles = new THREE.Points(geometry, material);
-  group.add(particles);
-
-  const orb = new THREE.Mesh(
-    new THREE.SphereGeometry(1.6, 48, 48),
-    new THREE.MeshBasicMaterial({
-      color: 0x9fb4ff,
+  starGeometry.setAttribute("position", new THREE.BufferAttribute(starPositions, 3));
+  const stars = new THREE.Points(
+    starGeometry,
+    new THREE.PointsMaterial({
+      color: 0xdaf6ff,
+      size: 0.025,
       transparent: true,
-      opacity: 0.06,
+      opacity: 0.72,
+    })
+  );
+  group.add(stars);
+
+  const earth = new THREE.Mesh(
+    new THREE.SphereGeometry(2.2, 96, 96),
+    new THREE.MeshStandardMaterial({
+      map: createEarthTexture(),
+      roughness: 0.72,
+      metalness: 0.02,
+    })
+  );
+  earth.position.set(2.5, -0.25, -5.8);
+  group.add(earth);
+
+  const atmosphere = new THREE.Mesh(
+    new THREE.SphereGeometry(2.32, 96, 96),
+    new THREE.MeshBasicMaterial({
+      color: 0x64d8ff,
+      transparent: true,
+      opacity: 0.16,
       wireframe: true,
     })
   );
-  orb.position.set(3.4, 0.4, -1.2);
-  group.add(orb);
+  atmosphere.position.copy(earth.position);
+  group.add(atmosphere);
 
+  const surfaceGlow = new THREE.Mesh(
+    new THREE.SphereGeometry(2.42, 96, 96),
+    new THREE.MeshBasicMaterial({
+      color: 0x8e7bff,
+      transparent: true,
+      opacity: 0.04,
+      wireframe: true,
+    })
+  );
+  surfaceGlow.position.copy(earth.position);
+  group.add(surfaceGlow);
+
+  scene.add(new THREE.AmbientLight(0xbddfff, 0.64));
+  const keyLight = new THREE.DirectionalLight(0xffffff, 2.2);
+  keyLight.position.set(6, 2.8, 5);
+  scene.add(keyLight);
+
+  let scrollProgress = 0;
   let frameId;
 
-  const render = () => {
-    const scroll = window.scrollY / Math.max(document.body.scrollHeight - window.innerHeight, 1);
+  const updateScroll = () => {
+    const journey = document.querySelector(".journey");
+    const max = Math.max((journey?.offsetHeight || window.innerHeight) - window.innerHeight, 1);
+    const top = journey?.offsetTop || 0;
+    scrollProgress = Math.min(Math.max((window.scrollY - top) / max, 0), 1);
+  };
 
-    group.rotation.y += 0.0009;
-    group.rotation.x = scroll * 0.22;
-    orb.rotation.y += 0.003;
-    orb.rotation.x += 0.001;
+  const render = () => {
+    const eased = 1 - Math.pow(1 - scrollProgress, 3);
+    const cameraZoom = 11.5 - eased * 6.9;
+
+    camera.position.z = cameraZoom;
+    camera.position.x = eased * 1.1;
+    camera.position.y = 0.4 - eased * 0.52;
+
+    earth.scale.setScalar(1 + eased * 2.15);
+    atmosphere.scale.setScalar(1 + eased * 2.18);
+    surfaceGlow.scale.setScalar(1 + eased * 2.28);
+
+    earth.rotation.y += 0.0018;
+    atmosphere.rotation.y -= 0.001;
+    stars.rotation.y += 0.00025;
+    group.rotation.x = -eased * 0.08;
+
+    atmosphere.material.opacity = 0.12 + eased * 0.22;
+    surfaceGlow.material.opacity = 0.03 + eased * 0.13;
+    stars.material.opacity = 0.72 - eased * 0.28;
 
     renderer.render(scene, camera);
     frameId = window.requestAnimationFrame(render);
@@ -139,9 +236,8 @@ const initScene = () => {
     renderer.setSize(window.innerWidth, window.innerHeight);
   };
 
+  window.addEventListener("scroll", updateScroll, { passive: true });
   window.addEventListener("resize", resize);
-  render();
-
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) {
       window.cancelAnimationFrame(frameId);
@@ -150,10 +246,46 @@ const initScene = () => {
 
     render();
   });
+
+  updateScroll();
+  render();
+};
+
+const initJourneyMotion = () => {
+  if (!window.gsap || !window.ScrollTrigger || prefersReducedMotion) {
+    return;
+  }
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  gsap.to(".cockpit", {
+    y: -34,
+    scale: 0.98,
+    ease: "none",
+    scrollTrigger: {
+      trigger: ".journey",
+      start: "top top",
+      end: "bottom bottom",
+      scrub: true,
+    },
+  });
+
+  gsap.to(".hero-copy", {
+    y: -54,
+    opacity: 0.78,
+    ease: "none",
+    scrollTrigger: {
+      trigger: ".journey",
+      start: "top top",
+      end: "55% top",
+      scrub: true,
+    },
+  });
 };
 
 document.addEventListener("DOMContentLoaded", () => {
   initSmoothScroll();
   initRevealAnimations();
-  initScene();
+  initSpaceScene();
+  initJourneyMotion();
 });

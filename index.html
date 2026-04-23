@@ -1,13 +1,13 @@
 <!doctype html>
-<html lang="ru">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Webcorn создает премиальные сайты для бизнеса: чистый дизайн, сильная структура и запуск без визуального хаоса."
+      content="Webcorn builds premium, high-converting websites for global brands across Europe and the US."
     />
-    <title>Webcorn — сайты, которые продают</title>
+    <title>Webcorn — Websites That Move Business Forward</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -17,129 +17,212 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <canvas id="scene" aria-hidden="true"></canvas>
+    <canvas id="space-canvas" aria-hidden="true"></canvas>
 
     <header class="header">
       <div class="container header__inner">
-        <a class="logo" href="#hero" aria-label="Webcorn">
-          <span class="logo__mark">W</span>
+        <a class="brand" href="#hero" aria-label="Webcorn home">
+          <span class="brand__mark">W</span>
           <span>Webcorn</span>
         </a>
 
-        <nav class="nav" aria-label="Основная навигация">
-          <a href="#packages">Пакеты</a>
-          <a href="#about">О нас</a>
-          <a href="#start">Старт</a>
+        <nav class="nav" aria-label="Primary navigation">
+          <a href="#services">Services</a>
+          <a href="#work">Examples</a>
+          <a href="#process">Process</a>
+          <a href="#pricing">Pricing</a>
         </nav>
+
+        <a class="header__cta" href="#contact">Book a Call</a>
       </div>
     </header>
 
-    <main class="site">
-      <section class="section hero" id="hero">
-        <div class="container split">
-          <div class="hero__content" data-reveal>
-            <p class="eyebrow">Premium web studio</p>
-            <h1>Webcorn</h1>
-            <p class="hero__subtitle">Сайты, которые продают</p>
-            <a class="button" href="#start">Начать проект</a>
-          </div>
-
-          <div class="visual-panel" data-reveal>
-            <div class="visual-panel__top">
-              <span></span>
-              <span></span>
-              <span></span>
+    <main>
+      <section class="journey" id="hero" aria-label="Space journey hero">
+        <div class="journey__sticky">
+          <div class="container hero-grid">
+            <div class="hero-copy" data-reveal>
+              <p class="eyebrow">Global web agency</p>
+              <h1>Websites That Move Business Forward</h1>
+              <p class="hero-copy__text">We build high-converting websites for global brands</p>
+              <a class="button" href="#contact">Get Your Website</a>
             </div>
-            <div class="visual-panel__body">
-              <div class="visual-panel__title"></div>
-              <div class="visual-panel__line"></div>
-              <div class="visual-panel__grid">
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
+
+            <div class="cockpit" data-reveal aria-label="Spacecraft cockpit window">
+              <div class="cockpit__status">
+                <span>ORBIT VIEW</span>
+                <span>EARTH LOCKED</span>
+              </div>
+
+              <div class="cockpit__window">
+                <div class="cockpit__glass">
+                  <span></span>
+                  <span></span>
+                </div>
+              </div>
+
+              <div class="cockpit__console">
+                <div>
+                  <strong>01</strong>
+                  <span>Strategy</span>
+                </div>
+                <div>
+                  <strong>02</strong>
+                  <span>Design</span>
+                </div>
+                <div>
+                  <strong>03</strong>
+                  <span>Launch</span>
+                </div>
               </div>
             </div>
+          </div>
+
+          <div class="journey__caption" aria-hidden="true">
+            <span>Space</span>
+            <span>Orbit</span>
+            <span>Atmosphere</span>
+            <span>Surface</span>
           </div>
         </div>
       </section>
 
-      <section class="section" id="packages">
+      <section class="section" id="services">
         <div class="container">
           <div class="section-head" data-reveal>
-            <p class="eyebrow">Пакеты</p>
-            <h2>Выберите уровень запуска</h2>
+            <p class="eyebrow">Services</p>
+            <h2>Built for conversion, trust, and scale.</h2>
           </div>
 
-          <div class="packages">
-            <article class="card" data-reveal>
-              <div>
-                <h3>Basic</h3>
-                <ul>
-                  <li>Лендинг</li>
-                  <li>Адаптивный дизайн</li>
-                  <li>Форма заявки</li>
-                </ul>
-              </div>
-              <div class="card__bottom">
-                <p class="price">от $900</p>
-                <a class="button button--secondary" href="#start">Выбрать</a>
-              </div>
+          <div class="card-grid card-grid--three">
+            <article class="service-card" data-reveal>
+              <div class="icon" aria-hidden="true">01</div>
+              <h3>Landing Pages</h3>
+              <p>Focused pages for campaigns, launches, and lead generation.</p>
             </article>
 
-            <article class="card card--featured" data-reveal>
-              <div>
-                <p class="badge">Популярный</p>
-                <h3>Pro</h3>
-                <ul>
-                  <li>Многостраничный сайт</li>
-                  <li>Премиальная структура</li>
-                  <li>Базовая SEO-подготовка</li>
-                </ul>
-              </div>
-              <div class="card__bottom">
-                <p class="price">от $1,800</p>
-                <a class="button" href="#start">Выбрать</a>
-              </div>
+            <article class="service-card" data-reveal>
+              <div class="icon" aria-hidden="true">02</div>
+              <h3>Multi-page Websites</h3>
+              <p>Premium brand sites with clear structure and strong navigation.</p>
             </article>
 
-            <article class="card" data-reveal>
-              <div>
-                <h3>Premium</h3>
-                <ul>
-                  <li>Индивидуальная концепция</li>
-                  <li>Анимации и визуал</li>
-                  <li>Запуск под ключ</li>
-                </ul>
-              </div>
-              <div class="card__bottom">
-                <p class="price">от $3,000</p>
-                <a class="button button--secondary" href="#start">Выбрать</a>
-              </div>
+            <article class="service-card" data-reveal>
+              <div class="icon" aria-hidden="true">03</div>
+              <h3>Web Apps</h3>
+              <p>Dashboards, payments, accounts, and product-ready systems.</p>
             </article>
           </div>
         </div>
       </section>
 
-      <section class="section" id="about">
-        <div class="container split value">
-          <div data-reveal>
-            <p class="eyebrow">Ценность</p>
-            <h2>Сайт должен выглядеть дорого и работать понятно.</h2>
+      <section class="section" id="work">
+        <div class="container split">
+          <div class="section-head" data-reveal>
+            <p class="eyebrow">Examples</p>
+            <h2>Niche-based websites with a premium digital feel.</h2>
           </div>
-          <p class="value__text" data-reveal>
-            Мы создаем сайты, которые выглядят как продукт уровня топ-компаний.
-          </p>
+
+          <div class="mockup-stack" data-reveal>
+            <article class="mockup-card">
+              <span>Hotels</span>
+              <strong>Direct booking experience</strong>
+            </article>
+            <article class="mockup-card">
+              <span>Clinics</span>
+              <strong>Trust-driven patient journey</strong>
+            </article>
+            <article class="mockup-card">
+              <span>Restaurants</span>
+              <strong>Atmosphere-led reservations</strong>
+            </article>
+          </div>
         </div>
       </section>
 
-      <section class="section" id="start">
+      <section class="section" id="process">
         <div class="container">
-          <div class="cta" data-reveal>
-            <p class="eyebrow">Запуск</p>
-            <h2>Запустить сайт</h2>
-            <a class="button" href="mailto:florencya08090@gmail.com?subject=Заявка%20на%20сайт%20Webcorn">
-              Оставить заявку
+          <div class="section-head section-head--center" data-reveal>
+            <p class="eyebrow">Process</p>
+            <h2>From idea to launch without noise.</h2>
+          </div>
+
+          <div class="process-grid">
+            <article class="process-step" data-reveal>
+              <span>01</span>
+              <h3>Strategy</h3>
+            </article>
+            <article class="process-step" data-reveal>
+              <span>02</span>
+              <h3>Design</h3>
+            </article>
+            <article class="process-step" data-reveal>
+              <span>03</span>
+              <h3>Development</h3>
+            </article>
+            <article class="process-step" data-reveal>
+              <span>04</span>
+              <h3>Launch</h3>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="pricing">
+        <div class="container">
+          <div class="section-head" data-reveal>
+            <p class="eyebrow">Pricing</p>
+            <h2>Choose the right launch level.</h2>
+          </div>
+
+          <div class="pricing-grid">
+            <article class="price-card" data-reveal>
+              <h3>Basic</h3>
+              <p>1-page website</p>
+              <strong>From $1,200</strong>
+              <ul>
+                <li>Landing page</li>
+                <li>Responsive design</li>
+                <li>Lead form</li>
+              </ul>
+              <a class="button button--ghost" href="#contact">Choose Basic</a>
+            </article>
+
+            <article class="price-card price-card--featured" data-reveal>
+              <span class="badge">Most chosen</span>
+              <h3>Standard</h3>
+              <p>Multi-page website</p>
+              <strong>From $2,500</strong>
+              <ul>
+                <li>Brand structure</li>
+                <li>Conversion pages</li>
+                <li>SEO foundation</li>
+              </ul>
+              <a class="button" href="#contact">Choose Standard</a>
+            </article>
+
+            <article class="price-card" data-reveal>
+              <h3>Premium</h3>
+              <p>Web app</p>
+              <strong>From $5,000</strong>
+              <ul>
+                <li>Dashboard</li>
+                <li>Payments</li>
+                <li>Client accounts</li>
+              </ul>
+              <a class="button button--ghost" href="#contact">Choose Premium</a>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section--final" id="contact">
+        <div class="container">
+          <div class="final-cta" data-reveal>
+            <p class="eyebrow">Start now</p>
+            <h2>Let’s build your next website</h2>
+            <a class="button" href="mailto:florencya08090@gmail.com?subject=Website%20project%20with%20Webcorn">
+              Book a Call
             </a>
           </div>
         </div>
