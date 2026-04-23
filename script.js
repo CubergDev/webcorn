@@ -143,8 +143,11 @@ const initSpaceScene = () => {
     new THREE.MeshPhongMaterial({
       map: earthTexture,
       specularMap: specularTexture,
-      specular: new THREE.Color(0x2c7fff),
-      shininess: 18,
+      color: 0xffffff,
+      emissive: new THREE.Color(0x143a66),
+      emissiveIntensity: 0.16,
+      specular: new THREE.Color(0x79cfff),
+      shininess: 26,
     })
   );
   earth.position.set(2.5, -0.25, -5.8);
@@ -156,7 +159,7 @@ const initSpaceScene = () => {
       map: cloudTexture,
       alphaMap: cloudTexture,
       transparent: true,
-      opacity: 0.36,
+      opacity: 0.44,
       depthWrite: false,
     })
   );
@@ -168,7 +171,7 @@ const initSpaceScene = () => {
     new THREE.MeshBasicMaterial({
       color: 0x64d8ff,
       transparent: true,
-      opacity: 0.12,
+      opacity: 0.18,
       side: THREE.BackSide,
       blending: THREE.AdditiveBlending,
     })
@@ -181,7 +184,7 @@ const initSpaceScene = () => {
     new THREE.MeshBasicMaterial({
       color: 0x8e7bff,
       transparent: true,
-      opacity: 0.05,
+      opacity: 0.08,
       side: THREE.BackSide,
       blending: THREE.AdditiveBlending,
     })
@@ -189,11 +192,14 @@ const initSpaceScene = () => {
   surfaceGlow.position.copy(earth.position);
   group.add(surfaceGlow);
 
-  scene.add(new THREE.AmbientLight(0x9fcfff, 0.44));
-  const keyLight = new THREE.DirectionalLight(0xffffff, 2.2);
+  scene.add(new THREE.AmbientLight(0xcfeaff, 0.78));
+  const keyLight = new THREE.DirectionalLight(0xffffff, 3.1);
   keyLight.position.set(6.5, 2.8, 5.2);
   scene.add(keyLight);
-  const rimLight = new THREE.DirectionalLight(0x65d8ff, 0.9);
+  const fillLight = new THREE.DirectionalLight(0x8fcfff, 1.1);
+  fillLight.position.set(-2.8, 1.4, 4.5);
+  scene.add(fillLight);
+  const rimLight = new THREE.DirectionalLight(0x65d8ff, 1.25);
   rimLight.position.set(-4, 1.6, -2);
   scene.add(rimLight);
 
@@ -226,8 +232,8 @@ const initSpaceScene = () => {
     stars.rotation.y += 0.00025;
     group.rotation.x = -eased * 0.08;
 
-    atmosphere.material.opacity = 0.12 + eased * 0.22;
-    surfaceGlow.material.opacity = 0.03 + eased * 0.13;
+    atmosphere.material.opacity = 0.18 + eased * 0.24;
+    surfaceGlow.material.opacity = 0.07 + eased * 0.15;
     stars.material.opacity = 0.72 - eased * 0.28;
 
     renderer.render(scene, camera);
