@@ -1723,8 +1723,8 @@
   Object.assign(TEXTS, {
     "Демо": entry("Demos"),
     "Смотреть примеры демо": entry("View demo examples"),
-    "Премиальные сайты для отелей, клиник и ресторанов.": entry(
-      "Premium websites for hotels, clinics, and restaurants."
+    "Премиальный сайт для Вас и для вашего бизнеса": entry(
+      "A premium website for you and for your business"
     ),
     "Открывайте демо. Выбирайте нишу. Запускайте сайт под свой бренд.": entry(
       "Open the demos. Choose a niche. Launch a website for your brand."
