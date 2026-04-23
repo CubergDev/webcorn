@@ -62,49 +62,10 @@ const initRevealAnimations = () => {
   });
 };
 
-const createEarthTexture = () => {
-  const size = 1024;
-  const canvas = document.createElement("canvas");
-  canvas.width = size;
-  canvas.height = size;
-  const context = canvas.getContext("2d");
-  const gradient = context.createLinearGradient(0, 0, size, size);
-
-  gradient.addColorStop(0, "#113d76");
-  gradient.addColorStop(0.45, "#0b79b8");
-  gradient.addColorStop(1, "#05224f");
-  context.fillStyle = gradient;
-  context.fillRect(0, 0, size, size);
-
-  context.fillStyle = "rgba(44, 140, 92, 0.72)";
-  for (let i = 0; i < 24; i += 1) {
-    const x = ((i * 191) % size) - 80;
-    const y = ((i * 313) % size) - 40;
-    const width = 130 + (i % 5) * 36;
-    const height = 54 + (i % 4) * 24;
-
-    context.beginPath();
-    context.ellipse(x, y, width, height, (i % 7) * 0.42, 0, Math.PI * 2);
-    context.fill();
-  }
-
-  context.fillStyle = "rgba(255, 255, 255, 0.18)";
-  for (let i = 0; i < 30; i += 1) {
-    const x = (i * 149) % size;
-    const y = (i * 97) % size;
-    context.beginPath();
-    context.ellipse(x, y, 96, 18, (i % 9) * 0.32, 0, Math.PI * 2);
-    context.fill();
-  }
-
-  context.fillStyle = "rgba(255, 210, 126, 0.62)";
-  for (let i = 0; i < 150; i += 1) {
-    const x = (i * 89) % size;
-    const y = (i * 233) % size;
-    context.fillRect(x, y, 2, 2);
-  }
-
-  return new THREE.CanvasTexture(canvas);
+const EARTH_ASSETS = {
+  diffuse: "assets/space/earth-blue-marble-3072.jpg",
+  clouds: "assets/space/earth-clouds-1024.png",
+  specular: "assets/space/earth-specular-2048.jpg",
 };
 
 const initSpaceScene = () => {
@@ -128,6 +89,23 @@ const initSpaceScene = () => {
   renderer.setSize(window.innerWidth, window.innerHeight);
   scene.add(group);
   camera.position.set(0, 0.4, 11.5);
+
+  const textureLoader = new THREE.TextureLoader();
+  const maxAnisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 8);
+  const loadTexture = (url, isColorTexture = false) => {
+    const texture = textureLoader.load(url);
+    texture.anisotropy = maxAnisotropy;
+
+    if (isColorTexture) {
+      if ("colorSpace" in texture && THREE.SRGBColorSpace) {
+        texture.colorSpace = THREE.SRGBColorSpace;
+      } else if (THREE.sRGBEncoding) {
+        texture.encoding = THREE.sRGBEncoding;
+      }
+    }
+
+    return texture;
+  };
 
   const starGeometry = new THREE.BufferGeometry();
   const starCount = 520;
@@ -155,45 +133,69 @@ const initSpaceScene = () => {
   );
   group.add(stars);
 
+  // NASA Blue Marble texture replaces the old generated cartoon map.
+  const earthTexture = loadTexture(EARTH_ASSETS.diffuse, true);
+  const cloudTexture = loadTexture(EARTH_ASSETS.clouds, true);
+  const specularTexture = loadTexture(EARTH_ASSETS.specular);
+
   const earth = new THREE.Mesh(
-    new THREE.SphereGeometry(2.2, 96, 96),
-    new THREE.MeshStandardMaterial({
-      map: createEarthTexture(),
-      roughness: 0.72,
-      metalness: 0.02,
+    new THREE.SphereGeometry(2.2, 128, 128),
+    new THREE.MeshPhongMaterial({
+      map: earthTexture,
+      specularMap: specularTexture,
+      specular: new THREE.Color(0x2c7fff),
+      shininess: 18,
     })
   );
   earth.position.set(2.5, -0.25, -5.8);
   group.add(earth);
 
+  const clouds = new THREE.Mesh(
+    new THREE.SphereGeometry(2.225, 128, 128),
+    new THREE.MeshLambertMaterial({
+      map: cloudTexture,
+      alphaMap: cloudTexture,
+      transparent: true,
+      opacity: 0.36,
+      depthWrite: false,
+    })
+  );
+  clouds.position.copy(earth.position);
+  group.add(clouds);
+
   const atmosphere = new THREE.Mesh(
-    new THREE.SphereGeometry(2.32, 96, 96),
+    new THREE.SphereGeometry(2.38, 96, 96),
     new THREE.MeshBasicMaterial({
       color: 0x64d8ff,
       transparent: true,
-      opacity: 0.16,
-      wireframe: true,
+      opacity: 0.12,
+      side: THREE.BackSide,
+      blending: THREE.AdditiveBlending,
     })
   );
   atmosphere.position.copy(earth.position);
   group.add(atmosphere);
 
   const surfaceGlow = new THREE.Mesh(
-    new THREE.SphereGeometry(2.42, 96, 96),
+    new THREE.SphereGeometry(2.52, 96, 96),
     new THREE.MeshBasicMaterial({
       color: 0x8e7bff,
       transparent: true,
-      opacity: 0.04,
-      wireframe: true,
+      opacity: 0.05,
+      side: THREE.BackSide,
+      blending: THREE.AdditiveBlending,
     })
   );
   surfaceGlow.position.copy(earth.position);
   group.add(surfaceGlow);
 
-  scene.add(new THREE.AmbientLight(0xbddfff, 0.64));
+  scene.add(new THREE.AmbientLight(0x9fcfff, 0.44));
   const keyLight = new THREE.DirectionalLight(0xffffff, 2.2);
-  keyLight.position.set(6, 2.8, 5);
+  keyLight.position.set(6.5, 2.8, 5.2);
   scene.add(keyLight);
+  const rimLight = new THREE.DirectionalLight(0x65d8ff, 0.9);
+  rimLight.position.set(-4, 1.6, -2);
+  scene.add(rimLight);
 
   let scrollProgress = 0;
   let frameId;
@@ -214,10 +216,12 @@ const initSpaceScene = () => {
     camera.position.y = 0.4 - eased * 0.52;
 
     earth.scale.setScalar(1 + eased * 2.15);
+    clouds.scale.setScalar(1 + eased * 2.17);
     atmosphere.scale.setScalar(1 + eased * 2.18);
     surfaceGlow.scale.setScalar(1 + eased * 2.28);
 
     earth.rotation.y += 0.0018;
+    clouds.rotation.y += 0.00235;
     atmosphere.rotation.y -= 0.001;
     stars.rotation.y += 0.00025;
     group.rotation.x = -eased * 0.08;
