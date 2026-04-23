@@ -63,7 +63,8 @@ const initRevealAnimations = () => {
 };
 
 const EARTH_ASSETS = {
-  diffuse: "assets/space/earth-blue-marble-3072.jpg",
+  diffuse: "assets/space/earth-blue-marble-4096.jpg",
+  lights: "assets/space/earth-city-lights-4096.jpg",
   clouds: "assets/space/earth-clouds-1024.png",
   specular: "assets/space/earth-specular-2048.jpg",
   normal: "assets/space/earth-normal-2048.jpg",
@@ -86,8 +87,15 @@ const initSpaceScene = () => {
   const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 100);
   const group = new THREE.Group();
 
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.35));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
   renderer.setSize(window.innerWidth, window.innerHeight);
+  if ("outputColorSpace" in renderer && THREE.SRGBColorSpace) {
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+  }
+  if (THREE.ACESFilmicToneMapping) {
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.18;
+  }
   scene.add(group);
   camera.position.set(0, 0.4, 11.5);
 
@@ -96,6 +104,8 @@ const initSpaceScene = () => {
   const loadTexture = (url, isColorTexture = false) => {
     const texture = textureLoader.load(url);
     texture.anisotropy = maxAnisotropy;
+    texture.minFilter = THREE.LinearMipmapLinearFilter;
+    texture.magFilter = THREE.LinearFilter;
 
     if (isColorTexture) {
       if ("colorSpace" in texture && THREE.SRGBColorSpace) {
@@ -136,9 +146,11 @@ const initSpaceScene = () => {
 
   // NASA Blue Marble texture replaces the old generated cartoon map.
   const earthTexture = loadTexture(EARTH_ASSETS.diffuse, true);
+  const cityLightsTexture = loadTexture(EARTH_ASSETS.lights, true);
   const cloudTexture = loadTexture(EARTH_ASSETS.clouds, true);
   const specularTexture = loadTexture(EARTH_ASSETS.specular);
   const normalTexture = loadTexture(EARTH_ASSETS.normal);
+  const lightDirection = new THREE.Vector3(7.2, 3.4, 5.7).normalize();
 
   const earth = new THREE.Mesh(
     new THREE.SphereGeometry(2.2, 128, 128),
@@ -157,6 +169,50 @@ const initSpaceScene = () => {
   earth.position.set(2.5, -0.25, -5.8);
   earth.rotation.set(-0.34, 0.7, -0.18);
   group.add(earth);
+
+  const cityLights = new THREE.Mesh(
+    new THREE.SphereGeometry(2.207, 128, 128),
+    new THREE.ShaderMaterial({
+      uniforms: {
+        lightsMap: { value: cityLightsTexture },
+        lightDirection: { value: lightDirection },
+        opacity: { value: 1.0 },
+      },
+      vertexShader: `
+        varying vec2 vUv;
+        varying vec3 vWorldNormal;
+
+        void main() {
+          vUv = uv;
+          vWorldNormal = normalize(mat3(modelMatrix) * normal);
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        uniform sampler2D lightsMap;
+        uniform vec3 lightDirection;
+        uniform float opacity;
+        varying vec2 vUv;
+        varying vec3 vWorldNormal;
+
+        void main() {
+          vec3 lights = texture2D(lightsMap, vUv).rgb;
+          float lightStrength = max(max(lights.r, lights.g), lights.b);
+          float nightSide = 1.0 - smoothstep(-0.16, 0.2, dot(normalize(vWorldNormal), normalize(lightDirection)));
+          float cityMask = smoothstep(0.08, 0.82, lightStrength) * nightSide * opacity;
+          vec3 cityColor = mix(vec3(1.0, 0.56, 0.2), vec3(0.65, 0.86, 1.0), smoothstep(0.58, 1.0, lightStrength));
+
+          gl_FragColor = vec4(cityColor * lightStrength * 2.35, cityMask);
+        }
+      `,
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+    })
+  );
+  cityLights.position.copy(earth.position);
+  cityLights.rotation.copy(earth.rotation);
+  group.add(cityLights);
 
   const clouds = new THREE.Mesh(
     new THREE.SphereGeometry(2.225, 128, 128),
@@ -282,11 +338,13 @@ const initSpaceScene = () => {
     camera.position.y = 0.4 - eased * 0.52;
 
     earth.scale.setScalar(1 + eased * 2.15);
+    cityLights.scale.setScalar(1 + eased * 2.155);
     clouds.scale.setScalar(1 + eased * 2.17);
     atmosphere.scale.setScalar(1 + eased * 2.18);
     surfaceGlow.scale.setScalar(1 + eased * 2.28);
 
     earth.rotation.y += 0.0018;
+    cityLights.rotation.y = earth.rotation.y;
     clouds.rotation.y += 0.00235;
     atmosphere.rotation.y = earth.rotation.y - 0.04;
     surfaceGlow.rotation.y = earth.rotation.y - 0.08;
@@ -294,6 +352,7 @@ const initSpaceScene = () => {
     group.rotation.x = -eased * 0.08;
 
     atmosphere.material.uniforms.intensity.value = 0.78 + eased * 0.4;
+    cityLights.material.uniforms.opacity.value = 0.7 + eased * 0.34;
     stars.material.opacity = 0.72 - eased * 0.28;
 
     renderer.render(scene, camera);
