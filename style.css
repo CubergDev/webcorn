@@ -226,18 +226,24 @@ h3 {
 
 .hero-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(420px, 0.86fr);
-  gap: 64px;
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
   align-items: center;
+  min-height: calc(100vh - 176px);
 }
 
 .hero-copy {
   display: grid;
   gap: 24px;
+  justify-items: center;
+  max-width: 960px;
+  margin: 0 auto;
+  text-align: center;
 }
 
 .hero-copy__text {
   max-width: 620px;
+  margin: 0 auto;
   color: var(--muted);
   font-size: clamp(1.18rem, 2.1vw, 1.7rem);
   font-weight: 600;
@@ -273,91 +279,6 @@ h3 {
   transform: translateY(-2px);
   box-shadow: 0 22px 62px rgba(100, 216, 255, 0.28);
   outline: none;
-}
-
-.cockpit {
-  display: grid;
-  gap: 18px;
-  padding: 22px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 42px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)),
-    rgba(3, 8, 16, 0.58);
-  box-shadow: var(--shadow);
-  backdrop-filter: blur(18px);
-}
-
-.cockpit__status,
-.cockpit__console {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.cockpit__status span,
-.cockpit__console div {
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.045);
-}
-
-.cockpit__status span {
-  padding: 12px 14px;
-  color: rgba(233, 243, 255, 0.72);
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.16em;
-}
-
-.cockpit__window {
-  display: grid;
-  min-height: 430px;
-  padding: 18px;
-  border: 1px solid rgba(155, 229, 255, 0.2);
-  border-radius: 34px;
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.12), transparent 34%),
-    rgba(4, 13, 26, 0.34);
-}
-
-.cockpit__glass {
-  display: grid;
-  grid-template-columns: 1fr 0.7fr;
-  gap: 18px;
-  align-items: end;
-  min-height: 100%;
-  padding: 22px;
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 28px;
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.08), transparent 38%),
-    rgba(255, 255, 255, 0.025);
-}
-
-.cockpit__glass span {
-  min-height: 10px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0.28), transparent);
-}
-
-.cockpit__console {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.cockpit__console div {
-  display: grid;
-  gap: 3px;
-  padding: 14px;
-}
-
-.cockpit__console strong {
-  font-size: 1rem;
-}
-
-.cockpit__console span {
-  color: var(--muted);
-  font-size: 0.84rem;
 }
 
 .journey__caption {
@@ -692,7 +613,6 @@ h3 {
   }
 
   .split,
-  .hero-grid,
   .site-type-grid,
   .price-layout,
   .contact-panel {
@@ -706,10 +626,6 @@ h3 {
   .journey__sticky {
     position: relative;
     padding-top: 128px;
-  }
-
-  .cockpit__window {
-    min-height: 340px;
   }
 
   .journey__caption {
@@ -743,7 +659,6 @@ h3 {
     gap: 36px;
   }
 
-  .cockpit,
   .list-card,
   .site-type-card,
   .price-main,
@@ -751,22 +666,9 @@ h3 {
     border-radius: 28px;
   }
 
-  .cockpit {
-    padding: 14px;
-  }
-
-  .cockpit__status,
-  .cockpit__console,
-  .cockpit__glass,
   .journey__caption,
   .result-grid {
     grid-template-columns: 1fr;
-  }
-
-  .cockpit__window {
-    min-height: 280px;
-    padding: 12px;
-    border-radius: 24px;
   }
 
   .contact-panel {

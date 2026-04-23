@@ -258,18 +258,6 @@ const initJourneyMotion = () => {
 
   gsap.registerPlugin(ScrollTrigger);
 
-  gsap.to(".cockpit", {
-    y: -34,
-    scale: 0.98,
-    ease: "none",
-    scrollTrigger: {
-      trigger: ".journey",
-      start: "top top",
-      end: "bottom bottom",
-      scrub: true,
-    },
-  });
-
   gsap.to(".hero-copy", {
     y: -54,
     opacity: 0.78,
