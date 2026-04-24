@@ -78,6 +78,8 @@ const SATURN_ASSETS = {
   ringsMetallic: "saturn/Textures/Saturn 4K/Saturn2_Rings_Metallic.png",
   moonBase: "saturn/Textures/Moon 4K/Saturn2_Saturn_BaseColor.png",
 };
+const SATURN_RING_EDGE_ON_TILT = -Math.PI * 0.46;
+const SATURN_RING_LINE_ANGLE = Math.PI * 0.14;
 
 const resolveThreeRuntime = async () => {
   try {
@@ -503,9 +505,9 @@ const initSpaceScene = async () => {
     targetScrollSpinVelocity *= 0.84;
     scrollSpinVelocity *= 0.95;
 
-    saturnGroup.rotation.y = autoRotationY + scrollRotationY;
-    saturnGroup.rotation.x = -0.16 + eased * 0.02;
-    saturnGroup.rotation.z = -0.115 - eased * 0.012;
+    saturnGroup.rotation.y = autoRotationY + scrollRotationY * 0.12;
+    saturnGroup.rotation.x = SATURN_RING_EDGE_ON_TILT + eased * 0.02;
+    saturnGroup.rotation.z = SATURN_RING_LINE_ANGLE - eased * 0.004;
     saturnGroup.position.x = 0;
     saturnGroup.position.y = (narrowScreen ? -0.28 : -0.12) + eased * 0.03;
     saturnGroup.position.z = -5.35 + eased * 0.1;
