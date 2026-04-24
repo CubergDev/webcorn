@@ -1,0 +1,13 @@
+.git
+.idea
+.claude
+.playwright-mcp
+data
+out
+bin
+dist
+*.class
+*.iml
+.DS_Store
+Dockerfile
+docker-compose.yml
