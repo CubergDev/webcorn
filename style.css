@@ -243,18 +243,6 @@ h3 {
   text-shadow: 0 18px 48px rgba(0, 0, 0, 0.62);
 }
 
-.hero-copy__text {
-  max-width: none;
-  margin: 0 auto;
-  color: var(--muted);
-  font-size: clamp(0.72rem, 0.92vw, 1rem);
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  line-height: 1;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
 .nowrap {
   white-space: nowrap;
 }
@@ -320,12 +308,64 @@ h3 {
   font-size: clamp(1.05rem, 1.6vw, 1.25rem);
 }
 
-.section-head__lead {
-  max-width: 720px;
+.section-head p.section-head__lead {
+  max-width: 880px;
   color: rgba(247, 251, 255, 0.94);
-  font-size: clamp(1.45rem, 2.5vw, 2rem);
+  font-size: clamp(2.2rem, 4.2vw, 4.7rem);
+  font-weight: 800;
+  line-height: 0.95;
+}
+
+.section-head__subclaim {
+  max-width: 680px;
+  color: var(--muted);
+  font-size: clamp(1.35rem, 2.45vw, 2.65rem);
   font-weight: 700;
-  line-height: 1.12;
+  line-height: 1.08;
+}
+
+.approach-layout {
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+  gap: 34px;
+  text-align: center;
+}
+
+.approach-layout .section-head {
+  justify-items: center;
+  max-width: 980px;
+}
+
+.approach-layout .list-card {
+  width: min(100%, 880px);
+}
+
+.approach-layout .feature-list {
+  justify-items: center;
+}
+
+.approach-layout .feature-list li {
+  display: block;
+  max-width: 760px;
+  color: rgba(247, 251, 255, 0.78);
+  font-size: clamp(0.9rem, 1.35vw, 1.08rem);
+  font-weight: 800;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.approach-layout .feature-list li::before {
+  display: none;
+}
+
+.section-title--single {
+  justify-self: center;
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  text-align: center;
+  white-space: nowrap;
+  font-size: clamp(0.65rem, 2.65vw, 2.35rem);
 }
 
 .section-head--center {
@@ -475,21 +515,6 @@ h3 {
   grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
   gap: 22px;
   margin-top: 48px;
-}
-
-.price-title {
-  max-width: none;
-}
-
-.price-title__label,
-.price-title__amount {
-  display: block;
-}
-
-.price-title__amount {
-  margin-top: 12px;
-  font-size: clamp(3rem, 6.6vw, 5.4rem);
-  line-height: 0.92;
 }
 
 .price-main,
@@ -773,9 +798,8 @@ h3 {
     grid-template-columns: 1fr;
   }
 
-  .hero-copy__text {
-    font-size: clamp(0.62rem, 1.4vw, 0.88rem);
-    letter-spacing: 0.1em;
+  .section-title--single {
+    white-space: nowrap;
   }
 }
 
@@ -817,8 +841,4 @@ h3 {
     border-radius: 32px;
   }
 
-  .hero-copy__text {
-    font-size: 0.58rem;
-    letter-spacing: 0.08em;
-  }
 }
