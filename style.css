@@ -244,11 +244,19 @@ h3 {
 }
 
 .hero-copy__text {
-  max-width: 620px;
+  max-width: none;
   margin: 0 auto;
   color: var(--muted);
-  font-size: clamp(1.18rem, 2.1vw, 1.7rem);
-  font-weight: 600;
+  font-size: clamp(0.72rem, 0.92vw, 1rem);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.nowrap {
+  white-space: nowrap;
 }
 
 .eyebrow {
@@ -310,6 +318,14 @@ h3 {
   max-width: 680px;
   color: var(--muted);
   font-size: clamp(1.05rem, 1.6vw, 1.25rem);
+}
+
+.section-head__lead {
+  max-width: 720px;
+  color: rgba(247, 251, 255, 0.94);
+  font-size: clamp(1.45rem, 2.5vw, 2rem);
+  font-weight: 700;
+  line-height: 1.12;
 }
 
 .section-head--center {
@@ -459,6 +475,21 @@ h3 {
   grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
   gap: 22px;
   margin-top: 48px;
+}
+
+.price-title {
+  max-width: none;
+}
+
+.price-title__label,
+.price-title__amount {
+  display: block;
+}
+
+.price-title__amount {
+  margin-top: 12px;
+  font-size: clamp(3rem, 6.6vw, 5.4rem);
+  line-height: 0.92;
 }
 
 .price-main,
@@ -637,6 +668,11 @@ h3 {
   .feature-list--compact {
     grid-template-columns: 1fr;
   }
+
+  .hero-copy__text {
+    font-size: clamp(0.62rem, 1.4vw, 0.88rem);
+    letter-spacing: 0.1em;
+  }
 }
 
 @media (max-width: 680px) {
@@ -675,5 +711,10 @@ h3 {
 
   .contact-panel {
     border-radius: 32px;
+  }
+
+  .hero-copy__text {
+    font-size: 0.58rem;
+    letter-spacing: 0.08em;
   }
 }

@@ -346,7 +346,7 @@ const initSpaceScene = async () => {
 
     model.position.sub(center);
     model.scale.multiplyScalar(4.8 / maxSize);
-    model.rotation.set(-0.28, -0.4, -0.3);
+    model.rotation.set(-0.38, -0.48, -0.42);
 
     return model;
   };
@@ -368,7 +368,7 @@ const initSpaceScene = async () => {
     ringLineA.rotation.x = Math.PI * 0.5;
     ringLineB.rotation.x = Math.PI * 0.5;
     fallback.add(body, rings, ringLineA, ringLineB);
-    fallback.rotation.set(-0.52, -0.18, -0.42);
+    fallback.rotation.set(-0.68, -0.2, -0.52);
 
     return fallback;
   };
@@ -504,8 +504,8 @@ const initSpaceScene = async () => {
     scrollSpinVelocity *= 0.95;
 
     saturnGroup.rotation.y = autoRotationY + scrollRotationY;
-    saturnGroup.rotation.x = -0.08 + eased * 0.025;
-    saturnGroup.rotation.z = -0.055 - eased * 0.014;
+    saturnGroup.rotation.x = -0.16 + eased * 0.02;
+    saturnGroup.rotation.z = -0.115 - eased * 0.012;
     saturnGroup.position.x = 0;
     saturnGroup.position.y = (narrowScreen ? -0.28 : -0.12) + eased * 0.03;
     saturnGroup.position.z = -5.35 + eased * 0.1;
