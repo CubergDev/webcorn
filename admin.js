@@ -1,24 +1,43 @@
-const LEADS_STORAGE_KEY = "webfactory-crm-leads";
-const LEGACY_REQUESTS_KEY = "webfactory-template-requests";
-const STATUSES = ["Новый", "Контакт", "КП отправлено", "В работе", "Успешно", "Закрыт"];
 const ORDER_STATUS_PAID = "Оплачен";
-const LANGUAGE_LOCALES = {
-  ru: "ru-RU",
-  en: "en-US",
+const TASK_STATUS_OPEN = "open";
+const TASK_STATUS_DONE = "done";
+
+const state = {
+  currentUser: null,
+  users: [],
+  columns: [],
+  leads: [],
+  tasks: [],
+  selectedLeadId: null,
+  activeView: "kanban",
 };
 
 const elements = {
+  staffName: document.getElementById("staff-name"),
+  logout: document.getElementById("staff-logout"),
+  note: document.getElementById("integration-note"),
   total: document.getElementById("total-leads"),
   fresh: document.getElementById("new-leads"),
   active: document.getElementById("active-leads"),
   won: document.getElementById("won-leads"),
+  myTasks: document.getElementById("my-tasks-count"),
+  overdueTasks: document.getElementById("overdue-tasks-count"),
   search: document.getElementById("lead-search"),
-  filter: document.getElementById("status-filter"),
-  status: document.getElementById("lead-status"),
-  list: document.getElementById("lead-list"),
-  chips: document.getElementById("status-chips"),
-  note: document.getElementById("integration-note"),
-  saveNotes: document.getElementById("save-notes"),
+  assigneeFilter: document.getElementById("assignee-filter"),
+  kanban: document.getElementById("crm-kanban"),
+  leadList: document.getElementById("lead-list"),
+  taskFilter: document.getElementById("task-filter"),
+  myTaskList: document.getElementById("my-task-list"),
+  leadTaskList: document.getElementById("lead-task-list"),
+  taskForm: document.getElementById("task-form"),
+  staffForm: document.getElementById("staff-form"),
+  staffList: document.getElementById("staff-list"),
+  columnForm: document.getElementById("column-form"),
+  columnList: document.getElementById("column-list"),
+  saveLead: document.getElementById("save-lead"),
+  leadColumn: document.getElementById("lead-column"),
+  leadAssignee: document.getElementById("lead-assignee"),
+  leadDescription: document.getElementById("lead-description"),
   notes: document.getElementById("detail-notes"),
   detailTitle: document.getElementById("detail-title"),
   detailClient: document.getElementById("detail-client"),
@@ -32,246 +51,10 @@ const elements = {
   detailBudget: document.getElementById("detail-budget"),
   detailTimeline: document.getElementById("detail-timeline"),
   detailPaymentStatus: document.getElementById("detail-payment-status"),
-  detailInvoice: document.getElementById("detail-invoice"),
   detailPaymentAmount: document.getElementById("detail-payment-amount"),
   detailCurrentSite: document.getElementById("detail-current-site"),
   detailProject: document.getElementById("detail-project"),
   detailMeta: document.getElementById("detail-meta"),
-  staffName: document.getElementById("staff-name"),
-  logout: document.getElementById("staff-logout"),
-};
-
-const sampleLeads = [
-  {
-    id: "WF-A19X3",
-    status: "Новый",
-    fullName: "Мария Волкова",
-    businessName: "Maison Orbit Hotel",
-    email: "maria@maisonorbit.example",
-    phone: "+33 6 88 20 10 42",
-    country: "Франция",
-    niche: "Отели",
-    packageTier: "Премиум",
-    selectedTemplate: "Maison Orbit",
-    budgetRange: "€3000–€5000",
-    timeline: "В течение месяца",
-    currentWebsite: "https://maisonorbit.example",
-    projectDetails: "Нужен более дорогой визуальный образ и сильнее блоки доверия для прямых бронирований.",
-    source: "Сайт webcorn",
-    notes: "Ждут предложение после созвона. Показать кейсы по бутик-отелям.",
-    invoiceId: "WF-CP-DEMO-A19X3",
-    paymentStatus: "Оплачен",
-    paymentAmount: "1790000",
-    paymentCurrency: "KZT",
-    paidAt: "2026-04-20T10:05:00.000Z",
-    orderStatus: "Оплачен",
-    cloudpaymentsTransactionId: "1001001001",
-    submittedAt: "2026-04-20T09:15:00.000Z",
-    lastUpdatedAt: "2026-04-20T10:05:00.000Z",
-  },
-  {
-    id: "WF-B73K8",
-    status: "КП отправлено",
-    fullName: "Daniel Foster",
-    businessName: "Nordic Care",
-    email: "daniel@northline.example",
-    phone: "+1 415 555 0162",
-    country: "США",
-    niche: "Клиники",
-    packageTier: "Средний",
-    selectedTemplate: "Nordic Care",
-    budgetRange: "€1500–€3000",
-    timeline: "Гибкий срок",
-    currentWebsite: "Нет текущего сайта",
-    projectDetails: "Нужна спокойная подача, сильнее раскрыть врачей и упростить запись с мобильных.",
-    source: "Сайт webcorn",
-    notes: "КП отправлено. Ждут подтверждение по срокам и стартовому платежу.",
-    submittedAt: "2026-04-18T14:40:00.000Z",
-    lastUpdatedAt: "2026-04-18T14:40:00.000Z",
-  },
-  {
-    id: "WF-C51M2",
-    status: "В работе",
-    fullName: "Софи Мартен",
-    businessName: "Noir Atelier",
-    email: "sophie@noiratelier.example",
-    phone: "+44 7700 900321",
-    country: "Великобритания",
-    niche: "Рестораны",
-    packageTier: "Премиум",
-    selectedTemplate: "Noir Atelier",
-    budgetRange: "€3000–€5000",
-    timeline: "Как можно скорее",
-    currentWebsite: "https://noiratelier.example",
-    projectDetails: "Нужны частные ужины, история шефа, дегустационное меню и дорогая атмосфера бренда.",
-    source: "Сайт webcorn",
-    notes: "Контент в сборе. Следующий шаг: утвердить главный экран и маршрут брони.",
-    submittedAt: "2026-04-15T11:05:00.000Z",
-    lastUpdatedAt: "2026-04-19T11:05:00.000Z",
-  },
-];
-
-let leads = [];
-let selectedLeadId = null;
-let usesServer = false;
-
-const getSiteLanguage = () => window.WebfactoryI18n?.language ?? "ru";
-const getSiteLocale = () => LANGUAGE_LOCALES[getSiteLanguage()] ?? LANGUAGE_LOCALES.ru;
-const translateMessage = (key, fallback, params = {}) =>
-  window.WebfactoryI18n?.message(key, params) || fallback;
-const translateText = (value) => window.WebfactoryI18n?.text(value) ?? value;
-
-const safeJsonParse = (value) => {
-  try {
-    return JSON.parse(value);
-  } catch (error) {
-    return null;
-  }
-};
-
-const normalizeLead = (lead = {}) => ({
-  id: lead.id ?? `WF-${Date.now().toString(36).toUpperCase()}`,
-  status: lead.status ?? "Новый",
-  fullName: lead.fullName ?? "",
-  businessName: lead.businessName ?? "",
-  email: lead.email ?? "",
-  phone: lead.phone ?? "",
-  country: lead.country ?? "",
-  niche: lead.niche ?? lead.businessType ?? "",
-  packageTier: lead.packageTier ?? lead.tier ?? "",
-  selectedTemplate: lead.selectedTemplate ?? lead.template ?? "",
-  budgetRange: lead.budgetRange ?? lead.budget ?? "",
-  timeline: lead.timeline ?? "",
-  currentWebsite: lead.currentWebsite ?? "",
-  projectDetails: lead.projectDetails ?? lead.customizationNeeds ?? lead.customization ?? "",
-  source: lead.source ?? "Сайт webcorn",
-  notes: lead.notes ?? "",
-  invoiceId: lead.invoiceId ?? "",
-  paymentStatus: lead.paymentStatus ?? "",
-  paymentAmount: lead.paymentAmount ?? "",
-  paymentCurrency: lead.paymentCurrency ?? "",
-  paidAt: lead.paidAt ?? "",
-  orderStatus: lead.orderStatus ?? "",
-  cloudpaymentsTransactionId: lead.cloudpaymentsTransactionId ?? "",
-  submittedAt: lead.submittedAt ?? new Date().toISOString(),
-  lastUpdatedAt: lead.lastUpdatedAt ?? lead.submittedAt ?? new Date().toISOString(),
-});
-
-const readStorageList = (key) => {
-  const parsed = safeJsonParse(window.localStorage.getItem(key) ?? "[]");
-  return Array.isArray(parsed) ? parsed : [];
-};
-
-const saveStoredLeads = (nextLeads) => {
-  window.localStorage.setItem(LEADS_STORAGE_KEY, JSON.stringify(nextLeads.map(normalizeLead)));
-};
-
-const getStoredLeads = () => {
-  const current = readStorageList(LEADS_STORAGE_KEY);
-
-  if (current.length) {
-    return current.map(normalizeLead);
-  }
-
-  const legacy = readStorageList(LEGACY_REQUESTS_KEY).map((lead) =>
-    normalizeLead({
-      ...lead,
-      packageTier: lead.packageTier ?? lead.tier ?? "",
-      selectedTemplate: lead.selectedTemplate ?? lead.template ?? "",
-      budgetRange: lead.budgetRange ?? lead.budget ?? "",
-      projectDetails: lead.projectDetails ?? lead.customization ?? "",
-    })
-  );
-
-  if (legacy.length) {
-    saveStoredLeads(legacy);
-    return legacy;
-  }
-
-  saveStoredLeads(sampleLeads);
-  return sampleLeads.map(normalizeLead);
-};
-
-const readResponsePayload = async (response) => {
-  const text = await response.text();
-
-  if (!text) {
-    return {};
-  }
-
-  return safeJsonParse(text) ?? { message: text };
-};
-
-const fetchJson = async (url) => {
-  const response = await window.fetch(url, {
-    headers: {
-      Accept: "application/json",
-    },
-  });
-  const payload = await readResponsePayload(response);
-
-  if (!response.ok || payload.success === false) {
-    throw new Error(translateText(payload.message ?? "Не удалось загрузить данные."));
-  }
-
-  return payload;
-};
-
-const postForm = async (url, payload) => {
-  const body = new URLSearchParams();
-
-  Object.entries(payload).forEach(([key, value]) => {
-    if (value === undefined || value === null) {
-      return;
-    }
-    body.set(key, String(value));
-  });
-
-  const response = await window.fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-      Accept: "application/json",
-    },
-    body: body.toString(),
-  });
-  const payloadResponse = await readResponsePayload(response);
-
-  if (!response.ok || payloadResponse.success === false) {
-    throw new Error(translateText(payloadResponse.message ?? "Не удалось сохранить изменения."));
-  }
-
-  return payloadResponse;
-};
-
-const loadCurrentStaff = async () => {
-  const response = await fetchJson("/api/auth/me");
-
-  if (!response.authenticated || response.user?.role !== "staff") {
-    throw new Error(translateText("Требуется вход сотрудника."));
-  }
-
-  return response.user;
-};
-
-const formatDate = (value) =>
-  value
-    ? new Intl.DateTimeFormat(getSiteLocale(), {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      }).format(new Date(value))
-    : "—";
-
-const formatAmount = (amount, currency = "KZT") => {
-  const numeric = Number(String(amount ?? "").replace(",", "."));
-  const suffix = currency === "KZT" ? "₸" : currency;
-
-  if (!Number.isFinite(numeric)) {
-    return amount ? `${amount} ${suffix}` : "—";
-  }
-
-  return `${new Intl.NumberFormat(getSiteLocale()).format(numeric)} ${suffix}`;
 };
 
 const escapeHtml = (value) =>
@@ -282,262 +65,509 @@ const escapeHtml = (value) =>
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
 
-const setMessage = (message, tone = "info") => {
-  if (!elements.note) {
-    return;
+const safeJsonParse = (value) => {
+  try {
+    return JSON.parse(value);
+  } catch (error) {
+    return null;
   }
-
-  elements.note.textContent = translateText(message);
-  elements.note.classList.remove("is-info", "is-success");
-  elements.note.classList.add(tone === "success" ? "is-success" : "is-info");
 };
 
-const getSelectedLead = () => leads.find((lead) => lead.id === selectedLeadId) ?? null;
+const readResponsePayload = async (response) => {
+  const text = await response.text();
+  return text ? safeJsonParse(text) ?? { message: text } : {};
+};
 
+const handleRequestError = (status, payload) => {
+  if (status === 401) {
+    window.location.href = "/staff-login.html?next=%2Fadmin.html";
+    return new Error("Требуется вход сотрудника.");
+  }
+  return new Error(payload.message || "Не удалось выполнить действие.");
+};
+
+const fetchJson = async (url) => {
+  const response = await fetch(url, { headers: { Accept: "application/json" } });
+  const payload = await readResponsePayload(response);
+  if (!response.ok || payload.success === false) {
+    throw handleRequestError(response.status, payload);
+  }
+  return payload;
+};
+
+const postForm = async (url, payload) => {
+  const body = new URLSearchParams();
+  Object.entries(payload).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      body.set(key, String(value));
+    }
+  });
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+      Accept: "application/json",
+    },
+    body: body.toString(),
+  });
+  const payloadResponse = await readResponsePayload(response);
+  if (!response.ok || payloadResponse.success === false) {
+    throw handleRequestError(response.status, payloadResponse);
+  }
+  return payloadResponse;
+};
+
+const normalizeLead = (lead = {}) => ({
+  id: lead.id ?? "",
+  status: lead.status ?? "Новый",
+  columnId: lead.columnId ?? "",
+  assignedToUserId: lead.assignedToUserId ?? "",
+  fullName: lead.fullName ?? "",
+  businessName: lead.businessName ?? "",
+  email: lead.email ?? "",
+  phone: lead.phone ?? "",
+  country: lead.country ?? "",
+  niche: lead.niche ?? "",
+  packageTier: lead.packageTier ?? "",
+  selectedTemplate: lead.selectedTemplate ?? "",
+  currentWebsite: lead.currentWebsite ?? "",
+  budgetRange: lead.budgetRange ?? "",
+  timeline: lead.timeline ?? "",
+  projectDetails: lead.projectDetails ?? "",
+  description: lead.description ?? "",
+  source: lead.source ?? "Сайт webcorn",
+  notes: lead.notes ?? "",
+  submittedAt: lead.submittedAt ?? "",
+  lastUpdatedAt: lead.lastUpdatedAt ?? "",
+  invoiceId: lead.invoiceId ?? "",
+  paymentStatus: lead.paymentStatus ?? "",
+  paymentAmount: lead.paymentAmount ?? "",
+  paymentCurrency: lead.paymentCurrency ?? "KZT",
+  paidAt: lead.paidAt ?? "",
+  orderStatus: lead.orderStatus ?? "",
+  cloudpaymentsTransactionId: lead.cloudpaymentsTransactionId ?? "",
+});
+
+const normalizeTask = (task = {}) => ({
+  id: task.id ?? "",
+  leadId: task.leadId ?? "",
+  title: task.title ?? "",
+  description: task.description ?? "",
+  status: task.status ?? TASK_STATUS_OPEN,
+  assignedToUserId: task.assignedToUserId ?? "",
+  createdByUserId: task.createdByUserId ?? "",
+  dueAt: task.dueAt ?? "",
+  completedAt: task.completedAt ?? "",
+  createdAt: task.createdAt ?? "",
+  lastUpdatedAt: task.lastUpdatedAt ?? "",
+});
+
+const normalizeColumn = (column = {}) => ({
+  id: column.id ?? "",
+  title: column.title ?? "",
+  sortOrder: Number(column.sortOrder ?? 0),
+  isDefault: Boolean(column.isDefault),
+});
+
+const normalizeUser = (user = {}) => ({
+  id: user.id ?? "",
+  role: user.role ?? "",
+  staffRole: user.staffRole ?? "",
+  fullName: user.fullName ?? "",
+  businessName: user.businessName ?? "",
+  email: user.email ?? "",
+});
+
+const formatDate = (value) =>
+  value
+    ? new Intl.DateTimeFormat("ru-RU", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(value))
+    : "—";
+
+const formatAmount = (amount, currency = "KZT") => {
+  const numeric = Number(String(amount ?? "").replace(",", "."));
+  const suffix = currency === "KZT" ? "₸" : currency;
+  return Number.isFinite(numeric) ? `${new Intl.NumberFormat("ru-RU").format(numeric)} ${suffix}` : "—";
+};
+
+const setMessage = (message, tone = "info") => {
+  elements.note.textContent = message;
+  elements.note.classList.toggle("is-success", tone === "success");
+  elements.note.classList.toggle("is-info", tone !== "success");
+};
+
+const isManager = () => state.currentUser?.staffRole === "manager";
+const isSales = () => state.currentUser?.staffRole === "sales";
+const canEditLeads = () => isManager() || isSales();
+
+const roleLabel = (role) =>
+  ({ manager: "Менеджер", sales: "Продажник", developer: "Разработчик" })[role] || "Сотрудник";
+
+const getSelectedLead = () => state.leads.find((lead) => lead.id === state.selectedLeadId) ?? null;
+const getUser = (id) => state.users.find((user) => user.id === id) ?? null;
+const getUserLabel = (id) => {
+  const user = getUser(id);
+  return user ? user.fullName || user.email : "Не назначен";
+};
 const getPaymentStatus = (lead) => lead.paymentStatus || lead.orderStatus || "";
+const getLeadTasks = (leadId) => state.tasks.filter((task) => task.leadId === leadId);
+const getOpenTaskCount = (leadId) => getLeadTasks(leadId).filter((task) => task.status !== TASK_STATUS_DONE).length;
+const todayDate = () => new Date().toISOString().slice(0, 10);
+const isOverdue = (task) => task.status !== TASK_STATUS_DONE && task.dueAt && task.dueAt < todayDate();
+
+const getFallbackColumnId = () => state.columns[0]?.id ?? "";
+const getLeadColumnId = (lead) => {
+  if (state.columns.some((column) => column.id === lead.columnId)) {
+    return lead.columnId;
+  }
+  return state.columns.find((column) => column.title === lead.status)?.id || getFallbackColumnId();
+};
 
 const getFilteredLeads = () => {
-  const searchTerm = elements.search?.value.trim().toLowerCase() ?? "";
-  const statusValue = elements.filter?.value ?? "Все";
-
-  return leads.filter((lead) => {
-    const matchesStatus = statusValue === "Все" ? true : lead.status === statusValue;
+  const term = elements.search?.value.trim().toLowerCase() ?? "";
+  const assignee = elements.assigneeFilter?.value ?? "all";
+  return state.leads.filter((lead) => {
     const haystack = [
       lead.fullName,
       lead.businessName,
       lead.email,
+      lead.phone,
       lead.niche,
       lead.packageTier,
       lead.selectedTemplate,
       lead.invoiceId,
-      getPaymentStatus(lead),
     ]
       .join(" ")
       .toLowerCase();
-
-    return matchesStatus && (searchTerm ? haystack.includes(searchTerm) : true);
+    const matchesAssignee = assignee === "all" ? true : (lead.assignedToUserId || "none") === assignee;
+    return matchesAssignee && (term ? haystack.includes(term) : true);
   });
+};
+
+const renderAssigneeOptions = (select, selected = "") => {
+  if (!select) {
+    return;
+  }
+  select.innerHTML = `<option value="">Не назначен</option>${state.users
+    .map(
+      (user) =>
+        `<option value="${escapeHtml(user.id)}"${user.id === selected ? " selected" : ""}>${escapeHtml(
+          user.fullName || user.email
+        )} · ${escapeHtml(roleLabel(user.staffRole))}</option>`
+    )
+    .join("")}`;
+};
+
+const renderColumnOptions = () => {
+  elements.leadColumn.innerHTML = state.columns
+    .map((column) => `<option value="${escapeHtml(column.id)}">${escapeHtml(column.title)}</option>`)
+    .join("");
+};
+
+const renderFilters = () => {
+  const selected = elements.assigneeFilter.value || "all";
+  elements.assigneeFilter.innerHTML = `<option value="all"${selected === "all" ? " selected" : ""}>Все ответственные</option><option value="none"${
+    selected === "none" ? " selected" : ""
+  }>Не назначен</option>${state.users
+    .map(
+      (user) =>
+        `<option value="${escapeHtml(user.id)}"${user.id === selected ? " selected" : ""}>${escapeHtml(
+          user.fullName || user.email
+        )}</option>`
+    )
+    .join("")}`;
 };
 
 const updateSummary = () => {
-  elements.total.textContent = String(leads.length);
-  elements.fresh.textContent = String(leads.filter((lead) => lead.status === "Новый").length);
+  const myOpenTasks = state.tasks.filter(
+    (task) => task.assignedToUserId === state.currentUser?.id && task.status !== TASK_STATUS_DONE
+  );
+  elements.total.textContent = String(state.leads.length);
+  elements.fresh.textContent = String(state.leads.filter((lead) => lead.status === "Новый").length);
   elements.active.textContent = String(
-    leads.filter((lead) => ["Контакт", "КП отправлено", "В работе"].includes(lead.status)).length
+    state.leads.filter((lead) => ["Контакт", "КП отправлено", "В работе"].includes(lead.status)).length
   );
   elements.won.textContent = String(
-    leads.filter((lead) => getPaymentStatus(lead) === ORDER_STATUS_PAID || lead.status === "Успешно").length
+    state.leads.filter((lead) => getPaymentStatus(lead) === ORDER_STATUS_PAID || lead.status === "Успешно").length
   );
+  elements.myTasks.textContent = String(myOpenTasks.length);
+  elements.overdueTasks.textContent = String(myOpenTasks.filter(isOverdue).length);
 };
 
-const renderStatusChips = () => {
-  if (!elements.chips) {
-    return;
-  }
-
-  elements.chips.innerHTML = "";
-  STATUSES.forEach((status) => {
-    const chip = document.createElement("span");
-    chip.className = "status-chip";
-    chip.textContent = `${translateText(status)} · ${leads.filter((lead) => lead.status === status).length}`;
-    elements.chips.appendChild(chip);
+const renderTabs = () => {
+  document.querySelectorAll("[data-view-tab]").forEach((tab) => {
+    tab.classList.toggle("is-active", tab.dataset.viewTab === state.activeView);
+  });
+  document.querySelectorAll("[data-view]").forEach((view) => {
+    view.classList.toggle("is-active", view.dataset.view === state.activeView);
   });
 };
 
-const getPaymentPillClass = (status) => {
-  if (status === ORDER_STATUS_PAID) {
-    return "payment-pill payment-pill--paid";
+const renderKanban = () => {
+  const filteredLeads = getFilteredLeads();
+  if (!state.columns.length) {
+    elements.kanban.innerHTML = `<article class="crm-empty"><strong>Колонки не настроены</strong><p>Менеджер может добавить колонки в настройках.</p></article>`;
+    return;
   }
 
-  if (status === "Ожидает оплаты") {
-    return "payment-pill payment-pill--pending";
-  }
-
-  if (status === "Ошибка оплаты") {
-    return "payment-pill payment-pill--failed";
-  }
-
-  return "payment-pill";
+  elements.kanban.innerHTML = state.columns
+    .map((column, index) => {
+      const columnLeads = filteredLeads.filter((lead) => getLeadColumnId(lead) === column.id);
+      const cards = columnLeads.length
+        ? columnLeads
+            .map((lead) => {
+              const payment = getPaymentStatus(lead);
+              const taskCount = getOpenTaskCount(lead.id);
+              return `<article class="kanban-card${lead.id === state.selectedLeadId ? " is-active" : ""}" data-lead-id="${escapeHtml(
+                lead.id
+              )}">
+                <div class="kanban-card__head">
+                  <strong>${escapeHtml(lead.businessName || lead.fullName || lead.email || lead.id)}</strong>
+                  <span>${escapeHtml(lead.id)}</span>
+                </div>
+                <p>${escapeHtml(lead.projectDetails || "Описание заявки не добавлено.")}</p>
+                <div class="lead-item__meta">
+                  <span class="lead-item__tag">${escapeHtml(lead.niche || "Без ниши")}</span>
+                  <span class="lead-item__tag">${escapeHtml(getUserLabel(lead.assignedToUserId))}</span>
+                  <span class="lead-item__tag">${taskCount} задач</span>
+                  ${payment ? `<span class="payment-pill">${escapeHtml(payment)}</span>` : ""}
+                </div>
+                <div class="kanban-card__actions">
+                  <button type="button" data-move-lead="${escapeHtml(lead.id)}" data-column-index="${index - 1}" ${
+                    !canEditLeads() || index === 0 ? "disabled" : ""
+                  }>Назад</button>
+                  <button type="button" data-move-lead="${escapeHtml(lead.id)}" data-column-index="${index + 1}" ${
+                    !canEditLeads() || index === state.columns.length - 1 ? "disabled" : ""
+                  }>Дальше</button>
+                </div>
+              </article>`;
+            })
+            .join("")
+        : `<article class="crm-empty crm-empty--compact"><strong>Пусто</strong><p>Лиды появятся после заявки или смены колонки.</p></article>`;
+      return `<section class="kanban-column">
+        <header><strong>${escapeHtml(column.title)}</strong><span>${columnLeads.length}</span></header>
+        <div class="kanban-column__body">${cards}</div>
+      </section>`;
+    })
+    .join("");
 };
 
 const renderLeadList = () => {
-  if (!elements.list) {
-    return;
-  }
-
-  const filtered = getFilteredLeads();
-  elements.list.innerHTML = "";
-
-  if (!filtered.length) {
-    elements.list.innerHTML = `
-      <article class="lead-item">
-        <div class="lead-item__head"><strong>${escapeHtml(translateText("Ничего не найдено"))}</strong></div>
-        <p class="lead-item__company">${escapeHtml(
-          translateText("Измените статус-фильтр или поисковый запрос.")
-        )}</p>
-      </article>
-    `;
-    return;
-  }
-
-  if (!filtered.some((lead) => lead.id === selectedLeadId)) {
-    selectedLeadId = filtered[0].id;
-  }
-
-  filtered.forEach((lead) => {
-    const paymentStatus = getPaymentStatus(lead);
-    const paymentBadge = paymentStatus
-      ? `<span class="${getPaymentPillClass(paymentStatus)}">${escapeHtml(translateText(paymentStatus))}</span>`
-      : "";
-    const invoiceTag = lead.invoiceId
-      ? `<span class="lead-item__tag">Invoice ${escapeHtml(lead.invoiceId)}</span>`
-      : "";
-
-    const item = document.createElement("article");
-    item.className = `lead-item${lead.id === selectedLeadId ? " is-active" : ""}`;
-    item.innerHTML = `
-      <div class="lead-item__head">
-        <strong>${escapeHtml(lead.fullName || lead.businessName || lead.email)}</strong>
-        <span class="status-pill">${escapeHtml(translateText(lead.status))}</span>
-      </div>
-      <p class="lead-item__company">${escapeHtml(
-        lead.businessName || translateText("Без названия компании")
-      )}</p>
-      <div class="lead-item__meta">
-        <span class="lead-item__tag">${escapeHtml(
-          lead.niche ? translateText(lead.niche) : translateText("Без ниши")
-        )}</span>
-        <span class="lead-item__tag">${escapeHtml(
-          lead.packageTier ? translateText(lead.packageTier) : translateText("Без пакета")
-        )}</span>
-        <span class="lead-item__tag">${escapeHtml(
-          lead.selectedTemplate ? translateText(lead.selectedTemplate) : translateText("Без шаблона")
-        )}</span>
-        ${invoiceTag}
-        ${paymentBadge}
-      </div>
-      <div class="lead-item__foot">
-        <span>${escapeHtml(lead.id)}</span>
-        <span>${formatDate(lead.submittedAt)}</span>
-      </div>
-    `;
-
-    item.addEventListener("click", () => {
-      selectedLeadId = lead.id;
-      renderLeadList();
-      renderLeadDetail();
-    });
-
-    elements.list.appendChild(item);
-  });
+  const leads = getFilteredLeads();
+  elements.leadList.innerHTML = leads.length
+    ? leads
+        .map(
+          (lead) => `<article class="lead-item${lead.id === state.selectedLeadId ? " is-active" : ""}" data-lead-id="${escapeHtml(
+            lead.id
+          )}">
+            <div class="lead-item__head"><strong>${escapeHtml(
+              lead.businessName || lead.fullName || lead.email || lead.id
+            )}</strong><span class="status-pill">${escapeHtml(
+              state.columns.find((column) => column.id === getLeadColumnId(lead))?.title || lead.status
+            )}</span></div>
+            <p class="lead-item__company">${escapeHtml(lead.projectDetails || "Описание не добавлено.")}</p>
+            <div class="lead-item__meta"><span class="lead-item__tag">${escapeHtml(
+              lead.niche || "Без ниши"
+            )}</span><span class="lead-item__tag">${escapeHtml(getUserLabel(lead.assignedToUserId))}</span></div>
+          </article>`
+        )
+        .join("")
+    : `<article class="crm-empty"><strong>Лидов не найдено</strong><p>Измените поиск или фильтр.</p></article>`;
 };
 
 const renderLeadDetail = () => {
   const lead = getSelectedLead();
+  renderColumnOptions();
+  renderAssigneeOptions(elements.leadAssignee, lead?.assignedToUserId ?? "");
+  renderAssigneeOptions(elements.taskForm?.elements.assignedToUserId, state.currentUser?.id ?? "");
+
+  const leadControls = [elements.leadColumn, elements.leadAssignee, elements.leadDescription];
+  leadControls.forEach((control) => {
+    if (control) {
+      control.disabled = !canEditLeads();
+    }
+  });
 
   if (!lead) {
-    elements.detailTitle.textContent = translateMessage("chooseLead", "Выберите лид");
-    elements.detailClient.textContent = translateMessage("leadNotSelected", "Лид не выбран");
-    elements.detailCompany.textContent = translateMessage("openLeadLeft", "Откройте карточку слева.");
-    elements.detailEmail.textContent = "—";
-    elements.detailPhone.textContent = "—";
-    elements.detailNiche.textContent = "—";
-    elements.detailPackage.textContent = "—";
-    elements.detailTemplate.textContent = "—";
-    elements.detailCountry.textContent = "—";
-    elements.detailBudget.textContent = "—";
-    elements.detailTimeline.textContent = "—";
-    elements.detailPaymentStatus.textContent = "—";
-    elements.detailInvoice.textContent = "—";
-    elements.detailPaymentAmount.textContent = "—";
-    elements.detailCurrentSite.textContent = "—";
-    elements.detailProject.textContent = "—";
-    elements.detailMeta.textContent = "—";
+    elements.detailTitle.textContent = "Выберите лид";
+    elements.detailClient.textContent = "Лид не выбран";
+    elements.detailCompany.textContent = "Откройте карточку в канбане или списке.";
+    [
+      elements.detailEmail,
+      elements.detailPhone,
+      elements.detailNiche,
+      elements.detailPackage,
+      elements.detailTemplate,
+      elements.detailCountry,
+      elements.detailBudget,
+      elements.detailTimeline,
+      elements.detailPaymentStatus,
+      elements.detailPaymentAmount,
+      elements.detailCurrentSite,
+      elements.detailProject,
+      elements.detailMeta,
+    ].forEach((node) => (node.textContent = "—"));
     elements.notes.value = "";
+    elements.leadDescription.value = "";
+    elements.leadTaskList.innerHTML = `<article class="crm-empty crm-empty--compact"><strong>Нет выбранного лида</strong><p>Выберите лид, чтобы создать задачу.</p></article>`;
+    elements.taskForm.hidden = true;
     return;
   }
 
-  const paymentStatus = getPaymentStatus(lead);
-  const metaParts = [
-    lead.source ? translateText(lead.source) : "",
-    formatDate(lead.submittedAt),
-    translateMessage("metaUpdated", `обновлено ${formatDate(lead.lastUpdatedAt)}`, {
-      date: formatDate(lead.lastUpdatedAt),
-    }),
-  ];
-
-  if (lead.paidAt) {
-    metaParts.push(
-      translateMessage("metaPaid", `оплачено ${formatDate(lead.paidAt)}`, {
-        date: formatDate(lead.paidAt),
-      })
-    );
-  }
-
-  if (lead.cloudpaymentsTransactionId) {
-    metaParts.push(
-      translateMessage("metaTransaction", `транзакция ${lead.cloudpaymentsTransactionId}`, {
-        id: lead.cloudpaymentsTransactionId,
-      })
-    );
-  }
-
-  elements.detailTitle.textContent =
-    lead.businessName || lead.fullName || translateMessage("cardTitleDefault", "Карточка лида");
-  elements.detailClient.textContent = lead.fullName || translateMessage("nameMissing", "Имя не указано");
-  elements.detailCompany.textContent = `${lead.businessName || translateText("Без названия")} · ${lead.id}`;
+  elements.taskForm.hidden = false;
+  elements.detailTitle.textContent = lead.businessName || lead.fullName || "Карточка лида";
+  elements.detailClient.textContent = lead.fullName || "Имя не указано";
+  elements.detailCompany.textContent = `${lead.businessName || "Без названия"} · ${lead.id}`;
   elements.detailEmail.textContent = lead.email || "—";
   elements.detailPhone.textContent = lead.phone || "—";
-  elements.detailNiche.textContent = lead.niche ? translateText(lead.niche) : "—";
-  elements.detailPackage.textContent = lead.packageTier ? translateText(lead.packageTier) : "—";
-  elements.detailTemplate.textContent = lead.selectedTemplate ? translateText(lead.selectedTemplate) : "—";
+  elements.detailNiche.textContent = lead.niche || "—";
+  elements.detailPackage.textContent = lead.packageTier || "—";
+  elements.detailTemplate.textContent = lead.selectedTemplate || "—";
   elements.detailCountry.textContent = lead.country || "—";
   elements.detailBudget.textContent = lead.budgetRange || "—";
   elements.detailTimeline.textContent = lead.timeline || "—";
-  elements.detailPaymentStatus.textContent = paymentStatus
-    ? translateText(paymentStatus)
-    : translateMessage("unpaid", "Не оплачено");
-  elements.detailInvoice.textContent = lead.invoiceId || "—";
-  elements.detailPaymentAmount.textContent = lead.paymentAmount
-    ? formatAmount(lead.paymentAmount, lead.paymentCurrency || "KZT")
-    : "—";
-  elements.detailCurrentSite.textContent = lead.currentWebsite || translateMessage("notSpecified", "Не указан");
-  elements.detailProject.textContent =
-    lead.projectDetails || translateMessage("descriptionMissing", "Описание не добавлено");
-  elements.detailMeta.textContent = metaParts.filter(Boolean).join(" · ");
-  elements.notes.value = lead.notes || "";
-  elements.status.value = lead.status;
+  elements.detailPaymentStatus.textContent = getPaymentStatus(lead) || "Не оплачено";
+  elements.detailPaymentAmount.textContent = lead.paymentAmount ? formatAmount(lead.paymentAmount, lead.paymentCurrency) : "—";
+  elements.detailCurrentSite.textContent = lead.currentWebsite || "Не указан";
+  elements.detailProject.textContent = lead.projectDetails || "Описание не добавлено";
+  elements.detailMeta.textContent = [lead.source, formatDate(lead.submittedAt), `обновлено ${formatDate(lead.lastUpdatedAt)}`]
+    .filter(Boolean)
+    .join(" · ");
+  elements.leadColumn.value = getLeadColumnId(lead);
+  elements.leadAssignee.value = lead.assignedToUserId;
+  elements.leadDescription.value = lead.description;
+  elements.notes.value = lead.notes;
+  renderLeadTasks();
 };
 
-const updateLeadLocally = (id, patch) => {
-  leads = leads.map((lead) =>
-    lead.id === id
-      ? normalizeLead({
-          ...lead,
-          ...patch,
-          lastUpdatedAt: new Date().toISOString(),
-        })
-      : lead
-  );
-  saveStoredLeads(leads);
-  return getSelectedLead();
+const taskCard = (task, options = {}) => {
+  const lead = state.leads.find((item) => item.id === task.leadId);
+  const done = task.status === TASK_STATUS_DONE;
+  return `<article class="task-card${done ? " is-done" : ""}${isOverdue(task) ? " is-overdue" : ""}" data-task-id="${escapeHtml(
+    task.id
+  )}">
+    <div class="task-card__head">
+      <div><strong>${escapeHtml(task.title)}</strong><span>${escapeHtml(
+        options.showLead && lead ? lead.businessName || lead.fullName || lead.id : getUserLabel(task.assignedToUserId)
+      )}</span></div>
+      <button type="button" data-toggle-task="${escapeHtml(task.id)}">${done ? "Вернуть" : "Выполнить"}</button>
+    </div>
+    <textarea data-task-description="${escapeHtml(task.id)}" aria-label="Описание задачи">${escapeHtml(
+      task.description
+    )}</textarea>
+    <div class="task-card__foot">
+      <span>${task.dueAt ? `срок ${escapeHtml(formatDate(task.dueAt))}` : "без срока"}</span>
+      <button type="button" data-save-task="${escapeHtml(task.id)}">Сохранить описание</button>
+    </div>
+  </article>`;
 };
 
-const persistLeadUpdate = async (id, patch) => {
-  if (!usesServer) {
-    return updateLeadLocally(id, patch);
+const renderLeadTasks = () => {
+  const lead = getSelectedLead();
+  const tasks = lead ? getLeadTasks(lead.id) : [];
+  elements.leadTaskList.innerHTML = tasks.length
+    ? tasks.map((task) => taskCard(task)).join("")
+    : `<article class="crm-empty crm-empty--compact"><strong>Задач пока нет</strong><p>Создайте задачу для продажника или разработчика.</p></article>`;
+};
+
+const renderMyTasks = () => {
+  const filter = elements.taskFilter?.value ?? TASK_STATUS_OPEN;
+  const tasks = state.tasks.filter((task) => {
+    const isMine = task.assignedToUserId === state.currentUser?.id;
+    const matchesFilter = filter === "all" ? true : task.status === filter;
+    return isMine && matchesFilter;
+  });
+  elements.myTaskList.innerHTML = tasks.length
+    ? tasks.map((task) => taskCard(task, { showLead: true })).join("")
+    : `<article class="crm-empty"><strong>Задач нет</strong><p>Когда вам назначат задачу, она появится здесь.</p></article>`;
+};
+
+const renderStaff = () => {
+  elements.staffForm.hidden = !isManager();
+  elements.staffList.innerHTML = state.users
+    .map(
+      (user) => `<article class="staff-card"><strong>${escapeHtml(user.fullName || user.email)}</strong><span>${escapeHtml(
+        user.email
+      )}</span><em>${escapeHtml(roleLabel(user.staffRole))}</em></article>`
+    )
+    .join("");
+  if (!isManager()) {
+    elements.staffList.insertAdjacentHTML(
+      "afterbegin",
+      `<article class="crm-empty crm-empty--compact"><strong>Добавление сотрудников защищено</strong><p>Новых пользователей может добавлять только менеджер.</p></article>`
+    );
   }
+};
 
+const renderColumns = () => {
+  elements.columnForm.hidden = !isManager();
+  elements.columnList.innerHTML = state.columns
+    .map(
+      (column, index) => `<article class="column-card" data-column-id="${escapeHtml(column.id)}">
+        <input type="text" value="${escapeHtml(column.title)}" data-column-title="${escapeHtml(column.id)}" ${
+        isManager() ? "" : "disabled"
+      } />
+        <span>Порядок ${index + 1}</span>
+        <button type="button" data-save-column="${escapeHtml(column.id)}" ${isManager() ? "" : "disabled"}>Сохранить</button>
+        <button type="button" data-delete-column="${escapeHtml(column.id)}" ${
+        isManager() && !column.isDefault ? "" : "disabled"
+      }>Удалить</button>
+      </article>`
+    )
+    .join("");
+  if (!isManager()) {
+    elements.columnList.insertAdjacentHTML(
+      "afterbegin",
+      `<article class="crm-empty crm-empty--compact"><strong>Колонки защищены</strong><p>Настраивать канбан может только менеджер.</p></article>`
+    );
+  }
+};
+
+const renderAll = () => {
+  updateSummary();
+  renderTabs();
+  renderFilters();
+  renderKanban();
+  renderLeadList();
+  renderLeadDetail();
+  renderMyTasks();
+  renderStaff();
+  renderColumns();
+};
+
+const replaceLead = (lead) => {
+  const normalized = normalizeLead(lead);
+  state.leads = state.leads.map((item) => (item.id === normalized.id ? normalized : item));
+};
+
+const replaceTask = (task) => {
+  const normalized = normalizeTask(task);
+  state.tasks = state.tasks.some((item) => item.id === normalized.id)
+    ? state.tasks.map((item) => (item.id === normalized.id ? normalized : item))
+    : [normalized, ...state.tasks];
+};
+
+const updateLead = async (id, patch) => {
   const response = await postForm("/api/crm/leads/update", { id, ...patch });
-  const updatedLead = normalizeLead(response.lead ?? {});
-  leads = leads.map((lead) => (lead.id === id ? updatedLead : lead));
-  return updatedLead;
+  replaceLead(response.lead);
+  renderAll();
+};
+
+const updateTask = async (id, patch) => {
+  const response = await postForm("/api/crm/tasks/update", { id, ...patch });
+  replaceTask(response.task);
+  renderAll();
 };
 
 const initEvents = () => {
-  elements.search?.addEventListener("input", renderLeadList);
-  elements.filter?.addEventListener("change", renderLeadList);
-  elements.logout?.addEventListener("click", async () => {
+  document.querySelectorAll("[data-view-tab]").forEach((tab) => {
+    tab.addEventListener("click", () => {
+      state.activeView = tab.dataset.viewTab;
+      renderTabs();
+    });
+  });
+
+  elements.logout.addEventListener("click", async () => {
     try {
       await postForm("/api/auth/logout", {});
     } finally {
@@ -545,120 +575,164 @@ const initEvents = () => {
     }
   });
 
-  elements.status?.addEventListener("change", async () => {
-    const lead = getSelectedLead();
+  elements.search.addEventListener("input", renderAll);
+  elements.assigneeFilter.addEventListener("change", renderAll);
+  elements.taskFilter.addEventListener("change", renderMyTasks);
 
-    if (!lead) {
-      return;
-    }
+  document.addEventListener("click", async (event) => {
+    const leadCard = event.target.closest("[data-lead-id]");
+    const moveButton = event.target.closest("[data-move-lead]");
+    const toggleTaskButton = event.target.closest("[data-toggle-task]");
+    const saveTaskButton = event.target.closest("[data-save-task]");
+    const saveColumnButton = event.target.closest("[data-save-column]");
+    const deleteColumnButton = event.target.closest("[data-delete-column]");
 
     try {
-      await persistLeadUpdate(lead.id, { status: elements.status.value });
-      setMessage(
-        translateMessage(
-          "statusUpdated",
-          `Статус обновлен: ${lead.businessName || lead.fullName} → ${elements.status.value}.`,
-          {
-            name: lead.businessName || lead.fullName,
-            status: translateText(elements.status.value),
-          }
-        ),
-        "success"
-      );
-      renderStatusChips();
-      renderLeadList();
-      renderLeadDetail();
-      updateSummary();
+      if (moveButton) {
+        event.stopPropagation();
+        const column = state.columns[Number(moveButton.dataset.columnIndex)];
+        if (column) {
+          await updateLead(moveButton.dataset.moveLead, { columnId: column.id, status: column.title });
+          setMessage("Лид перемещен по канбану.", "success");
+        }
+        return;
+      }
+      if (leadCard) {
+        state.selectedLeadId = leadCard.dataset.leadId;
+        renderAll();
+        return;
+      }
+      if (toggleTaskButton) {
+        const task = state.tasks.find((item) => item.id === toggleTaskButton.dataset.toggleTask);
+        await updateTask(task.id, { status: task.status === TASK_STATUS_DONE ? TASK_STATUS_OPEN : TASK_STATUS_DONE });
+        setMessage("Статус задачи обновлен.", "success");
+        return;
+      }
+      if (saveTaskButton) {
+        const taskId = saveTaskButton.dataset.saveTask;
+        const textarea = document.querySelector(`[data-task-description="${taskId}"]`);
+        await updateTask(taskId, { description: textarea?.value ?? "" });
+        setMessage("Описание задачи сохранено.", "success");
+        return;
+      }
+      if (saveColumnButton) {
+        const columnId = saveColumnButton.dataset.saveColumn;
+        const input = document.querySelector(`[data-column-title="${columnId}"]`);
+        const response = await postForm("/api/crm/columns/update", { id: columnId, title: input?.value ?? "" });
+        const updated = normalizeColumn(response.column);
+        state.columns = state.columns.map((column) => (column.id === updated.id ? updated : column));
+        renderAll();
+        setMessage("Колонка сохранена.", "success");
+        return;
+      }
+      if (deleteColumnButton) {
+        await postForm("/api/crm/columns/delete", { id: deleteColumnButton.dataset.deleteColumn });
+        await bootstrap();
+        setMessage("Колонка удалена, лиды перенесены в первую колонку.", "success");
+      }
     } catch (error) {
-      setMessage(error.message || translateMessage("statusUpdateFailed", "Не удалось обновить статус."), "info");
-      renderLeadDetail();
+      setMessage(error.message, "info");
     }
   });
 
-  elements.saveNotes?.addEventListener("click", async () => {
+  elements.saveLead.addEventListener("click", async () => {
     const lead = getSelectedLead();
-
     if (!lead) {
       return;
     }
-
+    const column = state.columns.find((item) => item.id === elements.leadColumn.value);
+    const patch = {
+      notes: elements.notes.value,
+      columnId: elements.leadColumn.value,
+      status: column?.title || lead.status,
+      assignedToUserId: elements.leadAssignee.value,
+      description: elements.leadDescription.value,
+    };
+    if (!canEditLeads()) {
+      delete patch.columnId;
+      delete patch.status;
+      delete patch.assignedToUserId;
+      delete patch.description;
+    }
     try {
-      await persistLeadUpdate(lead.id, { notes: elements.notes.value.trim() });
-      setMessage(
-        translateMessage("notesSaved", `Заметки сохранены для ${lead.businessName || lead.fullName}.`, {
-          name: lead.businessName || lead.fullName,
-        }),
-        "success"
-      );
-      renderLeadDetail();
+      await updateLead(lead.id, patch);
+      setMessage("Карточка лида сохранена.", "success");
     } catch (error) {
-      setMessage(error.message || translateMessage("notesSaveFailed", "Не удалось сохранить заметки."), "info");
+      setMessage(error.message, "info");
     }
   });
 
-  window.addEventListener("storage", (event) => {
-    if (usesServer || event.key !== LEADS_STORAGE_KEY) {
+  elements.taskForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const lead = getSelectedLead();
+    if (!lead) {
       return;
     }
-
-    leads = getStoredLeads();
-    if (!leads.some((lead) => lead.id === selectedLeadId)) {
-      selectedLeadId = leads[0]?.id ?? null;
+    const values = Object.fromEntries(new FormData(elements.taskForm).entries());
+    try {
+      const response = await postForm("/api/crm/tasks/create", { ...values, leadId: lead.id });
+      replaceTask(response.task);
+      elements.taskForm.reset();
+      renderAll();
+      setMessage("Задача добавлена к лиду.", "success");
+    } catch (error) {
+      setMessage(error.message, "info");
     }
-    updateSummary();
-    renderStatusChips();
-    renderLeadList();
-    renderLeadDetail();
-    setMessage(translateMessage("crmUpdated", "CRM обновлена: появились новые данные из сайта."), "info");
+  });
+
+  elements.staffForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const values = Object.fromEntries(new FormData(elements.staffForm).entries());
+    try {
+      const response = await postForm("/api/crm/users/create", values);
+      state.users = [...state.users, normalizeUser(response.user)];
+      elements.staffForm.reset();
+      renderAll();
+      setMessage("Сотрудник добавлен.", "success");
+    } catch (error) {
+      setMessage(error.message, "info");
+    }
+  });
+
+  elements.columnForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const values = Object.fromEntries(new FormData(elements.columnForm).entries());
+    try {
+      const response = await postForm("/api/crm/columns/create", values);
+      state.columns = [...state.columns, normalizeColumn(response.column)].sort((a, b) => a.sortOrder - b.sortOrder);
+      elements.columnForm.reset();
+      renderAll();
+      setMessage("Колонка добавлена.", "success");
+    } catch (error) {
+      setMessage(error.message, "info");
+    }
   });
 };
 
-const loadInitialLeads = async () => {
-  try {
-    const response = await fetchJson("/api/crm/leads");
-    usesServer = true;
-    setMessage(
-      translateMessage("crmConnected", "CRM подключена к серверным заявкам и статусам."),
-      "success"
-    );
-    return (response.leads ?? []).map(normalizeLead);
-  } catch (error) {
-    usesServer = false;
-    throw error;
+const bootstrap = async () => {
+  const payload = await fetchJson("/api/crm/bootstrap");
+  state.currentUser = normalizeUser(payload.user);
+  state.users = (payload.users ?? []).map(normalizeUser);
+  state.columns = (payload.columns ?? []).map(normalizeColumn).sort((a, b) => a.sortOrder - b.sortOrder);
+  state.leads = (payload.leads ?? []).map(normalizeLead);
+  state.tasks = (payload.tasks ?? []).map(normalizeTask);
+  if (!state.leads.some((lead) => lead.id === state.selectedLeadId)) {
+    state.selectedLeadId = state.leads[0]?.id ?? null;
   }
+  elements.staffName.textContent = `${state.currentUser.fullName || state.currentUser.email} · ${roleLabel(
+    state.currentUser.staffRole
+  )}`;
+  setMessage("CRM подключена к серверным данным.", "success");
+  renderAll();
 };
 
 const initDashboard = async () => {
   try {
-    const staff = await loadCurrentStaff();
-    if (elements.staffName) {
-      elements.staffName.textContent = staff.fullName || staff.email || "Сотрудник";
-    }
+    await bootstrap();
+    initEvents();
   } catch (error) {
-    window.location.href = "/staff-login.html?next=%2Fadmin.html";
-    return;
+    setMessage(error.message || "Не удалось загрузить CRM.", "info");
   }
-
-  try {
-    leads = await loadInitialLeads();
-  } catch (error) {
-    leads = [];
-    setMessage(error.message || translateMessage("crmUnavailable", "Не удалось загрузить CRM."), "info");
-  }
-
-  selectedLeadId = leads[0]?.id ?? null;
-  updateSummary();
-  renderStatusChips();
-  renderLeadList();
-  renderLeadDetail();
-  initEvents();
 };
-
-window.addEventListener("webfactory:languagechange", () => {
-  updateSummary();
-  renderStatusChips();
-  renderLeadList();
-  renderLeadDetail();
-});
 
 void initDashboard();
