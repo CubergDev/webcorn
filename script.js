@@ -490,11 +490,11 @@ const initSpaceScene = async () => {
 
     const narrowScreen = window.innerWidth < 760;
     const baseScale = narrowScreen ? 0.9 : 1.18;
-    const scaleBoost = narrowScreen ? 0.24 : 0.42;
+    const scaleBoost = narrowScreen ? 0.62 : 1.08;
 
     camera.position.x = 0;
     camera.position.y = 0.16 - eased * 0.04;
-    camera.position.z = 8.65 - eased * 0.58;
+    camera.position.z = 8.65 - eased * 0.9;
     camera.lookAt(0, -0.04, -5.3);
 
     autoRotationY += 0.00078;
@@ -508,7 +508,7 @@ const initSpaceScene = async () => {
     saturnGroup.rotation.z = -0.115 - eased * 0.012;
     saturnGroup.position.x = 0;
     saturnGroup.position.y = (narrowScreen ? -0.28 : -0.12) + eased * 0.03;
-    saturnGroup.position.z = -5.35 + eased * 0.1;
+    saturnGroup.position.z = -5.35 + eased * 0.18;
     saturnGroup.scale.setScalar(baseScale + eased * scaleBoost);
     glow.position.x = saturnGroup.position.x;
     glow.position.y = saturnGroup.position.y;
