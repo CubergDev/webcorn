@@ -100,9 +100,14 @@ h3 {
 }
 
 #blackhole-scene {
-  --hole-scale: 0.98;
+  --hole-scale: 1;
   --hole-shift-y: 22px;
-  --hole-opacity: 0.84;
+  --hole-opacity: 0.92;
+  --blackhole-disk-scale-x: 1.3;
+  --blackhole-disk-scale-y: 0.33;
+  --blackhole-glow-scale-x: 1.16;
+  --blackhole-glow-scale-y: 0.24;
+  --blackhole-tilt: -22deg;
   position: fixed;
   inset: 0;
   z-index: 0;
@@ -130,24 +135,44 @@ h3 {
 
 #blackhole-scene::after {
   background:
-    radial-gradient(circle at 50% 46%, rgba(255, 198, 133, 0.16), transparent 12%),
-    radial-gradient(circle at 50% 46%, rgba(255, 150, 86, 0.08), transparent 28%),
-    radial-gradient(circle at 50% 46%, transparent 0%, rgba(2, 4, 10, 0.12) 52%, rgba(2, 4, 10, 0.64) 100%);
+    radial-gradient(circle at 50% 46%, rgba(255, 194, 122, 0.12), transparent 10%),
+    radial-gradient(circle at 50% 46%, rgba(255, 136, 74, 0.06), transparent 22%),
+    radial-gradient(circle at 50% 46%, transparent 0%, rgba(2, 4, 10, 0.06) 48%, rgba(2, 4, 10, 0.58) 100%);
 }
 
 #blackhole-scene.is-reduced-motion .blackhole-rotator {
-  animation-duration: 78s;
+  animation: none;
+}
+
+#blackhole-scene.is-reduced-motion .blackhole-disk--base {
+  animation-duration: 52s;
+}
+
+#blackhole-scene.is-reduced-motion .blackhole-disk--glow {
+  animation-duration: 42s;
 }
 
 .blackhole-stage {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: min(132vw, 1780px);
+  width: min(118vw, 1560px);
   aspect-ratio: 1;
   transform: translate3d(-50%, calc(-50% + var(--hole-shift-y)), 0) scale(var(--hole-scale));
   opacity: var(--hole-opacity);
   will-change: transform, opacity;
+}
+
+.blackhole-stage::before {
+  content: "";
+  position: absolute;
+  inset: 37%;
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 1px rgba(255, 228, 190, 0.08),
+    0 0 56px rgba(255, 181, 108, 0.12),
+    0 0 112px rgba(255, 138, 74, 0.08);
+  filter: blur(8px);
 }
 
 .blackhole-rotator {
@@ -155,7 +180,6 @@ h3 {
   width: 100%;
   height: 100%;
   transform-origin: center;
-  animation: blackhole-spin 44s linear infinite;
 }
 
 .blackhole-aura,
@@ -172,62 +196,86 @@ h3 {
 
 .blackhole-aura--far {
   background-image: url("uploads-files-5781604-black-hole/textures/blackholelight_2_color.png");
-  opacity: 0.54;
+  opacity: 0.34;
   mix-blend-mode: screen;
-  transform: scale(1.18) rotate(6deg);
-  filter: blur(18px) brightness(1.22) saturate(0.9);
+  background-size: 62% 62%;
+  transform: scale(1.1) rotate(6deg);
+  -webkit-mask-image: radial-gradient(circle at center, transparent 0 20%, #000 29% 52%, transparent 70%);
+  mask-image: radial-gradient(circle at center, transparent 0 20%, #000 29% 52%, transparent 70%);
+  filter: blur(24px) brightness(1.18) saturate(0.88);
 }
 
 .blackhole-aura--near {
   background-image: url("uploads-files-5781604-black-hole/textures/blackholelight_1_color.png");
-  opacity: 0.68;
+  opacity: 0.52;
   mix-blend-mode: screen;
-  transform: scale(1.04) rotate(-10deg);
-  filter: blur(6px) brightness(1.16) saturate(0.88);
+  background-size: 58% 58%;
+  transform: scale(1.02) rotate(-10deg);
+  -webkit-mask-image: radial-gradient(circle at center, transparent 0 18%, #000 28% 47%, transparent 62%);
+  mask-image: radial-gradient(circle at center, transparent 0 18%, #000 28% 47%, transparent 62%);
+  filter: blur(8px) brightness(1.24) saturate(0.92);
 }
 
 .blackhole-disk--base {
   background-image: url("uploads-files-5781604-black-hole/textures/blackholering_1_color.png");
-  opacity: 0.9;
-  transform: scale(1.72, 0.52) rotate(-18deg);
-  filter: saturate(0.76) brightness(1.22) contrast(1.08) drop-shadow(0 0 52px rgba(255, 173, 104, 0.28));
+  opacity: 0.94;
+  background-size: 78% 78%;
+  transform: scale(var(--blackhole-disk-scale-x), var(--blackhole-disk-scale-y)) rotate(var(--blackhole-tilt));
+  -webkit-mask-image: radial-gradient(ellipse at center, transparent 0 34%, #000 44% 57%, transparent 69%);
+  mask-image: radial-gradient(ellipse at center, transparent 0 34%, #000 44% 57%, transparent 69%);
+  filter: saturate(0.82) brightness(1.38) contrast(1.12) drop-shadow(0 0 62px rgba(255, 174, 102, 0.34));
+  animation: blackhole-disk-spin 26s linear infinite;
 }
 
 .blackhole-disk--glow {
   background-image: url("uploads-files-5781604-black-hole/textures/blackholelight_3_color.png");
-  opacity: 0.46;
+  opacity: 0.56;
   mix-blend-mode: screen;
-  transform: scale(1.5, 0.42) rotate(-18deg);
-  filter: blur(10px) brightness(1.2) saturate(0.78);
+  background-size: 68% 68%;
+  transform: scale(var(--blackhole-glow-scale-x), var(--blackhole-glow-scale-y)) rotate(var(--blackhole-tilt));
+  -webkit-mask-image: radial-gradient(ellipse at center, transparent 0 34%, #000 46% 54%, transparent 66%);
+  mask-image: radial-gradient(ellipse at center, transparent 0 34%, #000 46% 54%, transparent 66%);
+  filter: blur(10px) brightness(1.26) saturate(0.86);
+  animation: blackhole-disk-glow 18s linear infinite reverse;
 }
 
 .blackhole-shadow {
-  inset: 25%;
+  inset: 34%;
   border-radius: 50%;
   background:
-    radial-gradient(circle at center, rgba(0, 0, 0, 0.98) 0 32%, rgba(0, 0, 0, 0.82) 44%, rgba(0, 0, 0, 0) 68%);
-  transform: scale(1.1, 0.92);
-  filter: blur(20px);
+    radial-gradient(circle at center, rgba(0, 0, 0, 0.99) 0 50%, rgba(0, 0, 0, 0.88) 62%, rgba(0, 0, 0, 0) 78%);
+  transform: scale(1.24, 1.04);
+  filter: blur(24px);
 }
 
 .blackhole-core {
-  inset: 33%;
+  inset: 39%;
   border-radius: 50%;
   background:
-    radial-gradient(circle at center, #000 0 64%, rgba(8, 8, 10, 0.98) 72%, rgba(255, 204, 145, 0.18) 78%, rgba(0, 0, 0, 0) 84%);
+    radial-gradient(circle at center, #000 0 66%, rgba(8, 8, 10, 0.98) 73%, rgba(255, 204, 145, 0.2) 78%, rgba(0, 0, 0, 0) 82%);
   box-shadow:
-    0 0 0 1px rgba(255, 220, 175, 0.08),
-    0 0 34px rgba(255, 178, 107, 0.16),
-    0 0 86px rgba(255, 146, 82, 0.06);
+    0 0 0 1px rgba(255, 220, 175, 0.1),
+    0 0 44px rgba(255, 178, 107, 0.2),
+    0 0 118px rgba(255, 146, 82, 0.08);
 }
 
-@keyframes blackhole-spin {
+@keyframes blackhole-disk-spin {
   from {
-    transform: rotate(0deg);
+    transform: scale(var(--blackhole-disk-scale-x), var(--blackhole-disk-scale-y)) rotate(var(--blackhole-tilt));
   }
 
   to {
-    transform: rotate(360deg);
+    transform: scale(var(--blackhole-disk-scale-x), var(--blackhole-disk-scale-y)) rotate(calc(var(--blackhole-tilt) + 360deg));
+  }
+}
+
+@keyframes blackhole-disk-glow {
+  from {
+    transform: scale(var(--blackhole-glow-scale-x), var(--blackhole-glow-scale-y)) rotate(var(--blackhole-tilt));
+  }
+
+  to {
+    transform: scale(var(--blackhole-glow-scale-x), var(--blackhole-glow-scale-y)) rotate(calc(var(--blackhole-tilt) - 360deg));
   }
 }
 
@@ -1024,15 +1072,14 @@ h3 {
     width: min(160vw, 980px);
   }
 
-  .blackhole-disk--base {
-    transform: scale(1.84, 0.62) rotate(-18deg);
-  }
-
-  .blackhole-disk--glow {
-    transform: scale(1.6, 0.5) rotate(-18deg);
+  #blackhole-scene {
+    --blackhole-disk-scale-x: 1.42;
+    --blackhole-disk-scale-y: 0.42;
+    --blackhole-glow-scale-x: 1.24;
+    --blackhole-glow-scale-y: 0.3;
   }
 
   .blackhole-core {
-    inset: 31%;
+    inset: 36%;
   }
 }
