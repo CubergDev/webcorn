@@ -14,8 +14,8 @@
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="preload" as="image" href="assets/space/earth-blue-marble-3072.jpg" type="image/jpeg" />
-    <link rel="preload" as="image" href="assets/space/earth-frames/earth-00.webp" type="image/webp" />
+    <link rel="preload" as="image" href="saturn/Textures/Saturn 4K/Saturn2_Saturn_BaseColor.png" type="image/png" />
+    <link rel="preload" as="image" href="saturn/Textures/Saturn 4K/Saturn2_Rings_BaseColor.png" type="image/png" />
     <link rel="stylesheet" href="style.css" />
     <script type="importmap">
       {
@@ -26,14 +26,9 @@
     </script>
   </head>
   <body>
-    <div id="earth-fallback-shell" aria-hidden="true">
-      <img
-        id="earth-fallback-frame"
-        src="assets/space/earth-frames/earth-00.webp"
-        alt=""
-        decoding="async"
-        fetchpriority="high"
-      />
+    <div id="planet-fallback-shell" aria-hidden="true">
+      <span id="planet-fallback-ring"></span>
+      <span id="planet-fallback-body"></span>
     </div>
     <div id="shuttle-shell" aria-hidden="true">
       <img

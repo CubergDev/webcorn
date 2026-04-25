@@ -4,18 +4,21 @@ const SHUTTLE_FRAME_PATHS = Array.from(
   { length: SHUTTLE_FRAME_COUNT },
   (_, index) => `assets/shuttle/frames/frame-${String(index).padStart(2, "0")}.webp`
 );
-const EARTH_FALLBACK_FRAME_COUNT = 12;
-const EARTH_FALLBACK_FRAME_PATHS = Array.from(
-  { length: EARTH_FALLBACK_FRAME_COUNT },
-  (_, index) => `assets/space/earth-frames/earth-${String(index).padStart(2, "0")}.webp`
-);
-const EARTH_ASSETS = {
-  day: "assets/space/earth-blue-marble-3072.jpg",
-  specular: "assets/space/earth-specular-2048.jpg",
-  clouds: "assets/space/earth-clouds-1024.png",
-  moon: "assets/space/moon-1024.jpg",
+const SATURN_ASSETS = {
+  model: "saturn/uploads-files-4052472-Stylized+Planets.dae",
+  textureRoot: "saturn/Textures/Saturn 4K/",
+  saturnBase: "saturn/Textures/Saturn 4K/Saturn2_Saturn_BaseColor.png",
+  saturnNormal: "saturn/Textures/Saturn 4K/Saturn2_Saturn_Normal.png",
+  saturnRoughness: "saturn/Textures/Saturn 4K/Saturn2_Saturn_Roughness.png",
+  saturnMetallic: "saturn/Textures/Saturn 4K/Saturn2_Saturn_Metallic.png",
+  ringsBase: "saturn/Textures/Saturn 4K/Saturn2_Rings_BaseColor.png",
+  ringsNormal: "saturn/Textures/Saturn 4K/Saturn2_Rings_Normal.png",
+  ringsRoughness: "saturn/Textures/Saturn 4K/Saturn2_Rings_Roughness.png",
+  ringsMetallic: "saturn/Textures/Saturn 4K/Saturn2_Rings_Metallic.png",
+  moonBase: "saturn/Textures/Moon 4K/Saturn2_Saturn_BaseColor.png",
 };
-const shouldUseEarthFallback = () => window.location.protocol === "file:";
+const THREE_MODULE_URL = "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
+const COLLADA_LOADER_URL = "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/ColladaLoader.js";
 
 const setRevealFallback = () => {
   document.querySelectorAll("[data-reveal]").forEach((item) => {
@@ -192,12 +195,13 @@ const initEmbeddedPlanet = () => {
   return true;
 };
 
-const initEarthFallback = () => {
-  const shell = document.getElementById("earth-fallback-shell");
-  const frame = document.getElementById("earth-fallback-frame");
+const initPlanetFallback = () => {
+  const shell = document.getElementById("planet-fallback-shell");
+  const ring = document.getElementById("planet-fallback-ring");
+  const body = document.getElementById("planet-fallback-body");
   const canvas = document.getElementById("space-canvas");
 
-  if (!shell || !frame) {
+  if (!shell || !ring || !body) {
     return false;
   }
 
@@ -206,42 +210,14 @@ const initEarthFallback = () => {
     canvas.style.display = "none";
   }
 
-  let currentFrameIndex = -1;
   let currentProgress = readJourneyProgress();
   let renderedProgress = currentProgress;
   let targetSpin = 0;
   let spin = 0;
-  let autoFrame = 0;
+  let autoRotation = 0;
   let lastScrollY = window.scrollY;
   let lastTime = 0;
   let frameId = 0;
-
-  const setEarthFrame = (index) => {
-    const boundedIndex = Math.max(0, Math.min(EARTH_FALLBACK_FRAME_COUNT - 1, index));
-
-    if (boundedIndex === currentFrameIndex) {
-      return;
-    }
-
-    currentFrameIndex = boundedIndex;
-    frame.src = EARTH_FALLBACK_FRAME_PATHS[boundedIndex];
-  };
-
-  const preloadFrames = () => {
-    EARTH_FALLBACK_FRAME_PATHS.slice(1).forEach((path) => {
-      const image = new Image();
-      image.decoding = "async";
-      image.src = path;
-    });
-  };
-
-  if (typeof window.requestIdleCallback === "function") {
-    window.requestIdleCallback(preloadFrames);
-  } else {
-    window.setTimeout(preloadFrames, 1);
-  }
-
-  setEarthFrame(0);
 
   const updateProgress = () => {
     const currentY = window.scrollY;
@@ -291,17 +267,16 @@ const initEarthFallback = () => {
     renderedProgress += (currentProgress - renderedProgress) * 0.08;
     spin += (targetSpin - spin) * 0.14;
     targetSpin *= 0.84;
-    autoFrame = (autoFrame + deltaSeconds * (prefersReducedMotion ? 0.25 : 0.72)) % EARTH_FALLBACK_FRAME_COUNT;
+    autoRotation += deltaSeconds * (prefersReducedMotion ? 4 : 10);
 
     const narrowScreen = window.innerWidth < 760;
-    const scale = (narrowScreen ? 0.78 : 0.72) + renderedProgress * (narrowScreen ? 0.4 : 0.58);
+    const scale = (narrowScreen ? 0.78 : 0.82) + renderedProgress * (narrowScreen ? 0.32 : 0.42);
     const shiftY = renderedProgress * (narrowScreen ? 18 : 10);
-    const frameFloat =
-      (autoFrame + spin + renderedProgress * 2.8 + EARTH_FALLBACK_FRAME_COUNT * 4) % EARTH_FALLBACK_FRAME_COUNT;
+    const rotation = autoRotation + spin * 28 + renderedProgress * 16;
 
-    shell.style.setProperty("--earth-scale", scale.toFixed(3));
-    shell.style.setProperty("--earth-shift-y", `${shiftY.toFixed(1)}px`);
-    setEarthFrame(Math.round(frameFloat));
+    shell.style.setProperty("--planet-scale", scale.toFixed(3));
+    shell.style.setProperty("--planet-shift-y", `${shiftY.toFixed(1)}px`);
+    shell.style.setProperty("--planet-rotation", `${rotation.toFixed(2)}deg`);
   };
 
   document.addEventListener("visibilitychange", () => {
@@ -321,14 +296,12 @@ const initEarthFallback = () => {
   return true;
 };
 
-const THREE_MODULE_URL = "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
-
 const resolveThreeRuntime = async () => {
   try {
-    const threeModule = await import(THREE_MODULE_URL);
-    return { THREE: threeModule };
+    const [threeModule, colladaModule] = await Promise.all([import(THREE_MODULE_URL), import(COLLADA_LOADER_URL)]);
+    return { THREE: threeModule, ColladaLoader: colladaModule.ColladaLoader };
   } catch (error) {
-    return { THREE: window.THREE };
+    return { THREE: window.THREE, ColladaLoader: null };
   }
 };
 
@@ -339,7 +312,7 @@ const initSpaceScene = async () => {
     return false;
   }
 
-  const { THREE } = await resolveThreeRuntime();
+  const { THREE, ColladaLoader } = await resolveThreeRuntime();
 
   if (!THREE) {
     return false;
@@ -354,10 +327,11 @@ const initSpaceScene = async () => {
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(34, window.innerWidth / window.innerHeight, 0.1, 120);
   const group = new THREE.Group();
-  const earthGroup = new THREE.Group();
+  const saturnGroup = new THREE.Group();
 
   scene.add(group);
-  group.add(earthGroup);
+  group.add(saturnGroup);
+  camera.position.set(0, 0.12, 10.2);
 
   const textureLoader = new THREE.TextureLoader();
   const setRendererSize = () => {
@@ -373,8 +347,10 @@ const initSpaceScene = async () => {
   }
   if (THREE.ACESFilmicToneMapping) {
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.9;
+    renderer.toneMappingExposure = 1.18;
   }
+  scene.background = new THREE.Color(0x020713);
+  scene.fog = new THREE.FogExp2(0x020713, 0.026);
 
   const maxAnisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 4);
   const loadTexture = (url, isColorTexture = false) => {
@@ -394,79 +370,57 @@ const initSpaceScene = async () => {
     return texture;
   };
 
-  const earth = new THREE.Mesh(
-    new THREE.SphereGeometry(1.56, 72, 72),
-    new THREE.MeshPhongMaterial({
-      map: loadTexture(EARTH_ASSETS.day, true),
-      specularMap: loadTexture(EARTH_ASSETS.specular),
-      specular: new THREE.Color(0x2c7fff),
-      shininess: 18,
+  const textures = {
+    saturnBase: loadTexture(SATURN_ASSETS.saturnBase, true),
+    saturnNormal: loadTexture(SATURN_ASSETS.saturnNormal),
+    saturnRoughness: loadTexture(SATURN_ASSETS.saturnRoughness),
+    saturnMetallic: loadTexture(SATURN_ASSETS.saturnMetallic),
+    ringsBase: loadTexture(SATURN_ASSETS.ringsBase, true),
+    ringsNormal: loadTexture(SATURN_ASSETS.ringsNormal),
+    ringsRoughness: loadTexture(SATURN_ASSETS.ringsRoughness),
+    ringsMetallic: loadTexture(SATURN_ASSETS.ringsMetallic),
+    moonBase: loadTexture(SATURN_ASSETS.moonBase, true),
+  };
+
+  const materials = {
+    saturn: new THREE.MeshStandardMaterial({
+      map: textures.saturnBase,
+      normalMap: textures.saturnNormal,
+      roughnessMap: textures.saturnRoughness,
+      metalnessMap: textures.saturnMetallic,
+      roughness: 0.86,
+      metalness: 0.02,
+      emissive: new THREE.Color(0x1f160b),
+      emissiveIntensity: 0.18,
       color: 0xffffff,
-    })
-  );
-  earth.rotation.set(0.34, -1.05, 0.12);
-  earthGroup.add(earth);
-
-  const cloudLayer = new THREE.Mesh(
-    new THREE.SphereGeometry(1.595, 56, 56),
-    new THREE.MeshPhongMaterial({
-      map: loadTexture(EARTH_ASSETS.clouds, true),
+    }),
+    rings: new THREE.MeshStandardMaterial({
+      map: textures.ringsBase,
+      alphaMap: textures.ringsBase,
+      normalMap: textures.ringsNormal,
+      roughnessMap: textures.ringsRoughness,
+      metalnessMap: textures.ringsMetallic,
+      roughness: 0.78,
+      metalness: 0.02,
       transparent: true,
-      opacity: 0.36,
-      depthWrite: false,
-      color: 0xf8fdff,
-    })
-  );
-  earthGroup.add(cloudLayer);
-
-  const atmosphere = new THREE.Mesh(
-    new THREE.SphereGeometry(1.72, 60, 60),
-    new THREE.ShaderMaterial({
-      uniforms: {
-        glowColor: { value: new THREE.Color(0x7fd7ff) },
-        intensity: { value: 0.58 },
-      },
-      vertexShader: `
-        varying vec3 vNormal;
-        varying vec3 vViewPosition;
-
-        void main() {
-          vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-          vNormal = normalize(normalMatrix * normal);
-          vViewPosition = -mvPosition.xyz;
-          gl_Position = projectionMatrix * mvPosition;
-        }
-      `,
-      fragmentShader: `
-        uniform vec3 glowColor;
-        uniform float intensity;
-        varying vec3 vNormal;
-        varying vec3 vViewPosition;
-
-        void main() {
-          float rim = 1.0 - max(dot(normalize(vNormal), normalize(vViewPosition)), 0.0);
-          float glow = pow(rim, 2.2) * intensity;
-          gl_FragColor = vec4(glowColor, glow);
-        }
-      `,
-      transparent: true,
-      depthWrite: false,
-      side: THREE.BackSide,
-      blending: THREE.AdditiveBlending,
-    })
-  );
-  earthGroup.add(atmosphere);
+      alphaTest: 0.035,
+      opacity: 0.98,
+      side: THREE.DoubleSide,
+      color: 0xffffff,
+    }),
+    moon: new THREE.MeshStandardMaterial({
+      map: textures.moonBase,
+      roughness: 0.92,
+      metalness: 0,
+      color: 0xf2f5ff,
+    }),
+  };
 
   const moon = new THREE.Mesh(
     new THREE.SphereGeometry(0.27, 28, 28),
-    new THREE.MeshStandardMaterial({
-      map: loadTexture(EARTH_ASSETS.moon, true),
-      roughness: 1,
-      metalness: 0,
-      color: 0xf3f7ff,
-    })
+    materials.moon
   );
-  moon.position.set(4.8, 1.25, -7.8);
+  moon.position.set(4.8, 1.25, -7.6);
   group.add(moon);
 
   const createStarField = (count, radius, depth, spread, size, opacity) => {
@@ -498,11 +452,140 @@ const initSpaceScene = async () => {
   const nearStars = createStarField(540, 5.8, -8.2, 0.3, 0.024, 0.76);
   group.add(deepStars, nearStars);
 
-  scene.add(new THREE.AmbientLight(0x9fcfff, 0.5));
-  const keyLight = new THREE.DirectionalLight(0xffffff, 2.2);
+  const glow = new THREE.Mesh(
+    new THREE.SphereGeometry(2.12, 96, 96),
+    new THREE.ShaderMaterial({
+      uniforms: {
+        glowColor: { value: new THREE.Color(0x80caff) },
+        intensity: { value: 0.24 },
+      },
+      vertexShader: `
+        varying vec3 vNormal;
+        varying vec3 vViewPosition;
+
+        void main() {
+          vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+          vNormal = normalize(normalMatrix * normal);
+          vViewPosition = -mvPosition.xyz;
+          gl_Position = projectionMatrix * mvPosition;
+        }
+      `,
+      fragmentShader: `
+        uniform vec3 glowColor;
+        uniform float intensity;
+        varying vec3 vNormal;
+        varying vec3 vViewPosition;
+
+        void main() {
+          float rim = 1.0 - max(dot(normalize(vNormal), normalize(vViewPosition)), 0.0);
+          float glow = pow(rim, 2.6) * intensity;
+          gl_FragColor = vec4(glowColor, glow);
+        }
+      `,
+      transparent: true,
+      depthWrite: false,
+      side: THREE.BackSide,
+      blending: THREE.AdditiveBlending,
+    })
+  );
+  group.add(glow);
+
+  const chooseMaterial = (sourceName = "") => {
+    const name = sourceName.toLowerCase();
+
+    if (name.includes("ring")) {
+      return materials.rings;
+    }
+
+    if (name.includes("moon")) {
+      return materials.moon;
+    }
+
+    return materials.saturn;
+  };
+
+  const prepareSaturnModel = (model) => {
+    model.traverse((object) => {
+      if (!object.isMesh) {
+        return;
+      }
+
+      if (object.geometry && !object.geometry.attributes.normal) {
+        object.geometry.computeVertexNormals();
+      }
+
+      if (Array.isArray(object.material)) {
+        object.material = object.material.map((material) => chooseMaterial(material?.name || object.name));
+      } else {
+        object.material = chooseMaterial(object.material?.name || object.name);
+      }
+    });
+
+    model.updateMatrixWorld(true);
+
+    const box = new THREE.Box3().setFromObject(model);
+    const size = box.getSize(new THREE.Vector3());
+    const center = box.getCenter(new THREE.Vector3());
+    const maxSize = Math.max(size.x, size.y, size.z) || 1;
+
+    model.position.sub(center);
+    model.scale.multiplyScalar(4.8 / maxSize);
+    model.rotation.set(-0.34, -0.18, -0.34);
+
+    return model;
+  };
+
+  const createFallbackSaturn = () => {
+    const fallback = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.SphereGeometry(1.36, 96, 96), materials.saturn);
+    const rings = new THREE.Mesh(new THREE.RingGeometry(1.72, 3.48, 192, 4), materials.rings);
+
+    rings.rotation.x = Math.PI * 0.5;
+    fallback.add(body, rings);
+    fallback.rotation.set(-0.34, -0.18, -0.34);
+
+    return fallback;
+  };
+
+  const loadSaturnModel = () =>
+    new Promise((resolve) => {
+      if (!ColladaLoader) {
+        resolve(createFallbackSaturn());
+        return;
+      }
+
+      const loader = new ColladaLoader();
+      loader.setResourcePath(SATURN_ASSETS.textureRoot);
+      loader.load(
+        SATURN_ASSETS.model,
+        (collada) => resolve(prepareSaturnModel(collada.scene)),
+        undefined,
+        () => resolve(createFallbackSaturn())
+      );
+    });
+
+  const fallbackSaturn = createFallbackSaturn();
+  saturnGroup.add(fallbackSaturn);
+
+  loadSaturnModel().then((saturnModel) => {
+    saturnModel.scale.multiplyScalar(1.18);
+    saturnModel.position.set(0, 0, 0);
+    saturnModel.traverse((object) => {
+      if (object.isMesh) {
+        object.renderOrder = 2;
+      }
+    });
+    saturnGroup.add(saturnModel);
+  });
+
+  scene.add(new THREE.AmbientLight(0xffead0, 0.72));
+  const keyLight = new THREE.DirectionalLight(0xffffff, 4.2);
   keyLight.position.set(5.6, 2.4, 4.8);
   scene.add(keyLight);
-  const rimLight = new THREE.DirectionalLight(0x65d8ff, 0.9);
+  const fillLight = new THREE.DirectionalLight(0x84cfff, 1.08);
+  fillLight.position.set(-3.2, 1.8, 3.4);
+  scene.add(fillLight);
+  const rimLight = new THREE.DirectionalLight(0x65d8ff, 1.55);
   rimLight.position.set(-4, 1.6, -2);
   scene.add(rimLight);
 
@@ -585,21 +668,20 @@ const initSpaceScene = async () => {
     scrollVelocity *= 0.92;
 
     camera.position.x = 0;
-    camera.position.y = 0.18 - eased * 0.1;
-    camera.position.z = (narrowScreen ? 10.4 : 11.2) - eased * (narrowScreen ? 1.65 : 2.1);
-    camera.lookAt(0, -0.04, -0.36);
+    camera.position.y = 0.1 - eased * 0.08;
+    camera.position.z = (narrowScreen ? 9.8 : 10.4) - eased * (narrowScreen ? 1.2 : 1.5);
+    camera.lookAt(0, -0.03, -0.3);
 
-    group.rotation.x = -eased * 0.03;
-    earthGroup.position.set(0, narrowScreen ? -0.12 : -0.05, -4.85 + eased * 0.15);
-    earthGroup.scale.setScalar((narrowScreen ? 0.8 : 0.7) + eased * (narrowScreen ? 0.92 : 1.18));
-    earth.rotation.y = -1.08 + autoRotation + scrollRotation * 0.09 + eased * 0.2;
-    earth.rotation.x = 0.34 + eased * 0.05;
-    cloudLayer.rotation.y = earth.rotation.y + autoRotation * 0.2;
-    cloudLayer.rotation.x = earth.rotation.x + 0.01;
-    atmosphere.rotation.copy(earth.rotation);
-    atmosphere.material.uniforms.intensity.value = 0.58 + eased * 0.14;
+    group.rotation.x = -eased * 0.02;
+    saturnGroup.position.set(0, narrowScreen ? -0.1 : -0.04, -4.7 + eased * 0.1);
+    saturnGroup.scale.setScalar((narrowScreen ? 1.06 : 0.96) + eased * (narrowScreen ? 0.3 : 0.42));
+    saturnGroup.rotation.y = autoRotation + scrollRotation * 0.07 + eased * 0.12;
+    saturnGroup.rotation.x = -0.02 + eased * 0.03;
+    saturnGroup.rotation.z = -0.015 - eased * 0.025;
+    glow.position.copy(saturnGroup.position);
+    glow.material.uniforms.intensity.value = 0.18 + eased * 0.08;
 
-    moon.position.x = 4.8 - eased * 0.5;
+    moon.position.x = 4.8 - eased * 0.36;
     moon.position.y = 1.25 + eased * 0.14;
     deepStars.rotation.y += 0.00005;
     nearStars.rotation.y += 0.00011;
@@ -708,14 +790,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   initSmoothScroll();
   initRevealAnimations();
   initEmbeddedPlanet();
-  if (shouldUseEarthFallback()) {
-    initEarthFallback();
-  } else {
-    const started = await initSpaceScene().catch(() => false);
+  const started = await initSpaceScene().catch(() => false);
 
-    if (!started) {
-      initEarthFallback();
-    }
+  if (!started) {
+    initPlanetFallback();
   }
   initJourneyMotion();
   initLeadForm();
