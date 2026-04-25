@@ -99,15 +99,7 @@ h3 {
   line-height: 1.05;
 }
 
-#blackhole-scene {
-  --hole-scale: 1;
-  --hole-shift-y: 22px;
-  --hole-opacity: 0.92;
-  --blackhole-disk-scale-x: 1.3;
-  --blackhole-disk-scale-y: 0.33;
-  --blackhole-glow-scale-x: 1.16;
-  --blackhole-glow-scale-y: 0.24;
-  --blackhole-tilt: -22deg;
+#earth-scene {
   position: fixed;
   inset: 0;
   z-index: 0;
@@ -115,14 +107,14 @@ h3 {
   overflow: hidden;
 }
 
-#blackhole-scene::before,
-#blackhole-scene::after {
+#earth-scene::before,
+#earth-scene::after {
   content: "";
   position: absolute;
   inset: 0;
 }
 
-#blackhole-scene::before {
+#earth-scene::before {
   background:
     radial-gradient(circle at 16% 22%, rgba(255, 255, 255, 0.14) 0 1px, transparent 1.4px),
     radial-gradient(circle at 76% 18%, rgba(255, 255, 255, 0.14) 0 1px, transparent 1.4px),
@@ -133,149 +125,90 @@ h3 {
   opacity: 0.72;
 }
 
-#blackhole-scene::after {
+#earth-scene::after {
   background:
-    radial-gradient(circle at 50% 46%, rgba(255, 194, 122, 0.12), transparent 10%),
-    radial-gradient(circle at 50% 46%, rgba(255, 136, 74, 0.06), transparent 22%),
-    radial-gradient(circle at 50% 46%, transparent 0%, rgba(2, 4, 10, 0.06) 48%, rgba(2, 4, 10, 0.58) 100%);
+    radial-gradient(circle at 50% 42%, rgba(85, 146, 255, 0.12), transparent 14%),
+    radial-gradient(circle at 50% 42%, rgba(43, 100, 204, 0.08), transparent 26%),
+    radial-gradient(circle at 50% 42%, transparent 0%, rgba(2, 4, 10, 0.08) 52%, rgba(2, 4, 10, 0.58) 100%);
 }
 
-#blackhole-scene.is-reduced-motion .blackhole-rotator {
-  animation: none;
+#earth-scene.is-reduced-motion .earth-map,
+#earth-scene.is-reduced-motion .earth-clouds {
+  animation-duration: 120s;
 }
 
-#blackhole-scene.is-reduced-motion .blackhole-disk--base {
-  animation-duration: 52s;
-}
-
-#blackhole-scene.is-reduced-motion .blackhole-disk--glow {
-  animation-duration: 42s;
-}
-
-.blackhole-stage {
+.earth-stage {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: min(118vw, 1560px);
+  width: min(52vw, 700px);
   aspect-ratio: 1;
-  transform: translate3d(-50%, calc(-50% + var(--hole-shift-y)), 0) scale(var(--hole-scale));
-  opacity: var(--hole-opacity);
-  will-change: transform, opacity;
+  transform: translate3d(-50%, -42%, 0);
 }
 
-.blackhole-stage::before {
-  content: "";
-  position: absolute;
-  inset: 37%;
-  border-radius: 50%;
-  box-shadow:
-    0 0 0 1px rgba(255, 228, 190, 0.08),
-    0 0 56px rgba(255, 181, 108, 0.12),
-    0 0 112px rgba(255, 138, 74, 0.08);
-  filter: blur(8px);
-}
-
-.blackhole-rotator {
+.earth-planet {
   position: relative;
   width: 100%;
   height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
   transform-origin: center;
+  transform: rotate(-18deg);
+  box-shadow:
+    0 0 0 1px rgba(170, 212, 255, 0.08),
+    0 0 70px rgba(58, 117, 225, 0.18),
+    0 0 140px rgba(31, 77, 170, 0.08);
 }
 
-.blackhole-aura,
-.blackhole-disk,
-.blackhole-shadow,
-.blackhole-core {
+.earth-map,
+.earth-clouds,
+.earth-shadow,
+.earth-atmosphere {
   position: absolute;
   inset: 0;
-  background-position: center;
+  border-radius: 50%;
   background-repeat: no-repeat;
-  background-size: contain;
   transform-origin: center;
 }
 
-.blackhole-aura--far {
-  background-image: url("uploads-files-5781604-black-hole/textures/blackholelight_2_color.png");
-  opacity: 0.34;
-  mix-blend-mode: screen;
-  background-size: 62% 62%;
-  transform: scale(1.1) rotate(6deg);
-  -webkit-mask-image: radial-gradient(circle at center, transparent 0 20%, #000 29% 52%, transparent 70%);
-  mask-image: radial-gradient(circle at center, transparent 0 20%, #000 29% 52%, transparent 70%);
-  filter: blur(24px) brightness(1.18) saturate(0.88);
-}
-
-.blackhole-aura--near {
-  background-image: url("uploads-files-5781604-black-hole/textures/blackholelight_1_color.png");
-  opacity: 0.52;
-  mix-blend-mode: screen;
-  background-size: 58% 58%;
-  transform: scale(1.02) rotate(-10deg);
-  -webkit-mask-image: radial-gradient(circle at center, transparent 0 18%, #000 28% 47%, transparent 62%);
-  mask-image: radial-gradient(circle at center, transparent 0 18%, #000 28% 47%, transparent 62%);
-  filter: blur(8px) brightness(1.24) saturate(0.92);
-}
-
-.blackhole-disk--base {
-  background-image: url("uploads-files-5781604-black-hole/textures/blackholering_1_color.png");
-  opacity: 0.94;
-  background-size: 78% 78%;
-  transform: scale(var(--blackhole-disk-scale-x), var(--blackhole-disk-scale-y)) rotate(var(--blackhole-tilt));
-  -webkit-mask-image: radial-gradient(ellipse at center, transparent 0 34%, #000 44% 57%, transparent 69%);
-  mask-image: radial-gradient(ellipse at center, transparent 0 34%, #000 44% 57%, transparent 69%);
-  filter: saturate(0.82) brightness(1.38) contrast(1.12) drop-shadow(0 0 62px rgba(255, 174, 102, 0.34));
-  animation: blackhole-disk-spin 26s linear infinite;
-}
-
-.blackhole-disk--glow {
-  background-image: url("uploads-files-5781604-black-hole/textures/blackholelight_3_color.png");
-  opacity: 0.56;
-  mix-blend-mode: screen;
-  background-size: 68% 68%;
-  transform: scale(var(--blackhole-glow-scale-x), var(--blackhole-glow-scale-y)) rotate(var(--blackhole-tilt));
-  -webkit-mask-image: radial-gradient(ellipse at center, transparent 0 34%, #000 46% 54%, transparent 66%);
-  mask-image: radial-gradient(ellipse at center, transparent 0 34%, #000 46% 54%, transparent 66%);
-  filter: blur(10px) brightness(1.26) saturate(0.86);
-  animation: blackhole-disk-glow 18s linear infinite reverse;
-}
-
-.blackhole-shadow {
-  inset: 34%;
-  border-radius: 50%;
+.earth-map {
   background:
-    radial-gradient(circle at center, rgba(0, 0, 0, 0.99) 0 50%, rgba(0, 0, 0, 0.88) 62%, rgba(0, 0, 0, 0) 78%);
-  transform: scale(1.24, 1.04);
-  filter: blur(24px);
+    radial-gradient(circle at 34% 34%, rgba(255, 255, 255, 0.24), transparent 20%),
+    url("assets/space/earth-blue-marble-3072.jpg") repeat-x center / auto 100%;
+  animation: earth-rotate 34s linear infinite;
+  filter: saturate(1.08) contrast(1.04);
 }
 
-.blackhole-core {
-  inset: 39%;
-  border-radius: 50%;
+.earth-clouds {
+  background: url("assets/space/earth-clouds-1024.png") repeat-x center / auto 100%;
+  mix-blend-mode: screen;
+  opacity: 0.32;
+  animation: earth-rotate 46s linear infinite reverse;
+}
+
+.earth-shadow {
   background:
-    radial-gradient(circle at center, #000 0 66%, rgba(8, 8, 10, 0.98) 73%, rgba(255, 204, 145, 0.2) 78%, rgba(0, 0, 0, 0) 82%);
+    radial-gradient(circle at 32% 34%, rgba(255, 255, 255, 0.28), transparent 18%),
+    radial-gradient(circle at 38% 38%, transparent 0 44%, rgba(0, 0, 0, 0.12) 58%, rgba(0, 0, 0, 0.52) 78%, rgba(0, 0, 0, 0.84) 100%),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.46) 0%, rgba(0, 0, 0, 0.14) 34%, rgba(0, 0, 0, 0.04) 54%, rgba(0, 0, 0, 0.46) 100%);
+}
+
+.earth-atmosphere {
+  inset: -1.8%;
+  border: 1px solid rgba(157, 208, 255, 0.28);
   box-shadow:
-    0 0 0 1px rgba(255, 220, 175, 0.1),
-    0 0 44px rgba(255, 178, 107, 0.2),
-    0 0 118px rgba(255, 146, 82, 0.08);
+    0 0 0 2px rgba(98, 172, 255, 0.05),
+    0 0 44px rgba(74, 147, 255, 0.18),
+    inset 0 0 22px rgba(147, 208, 255, 0.16);
 }
 
-@keyframes blackhole-disk-spin {
+@keyframes earth-rotate {
   from {
-    transform: scale(var(--blackhole-disk-scale-x), var(--blackhole-disk-scale-y)) rotate(var(--blackhole-tilt));
+    background-position-x: 0;
   }
 
   to {
-    transform: scale(var(--blackhole-disk-scale-x), var(--blackhole-disk-scale-y)) rotate(calc(var(--blackhole-tilt) + 360deg));
-  }
-}
-
-@keyframes blackhole-disk-glow {
-  from {
-    transform: scale(var(--blackhole-glow-scale-x), var(--blackhole-glow-scale-y)) rotate(var(--blackhole-tilt));
-  }
-
-  to {
-    transform: scale(var(--blackhole-glow-scale-x), var(--blackhole-glow-scale-y)) rotate(calc(var(--blackhole-tilt) - 360deg));
+    background-position-x: 1000px;
   }
 }
 
@@ -1068,18 +1001,15 @@ h3 {
     letter-spacing: 0.08em;
   }
 
-  .blackhole-stage {
-    width: min(160vw, 980px);
+  .earth-stage {
+    width: min(84vw, 440px);
   }
 
-  #blackhole-scene {
-    --blackhole-disk-scale-x: 1.42;
-    --blackhole-disk-scale-y: 0.42;
-    --blackhole-glow-scale-x: 1.24;
-    --blackhole-glow-scale-y: 0.3;
+  .earth-stage {
+    transform: translate3d(-50%, -38%, 0);
   }
 
-  .blackhole-core {
-    inset: 36%;
+  .earth-planet {
+    transform: rotate(-14deg);
   }
 }

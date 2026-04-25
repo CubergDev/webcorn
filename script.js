@@ -83,8 +83,8 @@ const readJourneyProgress = () => {
   return Math.min(Math.max((window.scrollY - top) / max, 0), 1);
 };
 
-const initBlackHoleBackground = () => {
-  const scene = document.getElementById("blackhole-scene");
+const initEarthBackground = () => {
+  const scene = document.getElementById("earth-scene");
 
   if (!scene) {
     return false;
@@ -93,45 +93,6 @@ const initBlackHoleBackground = () => {
   if (prefersReducedMotion) {
     scene.classList.add("is-reduced-motion");
   }
-
-  const motion = { progress: readJourneyProgress() };
-
-  const applyState = () => {
-    const eased = motion.progress * motion.progress * (3 - 2 * motion.progress);
-    const narrowScreen = window.innerWidth < 760;
-    const scale = (narrowScreen ? 0.98 : 1.02) + eased * (narrowScreen ? 0.14 : 0.2);
-    const shiftY = (narrowScreen ? 28 : 18) - eased * (narrowScreen ? 10 : 14);
-    const opacity = 0.84 + eased * 0.16;
-
-    scene.style.setProperty("--hole-scale", scale.toFixed(3));
-    scene.style.setProperty("--hole-shift-y", `${shiftY.toFixed(1)}px`);
-    scene.style.setProperty("--hole-opacity", opacity.toFixed(3));
-  };
-
-  if (window.gsap && window.ScrollTrigger && !prefersReducedMotion) {
-    gsap.registerPlugin(ScrollTrigger);
-    gsap.to(motion, {
-      progress: 1,
-      ease: "none",
-      onUpdate: applyState,
-      scrollTrigger: {
-        trigger: ".journey",
-        start: "top top",
-        end: "bottom bottom",
-        scrub: 2,
-      },
-    });
-  } else {
-    const updateScroll = () => {
-      motion.progress = readJourneyProgress();
-      applyState();
-    };
-
-    window.addEventListener("scroll", updateScroll, { passive: true });
-  }
-
-  window.addEventListener("resize", applyState, { passive: true });
-  applyState();
 
   return true;
 };
@@ -318,7 +279,7 @@ const initLeadForm = () => {
 document.addEventListener("DOMContentLoaded", () => {
   initSmoothScroll();
   initRevealAnimations();
-  initBlackHoleBackground();
+  initEarthBackground();
   initShuttleIntro();
   initJourneyMotion();
   initLeadForm();
