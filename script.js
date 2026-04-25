@@ -257,15 +257,17 @@ const initPlanetFallback = () => {
     autoRotation += deltaSeconds * (prefersReducedMotion ? 8 : 18);
 
     const narrowScreen = window.innerWidth < 760;
-    const scale = (narrowScreen ? 0.74 : 0.82) + renderedProgress * (narrowScreen ? 0.24 : 0.36);
-    const shiftY = renderedProgress * (narrowScreen ? 18 : 8);
-    const bodyRotation = autoRotation * 0.24 + spin * 18;
-    const ringRotation = -18 + autoRotation * 0.9 + spin * 28 + renderedProgress * 12;
+    const scale = (narrowScreen ? 0.72 : 0.84) + renderedProgress * (narrowScreen ? 0.18 : 0.26);
+    const shiftY = renderedProgress * (narrowScreen ? 16 : 6);
+    const bodyRotation = autoRotation * 0.08 + spin * 10;
+    const ringRotation = -6 + autoRotation * 0.18 + spin * 3;
+    const streamRotation = -32 + autoRotation * 0.48 + spin * 8;
 
     shell.style.setProperty("--planet-scale", scale.toFixed(3));
     shell.style.setProperty("--planet-shift-y", `${shiftY.toFixed(1)}px`);
     shell.style.setProperty("--planet-rotation", `${bodyRotation.toFixed(2)}deg`);
     shell.style.setProperty("--ring-rotation", `${ringRotation.toFixed(2)}deg`);
+    shell.style.setProperty("--stream-rotation", `${streamRotation.toFixed(2)}deg`);
   };
 
   document.addEventListener("visibilitychange", () => {
@@ -366,6 +368,58 @@ const createAccretionTexture = (THREE, size = 1024) => {
   return texture;
 };
 
+const createStreamTexture = (THREE, width = 2048, height = 384) => {
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const context = canvas.getContext("2d");
+
+  if (!context) {
+    return null;
+  }
+
+  context.clearRect(0, 0, width, height);
+  const gradient = context.createLinearGradient(0, height / 2, width, height / 2);
+  gradient.addColorStop(0, "rgba(255, 170, 96, 0)");
+  gradient.addColorStop(0.12, "rgba(255, 228, 182, 0.26)");
+  gradient.addColorStop(0.28, "rgba(255, 247, 232, 0.98)");
+  gradient.addColorStop(0.42, "rgba(255, 191, 120, 0.92)");
+  gradient.addColorStop(0.55, "rgba(255, 140, 82, 0.82)");
+  gradient.addColorStop(0.7, "rgba(255, 228, 182, 0.94)");
+  gradient.addColorStop(0.86, "rgba(255, 188, 108, 0.18)");
+  gradient.addColorStop(1, "rgba(255, 170, 96, 0)");
+
+  context.fillStyle = gradient;
+  context.beginPath();
+  context.ellipse(width / 2, height / 2, width * 0.46, height * 0.14, 0, 0, Math.PI * 2);
+  context.fill();
+
+  context.save();
+  context.globalCompositeOperation = "screen";
+  for (let index = 0; index < 140; index += 1) {
+    const x = width * (0.06 + (index / 140) * 0.88);
+    const y = height * (0.28 + ((index * 17) % 43) / 100);
+    const length = width * (0.08 + (index % 9) / 60);
+    const alpha = 0.03 + (index % 6) * 0.015;
+
+    context.strokeStyle = `rgba(255, ${190 + (index % 55)}, ${150 + (index % 70)}, ${alpha})`;
+    context.lineWidth = 2 + (index % 3);
+    context.beginPath();
+    context.moveTo(x, y);
+    context.lineTo(x + length, y + ((index % 2 === 0) ? 1 : -1) * height * 0.06);
+    context.stroke();
+  }
+  context.restore();
+
+  const texture = new THREE.CanvasTexture(canvas);
+  if ("colorSpace" in texture && THREE.SRGBColorSpace) {
+    texture.colorSpace = THREE.SRGBColorSpace;
+  }
+  texture.needsUpdate = true;
+
+  return texture;
+};
+
 const initSpaceScene = async () => {
   const canvas = document.getElementById("space-canvas");
 
@@ -441,6 +495,7 @@ const initSpaceScene = async () => {
   group.add(deepStars, nearStars);
 
   const diskTexture = createAccretionTexture(THREE);
+  const streamTexture = createStreamTexture(THREE);
   const accretionDisk = new THREE.Mesh(
     new THREE.RingGeometry(1.2, 3.28, 192, 6),
     new THREE.MeshBasicMaterial({
@@ -454,6 +509,7 @@ const initSpaceScene = async () => {
     })
   );
   accretionDisk.rotation.x = Math.PI * 0.5 - 0.22;
+  accretionDisk.scale.set(1.78, 0.52, 1);
   blackHoleGroup.add(accretionDisk);
 
   const accretionDiskInner = new THREE.Mesh(
@@ -470,7 +526,30 @@ const initSpaceScene = async () => {
   );
   accretionDiskInner.rotation.x = Math.PI * 0.5 - 0.18;
   accretionDiskInner.rotation.z = 0.24;
+  accretionDiskInner.scale.set(1.36, 0.44, 1);
   blackHoleGroup.add(accretionDiskInner);
+
+  const streamMaterial = new THREE.MeshBasicMaterial({
+    map: streamTexture,
+    transparent: true,
+    opacity: 0.98,
+    side: THREE.DoubleSide,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    color: 0xffffff,
+  });
+  const streamGeometry = new THREE.PlaneGeometry(9.6, 1.6, 1, 1);
+  const accretionStreamFront = new THREE.Mesh(streamGeometry, streamMaterial);
+  accretionStreamFront.rotation.z = -0.62;
+  accretionStreamFront.position.z = 0.18;
+  blackHoleGroup.add(accretionStreamFront);
+
+  const accretionStreamBack = new THREE.Mesh(streamGeometry, streamMaterial.clone());
+  accretionStreamBack.material.opacity = 0.54;
+  accretionStreamBack.rotation.z = -0.62;
+  accretionStreamBack.position.z = -0.22;
+  accretionStreamBack.scale.set(0.92, 0.84, 1);
+  blackHoleGroup.add(accretionStreamBack);
 
   const photonRing = new THREE.Mesh(
     new THREE.TorusGeometry(1.18, 0.06, 12, 220),
@@ -632,6 +711,8 @@ const initSpaceScene = async () => {
     accretionDisk.rotation.x = Math.PI * 0.5 - 0.22 + eased * 0.05;
     accretionDiskInner.rotation.z = 0.24 - autoRotation * 0.84 + scrollRotation * 0.02;
     accretionDiskInner.rotation.x = Math.PI * 0.5 - 0.18 + eased * 0.04;
+    accretionStreamFront.rotation.z = -0.62 + autoRotation * 0.09 + scrollRotation * 0.05;
+    accretionStreamBack.rotation.z = -0.62 + autoRotation * 0.06 + scrollRotation * 0.04;
     photonRing.rotation.z = autoRotation * 0.22 - scrollRotation * 0.05;
     photonRing.scale.setScalar(1 + eased * 0.06);
     glow.material.uniforms.intensity.value = 0.22 + eased * 0.14;
