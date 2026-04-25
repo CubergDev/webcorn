@@ -4,13 +4,11 @@ const SHUTTLE_FRAME_PATHS = Array.from(
   { length: SHUTTLE_FRAME_COUNT },
   (_, index) => `assets/shuttle/frames/frame-${String(index).padStart(2, "0")}.webp`
 );
-const EARTH_FRAME_COUNT = 12;
-const EARTH_FRAME_PATHS = Array.from(
-  { length: EARTH_FRAME_COUNT },
-  (_, index) => `assets/space/earth-frames/earth-${String(index).padStart(2, "0")}.webp`
-);
 const EARTH_ASSETS = {
-  day: "assets/space/earth-optimized-2048.webp",
+  day: "assets/space/earth-blue-marble-4096.jpg",
+  normal: "assets/space/earth-normal-2048.jpg",
+  specular: "assets/space/earth-specular-2048.jpg",
+  lights: "assets/space/earth-city-lights-4096.jpg",
   clouds: "assets/space/earth-clouds-1024.png",
   moon: "assets/space/moon-1024.jpg",
 };
@@ -190,132 +188,6 @@ const initEmbeddedPlanet = () => {
   return true;
 };
 
-const initEarthSequence = () => {
-  const shell = document.getElementById("earth-shell");
-  const frame = document.getElementById("earth-frame");
-  const canvas = document.getElementById("space-canvas");
-
-  if (!shell || !frame) {
-    return;
-  }
-
-  if (canvas) {
-    canvas.style.display = "none";
-  }
-
-  let currentFrameIndex = -1;
-  let currentProgress = readJourneyProgress();
-  let renderedProgress = currentProgress;
-  let targetSpin = 0;
-  let spin = 0;
-  let autoFrame = 0;
-  let lastScrollY = window.scrollY;
-  let lastTime = 0;
-  let frameId = 0;
-
-  const setEarthFrame = (index) => {
-    const boundedIndex = Math.max(0, Math.min(EARTH_FRAME_COUNT - 1, index));
-
-    if (boundedIndex === currentFrameIndex) {
-      return;
-    }
-
-    currentFrameIndex = boundedIndex;
-    frame.src = EARTH_FRAME_PATHS[boundedIndex];
-  };
-
-  const preloadFrames = () => {
-    EARTH_FRAME_PATHS.slice(1).forEach((path) => {
-      const image = new Image();
-      image.decoding = "async";
-      image.src = path;
-    });
-  };
-
-  if (typeof window.requestIdleCallback === "function") {
-    window.requestIdleCallback(preloadFrames);
-  } else {
-    window.setTimeout(preloadFrames, 1);
-  }
-
-  setEarthFrame(0);
-
-  const onScroll = () => {
-    const currentY = window.scrollY;
-    const delta = currentY - lastScrollY;
-    lastScrollY = currentY;
-    currentProgress = readJourneyProgress();
-    targetSpin += Math.max(-2.4, Math.min(2.4, delta * 0.018));
-  };
-
-  if (window.gsap && window.ScrollTrigger && !prefersReducedMotion) {
-    gsap.registerPlugin(ScrollTrigger);
-    ScrollTrigger.create({
-      trigger: ".journey",
-      start: "top top",
-      end: "bottom bottom",
-      scrub: 2,
-      onUpdate: (self) => {
-        currentProgress = self.progress;
-      },
-    });
-  } else {
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
-  }
-
-  window.addEventListener(
-    "wheel",
-    (event) => {
-      targetSpin += Math.max(-1.8, Math.min(1.8, event.deltaY * 0.006));
-    },
-    { passive: true }
-  );
-
-  const render = (time = 0) => {
-    frameId = window.requestAnimationFrame(render);
-
-    if (document.hidden) {
-      return;
-    }
-
-    if (time - lastTime < 1000 / 12) {
-      return;
-    }
-
-    const deltaSeconds = lastTime ? (time - lastTime) / 1000 : 1 / 12;
-    lastTime = time;
-    renderedProgress += (currentProgress - renderedProgress) * 0.08;
-    spin += (targetSpin - spin) * 0.14;
-    targetSpin *= 0.84;
-    autoFrame = (autoFrame + deltaSeconds * (prefersReducedMotion ? 0.25 : 0.7)) % EARTH_FRAME_COUNT;
-
-    const narrowScreen = window.innerWidth < 760;
-    const scale = (narrowScreen ? 0.74 : 0.68) + renderedProgress * (narrowScreen ? 0.42 : 0.62);
-    const shiftY = renderedProgress * (narrowScreen ? 18 : 10);
-    const frameFloat = (autoFrame + spin + renderedProgress * 3.2 + EARTH_FRAME_COUNT * 4) % EARTH_FRAME_COUNT;
-
-    shell.style.setProperty("--earth-scale", scale.toFixed(3));
-    shell.style.setProperty("--earth-shift-y", `${shiftY.toFixed(1)}px`);
-    setEarthFrame(Math.round(frameFloat));
-  };
-
-  document.addEventListener("visibilitychange", () => {
-    if (document.hidden) {
-      window.cancelAnimationFrame(frameId);
-      frameId = 0;
-      return;
-    }
-
-    if (!frameId) {
-      lastTime = 0;
-      render();
-    }
-  });
-
-  render();
-};
-
 const THREE_MODULE_URL = "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
 
 const resolveThreeRuntime = async () => {
@@ -356,7 +228,7 @@ const initSpaceScene = async () => {
 
   const textureLoader = new THREE.TextureLoader();
   const setRendererSize = () => {
-    const maxDpr = window.innerWidth < 760 ? 0.9 : 1;
+    const maxDpr = window.innerWidth < 760 ? 1 : 1.12;
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, maxDpr));
     renderer.setSize(window.innerWidth, window.innerHeight, false);
   };
@@ -368,7 +240,7 @@ const initSpaceScene = async () => {
   }
   if (THREE.ACESFilmicToneMapping) {
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.6;
+    renderer.toneMappingExposure = 1.9;
   }
 
   const maxAnisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 4);
@@ -390,21 +262,29 @@ const initSpaceScene = async () => {
   };
 
   const earth = new THREE.Mesh(
-    new THREE.SphereGeometry(1.56, 56, 56),
-    new THREE.MeshBasicMaterial({
+    new THREE.SphereGeometry(1.56, 72, 72),
+    new THREE.MeshPhongMaterial({
       map: loadTexture(EARTH_ASSETS.day, true),
+      normalMap: loadTexture(EARTH_ASSETS.normal),
+      normalScale: new THREE.Vector2(0.82, 0.82),
+      specularMap: loadTexture(EARTH_ASSETS.specular),
+      specular: new THREE.Color(0x9ed7ff),
+      shininess: 22,
+      emissiveMap: loadTexture(EARTH_ASSETS.lights, true),
+      emissive: new THREE.Color(0xffddb0),
+      emissiveIntensity: 0.68,
       color: 0xffffff,
     })
   );
-  earth.rotation.set(0.28, 2.2, 0.08);
+  earth.rotation.set(0.34, -1.05, 0.12);
   earthGroup.add(earth);
 
   const cloudLayer = new THREE.Mesh(
-    new THREE.SphereGeometry(1.595, 42, 42),
-    new THREE.MeshBasicMaterial({
+    new THREE.SphereGeometry(1.595, 56, 56),
+    new THREE.MeshPhongMaterial({
       map: loadTexture(EARTH_ASSETS.clouds, true),
       transparent: true,
-      opacity: 0.42,
+      opacity: 0.5,
       depthWrite: false,
       color: 0xf8fdff,
     })
@@ -451,8 +331,10 @@ const initSpaceScene = async () => {
 
   const moon = new THREE.Mesh(
     new THREE.SphereGeometry(0.27, 28, 28),
-    new THREE.MeshBasicMaterial({
+    new THREE.MeshStandardMaterial({
       map: loadTexture(EARTH_ASSETS.moon, true),
+      roughness: 1,
+      metalness: 0,
       color: 0xf3f7ff,
     })
   );
@@ -484,9 +366,20 @@ const initSpaceScene = async () => {
     );
   };
 
-  const deepStars = createStarField(720, 8.6, -11.8, 0.35, 0.014, 0.52);
-  const nearStars = createStarField(320, 5.8, -8.2, 0.3, 0.024, 0.76);
+  const deepStars = createStarField(980, 8.6, -11.8, 0.35, 0.014, 0.52);
+  const nearStars = createStarField(540, 5.8, -8.2, 0.3, 0.024, 0.76);
   group.add(deepStars, nearStars);
+
+  scene.add(new THREE.AmbientLight(0xe5f3ff, 1.7));
+  const keyLight = new THREE.DirectionalLight(0xffffff, 2.45);
+  keyLight.position.set(5.6, 2.4, 4.8);
+  scene.add(keyLight);
+  const fillLight = new THREE.DirectionalLight(0xa8dfff, 1.2);
+  fillLight.position.set(-4.2, 1.4, 3.2);
+  scene.add(fillLight);
+  const rimLight = new THREE.DirectionalLight(0x8ce1ff, 1.5);
+  rimLight.position.set(-3.2, 2.2, -1.8);
+  scene.add(rimLight);
 
   const motion = { progress: readJourneyProgress() };
   let renderedProgress = motion.progress;
@@ -689,7 +582,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initSmoothScroll();
   initRevealAnimations();
   initEmbeddedPlanet();
-  initEarthSequence();
+  initSpaceScene();
   initJourneyMotion();
   initLeadForm();
 });

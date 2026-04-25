@@ -110,38 +110,6 @@ h3 {
   pointer-events: none;
 }
 
-#earth-shell {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  display: grid;
-  place-items: center;
-  pointer-events: none;
-  overflow: hidden;
-}
-
-#earth-shell::after {
-  content: "";
-  position: absolute;
-  width: min(82vw, 960px);
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(115, 196, 255, 0.08) 0%, rgba(80, 143, 255, 0.16) 42%, rgba(80, 143, 255, 0) 72%);
-  transform: translate3d(0, var(--earth-shift-y, 0px), 0) scale(calc(var(--earth-scale, 0.78) * 1.05));
-  filter: blur(12px);
-}
-
-#earth-frame {
-  position: relative;
-  width: min(78vw, 900px);
-  height: auto;
-  display: block;
-  transform: translate3d(0, var(--earth-shift-y, 0px), 0) scale(var(--earth-scale, 0.78));
-  transform-origin: center;
-  will-change: transform;
-  filter: drop-shadow(0 16px 46px rgba(63, 142, 255, 0.16));
-}
-
 #shuttle-shell {
   position: fixed;
   inset: 0;
@@ -929,13 +897,5 @@ h3 {
   .hero-copy__text {
     font-size: 0.58rem;
     letter-spacing: 0.08em;
-  }
-
-  #earth-shell::after {
-    width: min(102vw, 560px);
-  }
-
-  #earth-frame {
-    width: min(96vw, 520px);
   }
 }

@@ -14,19 +14,16 @@
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="preload" as="image" href="assets/space/earth-frames/earth-00.webp" type="image/webp" />
     <link rel="stylesheet" href="style.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+        }
+      }
+    </script>
   </head>
   <body>
-    <div id="earth-shell" aria-hidden="true">
-      <img
-        id="earth-frame"
-        src="assets/space/earth-frames/earth-00.webp"
-        alt=""
-        decoding="async"
-        fetchpriority="high"
-      />
-    </div>
     <div id="shuttle-shell" aria-hidden="true">
       <img
         id="shuttle-frame"
@@ -246,6 +243,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollToPlugin.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
     <script src="script.js"></script>
   </body>
 </html>
