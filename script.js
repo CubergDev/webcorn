@@ -4,6 +4,11 @@ const SHUTTLE_FRAME_PATHS = Array.from(
   { length: SHUTTLE_FRAME_COUNT },
   (_, index) => `assets/shuttle/frames/frame-${String(index).padStart(2, "0")}.webp`
 );
+const EARTH_FALLBACK_FRAME_COUNT = 12;
+const EARTH_FALLBACK_FRAME_PATHS = Array.from(
+  { length: EARTH_FALLBACK_FRAME_COUNT },
+  (_, index) => `assets/space/earth-frames/earth-${String(index).padStart(2, "0")}.webp`
+);
 const EARTH_ASSETS = {
   day: "assets/space/earth-blue-marble-4096.jpg",
   normal: "assets/space/earth-normal-2048.jpg",
@@ -12,6 +17,7 @@ const EARTH_ASSETS = {
   clouds: "assets/space/earth-clouds-1024.png",
   moon: "assets/space/moon-1024.jpg",
 };
+const shouldUseEarthFallback = () => window.location.protocol === "file:";
 
 const setRevealFallback = () => {
   document.querySelectorAll("[data-reveal]").forEach((item) => {
@@ -188,6 +194,135 @@ const initEmbeddedPlanet = () => {
   return true;
 };
 
+const initEarthFallback = () => {
+  const shell = document.getElementById("earth-fallback-shell");
+  const frame = document.getElementById("earth-fallback-frame");
+  const canvas = document.getElementById("space-canvas");
+
+  if (!shell || !frame) {
+    return false;
+  }
+
+  shell.classList.add("is-active");
+  if (canvas) {
+    canvas.style.display = "none";
+  }
+
+  let currentFrameIndex = -1;
+  let currentProgress = readJourneyProgress();
+  let renderedProgress = currentProgress;
+  let targetSpin = 0;
+  let spin = 0;
+  let autoFrame = 0;
+  let lastScrollY = window.scrollY;
+  let lastTime = 0;
+  let frameId = 0;
+
+  const setEarthFrame = (index) => {
+    const boundedIndex = Math.max(0, Math.min(EARTH_FALLBACK_FRAME_COUNT - 1, index));
+
+    if (boundedIndex === currentFrameIndex) {
+      return;
+    }
+
+    currentFrameIndex = boundedIndex;
+    frame.src = EARTH_FALLBACK_FRAME_PATHS[boundedIndex];
+  };
+
+  const preloadFrames = () => {
+    EARTH_FALLBACK_FRAME_PATHS.slice(1).forEach((path) => {
+      const image = new Image();
+      image.decoding = "async";
+      image.src = path;
+    });
+  };
+
+  if (typeof window.requestIdleCallback === "function") {
+    window.requestIdleCallback(preloadFrames);
+  } else {
+    window.setTimeout(preloadFrames, 1);
+  }
+
+  setEarthFrame(0);
+
+  const updateProgress = () => {
+    const currentY = window.scrollY;
+    const delta = currentY - lastScrollY;
+    lastScrollY = currentY;
+    currentProgress = readJourneyProgress();
+    targetSpin += Math.max(-2.2, Math.min(2.2, delta * 0.018));
+  };
+
+  if (window.gsap && window.ScrollTrigger && !prefersReducedMotion) {
+    gsap.registerPlugin(ScrollTrigger);
+    ScrollTrigger.create({
+      trigger: ".journey",
+      start: "top top",
+      end: "bottom bottom",
+      scrub: 2,
+      onUpdate: (self) => {
+        currentProgress = self.progress;
+      },
+    });
+  } else {
+    window.addEventListener("scroll", updateProgress, { passive: true });
+    updateProgress();
+  }
+
+  window.addEventListener(
+    "wheel",
+    (event) => {
+      targetSpin += Math.max(-1.8, Math.min(1.8, event.deltaY * 0.006));
+    },
+    { passive: true }
+  );
+
+  const render = (time = 0) => {
+    frameId = window.requestAnimationFrame(render);
+
+    if (document.hidden) {
+      return;
+    }
+
+    if (time - lastTime < 1000 / 12) {
+      return;
+    }
+
+    const deltaSeconds = lastTime ? (time - lastTime) / 1000 : 1 / 12;
+    lastTime = time;
+    renderedProgress += (currentProgress - renderedProgress) * 0.08;
+    spin += (targetSpin - spin) * 0.14;
+    targetSpin *= 0.84;
+    autoFrame = (autoFrame + deltaSeconds * (prefersReducedMotion ? 0.25 : 0.72)) % EARTH_FALLBACK_FRAME_COUNT;
+
+    const narrowScreen = window.innerWidth < 760;
+    const scale = (narrowScreen ? 0.78 : 0.72) + renderedProgress * (narrowScreen ? 0.4 : 0.58);
+    const shiftY = renderedProgress * (narrowScreen ? 18 : 10);
+    const frameFloat =
+      (autoFrame + spin + renderedProgress * 2.8 + EARTH_FALLBACK_FRAME_COUNT * 4) % EARTH_FALLBACK_FRAME_COUNT;
+
+    shell.style.setProperty("--earth-scale", scale.toFixed(3));
+    shell.style.setProperty("--earth-shift-y", `${shiftY.toFixed(1)}px`);
+    setEarthFrame(Math.round(frameFloat));
+  };
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      window.cancelAnimationFrame(frameId);
+      frameId = 0;
+      return;
+    }
+
+    if (!frameId) {
+      lastTime = 0;
+      render();
+    }
+  });
+
+  render();
+  return true;
+};
+
 const THREE_MODULE_URL = "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
 
 const resolveThreeRuntime = async () => {
@@ -203,13 +338,13 @@ const initSpaceScene = async () => {
   const canvas = document.getElementById("space-canvas");
 
   if (!canvas) {
-    return;
+    return false;
   }
 
   const { THREE } = await resolveThreeRuntime();
 
   if (!THREE) {
-    return;
+    return false;
   }
 
   const renderer = new THREE.WebGLRenderer({
@@ -505,6 +640,7 @@ const initSpaceScene = async () => {
   });
 
   render();
+  return true;
 };
 
 const initJourneyMotion = () => {
@@ -578,11 +714,19 @@ const initLeadForm = () => {
   });
 };
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   initSmoothScroll();
   initRevealAnimations();
   initEmbeddedPlanet();
-  initSpaceScene();
+  if (shouldUseEarthFallback()) {
+    initEarthFallback();
+  } else {
+    const started = await initSpaceScene().catch(() => false);
+
+    if (!started) {
+      initEarthFallback();
+    }
+  }
   initJourneyMotion();
   initLeadForm();
 });
