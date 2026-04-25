@@ -15,19 +15,19 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="style.css" />
-    <script type="importmap">
-      {
-        "imports": {
-          "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
-        }
-      }
-    </script>
   </head>
   <body>
-    <div id="planet-fallback-shell" aria-hidden="true">
-      <span id="planet-fallback-ring"></span>
-      <span id="planet-fallback-stream"></span>
-      <span id="planet-fallback-body"></span>
+    <div id="blackhole-scene" aria-hidden="true">
+      <div class="blackhole-stage">
+        <div class="blackhole-rotator">
+          <span class="blackhole-aura blackhole-aura--far"></span>
+          <span class="blackhole-aura blackhole-aura--near"></span>
+          <span class="blackhole-disk blackhole-disk--base"></span>
+          <span class="blackhole-disk blackhole-disk--glow"></span>
+          <span class="blackhole-shadow"></span>
+          <span class="blackhole-core"></span>
+        </div>
+      </div>
     </div>
     <div id="shuttle-shell" aria-hidden="true">
       <img
@@ -38,7 +38,6 @@
         fetchpriority="high"
       />
     </div>
-    <canvas id="space-canvas" aria-hidden="true"></canvas>
 
     <header class="header">
       <div class="container header__inner">
@@ -248,7 +247,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollToPlugin.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
     <script src="script.js"></script>
   </body>
 </html>
