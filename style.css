@@ -118,8 +118,9 @@ h3 {
   background: #02040a;
   opacity: 1;
   transform: translate3d(0, var(--shuttle-shift-y, 0px), 0) scale(var(--shuttle-scale, 1));
-  filter: blur(var(--shuttle-blur, 0px));
   transition: opacity 280ms ease;
+  contain: paint;
+  will-change: transform, opacity;
 }
 
 #shuttle-shell.is-ready {
@@ -167,6 +168,7 @@ h3 {
   pointer-events: none;
   opacity: 0;
   transition: opacity 420ms ease;
+  contain: layout paint style;
 }
 
 #planet-shell.is-ready {
@@ -186,13 +188,13 @@ h3 {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 360vw;
-  height: 360vh;
+  width: 330vw;
+  height: 330vh;
   border: 0;
-  transform: translate(-50%, calc(-50% + var(--planet-shift-y, 0px))) scale(var(--planet-scale, 1.04));
+  transform: translate3d(-50%, calc(-50% + var(--planet-shift-y, 0px)), 0) scale(var(--planet-scale, 1.04));
   transform-origin: center;
-  filter: saturate(1.08) brightness(1.08);
   will-change: transform;
+  backface-visibility: hidden;
 }
 
 .container {
@@ -932,7 +934,7 @@ h3 {
   }
 
   #planet-frame {
-    width: 460vw;
-    height: 460vh;
+    width: 380vw;
+    height: 380vh;
   }
 }

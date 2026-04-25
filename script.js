@@ -78,6 +78,7 @@ const initEmbeddedPlanet = () => {
   const shuttleVideo = document.getElementById("shuttle-video");
   const shuttleCanvas = document.getElementById("shuttle-canvas");
   const canvas = document.getElementById("space-canvas");
+  const rootStyle = document.documentElement.style;
 
   if (!shell || !frame) {
     return false;
@@ -187,7 +188,23 @@ const initEmbeddedPlanet = () => {
   }
 
   const motion = { progress: readJourneyProgress() };
-  let renderedProgress = motion.progress;
+  let planetFrameId = 0;
+  const cssState = {
+    "--planet-scale": "",
+    "--planet-shift-y": "",
+    "--shuttle-opacity": "",
+    "--shuttle-scale": "",
+    "--shuttle-shift-y": "",
+  };
+
+  const setCssVar = (name, value) => {
+    if (cssState[name] === value) {
+      return;
+    }
+
+    cssState[name] = value;
+    rootStyle.setProperty(name, value);
+  };
 
   const applyPlanetState = (progress) => {
     const narrowScreen = window.innerWidth < 760;
@@ -199,12 +216,22 @@ const initEmbeddedPlanet = () => {
     const scaleBoost = narrowScreen ? 0.9 : 0.72;
     const shiftY = narrowScreen ? earthApproach * 18 : earthApproach * 10;
 
-    document.documentElement.style.setProperty("--planet-scale", (baseScale + earthApproach * scaleBoost).toFixed(3));
-    document.documentElement.style.setProperty("--planet-shift-y", `${shiftY.toFixed(1)}px`);
-    document.documentElement.style.setProperty("--shuttle-opacity", Math.max(0, 1 - shuttleExit * 1.18).toFixed(3));
-    document.documentElement.style.setProperty("--shuttle-scale", (1 + shuttleExit * 0.55).toFixed(3));
-    document.documentElement.style.setProperty("--shuttle-shift-y", `${(shuttleExit * 10).toFixed(1)}px`);
-    document.documentElement.style.setProperty("--shuttle-blur", `${(shuttleExit * 10).toFixed(1)}px`);
+    setCssVar("--planet-scale", (baseScale + earthApproach * scaleBoost).toFixed(3));
+    setCssVar("--planet-shift-y", `${shiftY.toFixed(1)}px`);
+    setCssVar("--shuttle-opacity", Math.max(0, 1 - shuttleExit * 1.18).toFixed(3));
+    setCssVar("--shuttle-scale", (1 + shuttleExit * 0.55).toFixed(3));
+    setCssVar("--shuttle-shift-y", `${(shuttleExit * 10).toFixed(1)}px`);
+  };
+
+  const schedulePlanetState = () => {
+    if (planetFrameId) {
+      return;
+    }
+
+    planetFrameId = window.requestAnimationFrame(() => {
+      planetFrameId = 0;
+      applyPlanetState(motion.progress);
+    });
   };
 
   if (window.gsap && window.ScrollTrigger && !prefersReducedMotion) {
@@ -212,6 +239,7 @@ const initEmbeddedPlanet = () => {
     gsap.to(motion, {
       progress: 1,
       ease: "none",
+      onUpdate: schedulePlanetState,
       scrollTrigger: {
         trigger: ".journey",
         start: "top top",
@@ -222,20 +250,15 @@ const initEmbeddedPlanet = () => {
   } else {
     const updateScroll = () => {
       motion.progress = readJourneyProgress();
+      schedulePlanetState();
     };
 
     window.addEventListener("scroll", updateScroll, { passive: true });
     updateScroll();
   }
 
-  const renderPlanetState = () => {
-    renderedProgress += (motion.progress - renderedProgress) * 0.045;
-    applyPlanetState(renderedProgress);
-    window.requestAnimationFrame(renderPlanetState);
-  };
-
-  applyPlanetState(renderedProgress);
-  renderPlanetState();
+  window.addEventListener("resize", schedulePlanetState, { passive: true });
+  applyPlanetState(motion.progress);
 
   return true;
 };
