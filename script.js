@@ -1,10 +1,17 @@
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-const SKETCHFAB_EARTH_UID = "37249acae18b406d8c1c160d7c0bc8e6";
 const SHUTTLE_FRAME_COUNT = 16;
 const SHUTTLE_FRAME_PATHS = Array.from(
   { length: SHUTTLE_FRAME_COUNT },
   (_, index) => `assets/shuttle/frames/frame-${String(index).padStart(2, "0")}.webp`
 );
+const EARTH_ASSETS = {
+  day: "assets/space/earth-blue-marble-4096.jpg",
+  normal: "assets/space/earth-normal-2048.jpg",
+  specular: "assets/space/earth-specular-2048.jpg",
+  lights: "assets/space/earth-city-lights-4096.jpg",
+  clouds: "assets/space/earth-clouds-1024.png",
+  moon: "assets/space/moon-1024.jpg",
+};
 
 const setRevealFallback = () => {
   document.querySelectorAll("[data-reveal]").forEach((item) => {
@@ -76,77 +83,46 @@ const readJourneyProgress = () => {
 };
 
 const initEmbeddedPlanet = () => {
-  const shell = document.getElementById("planet-shell");
-  const frame = document.getElementById("planet-frame");
   const shuttleShell = document.getElementById("shuttle-shell");
   const shuttleFrame = document.getElementById("shuttle-frame");
-  const canvas = document.getElementById("space-canvas");
   const rootStyle = document.documentElement.style;
 
-  if (!shell || !frame) {
+  if (!shuttleShell || !shuttleFrame) {
     return false;
   }
 
-  const params = new URLSearchParams({
-    autostart: "1",
-    preload: "1",
-    camera: "0",
-    autospin: "0.08",
-    ui_controls: "0",
-    ui_infos: "0",
-    ui_inspector: "0",
-    ui_stop: "0",
-    ui_watermark: "0",
-    ui_watermark_link: "0",
-    dnt: "1",
-  });
+  let currentShuttleFrameIndex = -1;
+  const setShuttleFrame = (index) => {
+    const boundedIndex = Math.max(0, Math.min(SHUTTLE_FRAME_COUNT - 1, index));
 
-  frame.src = `https://sketchfab.com/models/${SKETCHFAB_EARTH_UID}/embed?${params.toString()}`;
-  frame.addEventListener("load", () => shell.classList.add("is-ready"), { once: true });
-
-  if (canvas) {
-    canvas.style.display = "none";
-  }
-
-  let setShuttleFrame = null;
-
-  if (shuttleShell && shuttleFrame) {
-    let currentShuttleFrameIndex = -1;
-
-    setShuttleFrame = (index) => {
-      const boundedIndex = Math.max(0, Math.min(SHUTTLE_FRAME_COUNT - 1, index));
-
-      if (currentShuttleFrameIndex === boundedIndex) {
-        return;
-      }
-
-      currentShuttleFrameIndex = boundedIndex;
-      shuttleFrame.src = SHUTTLE_FRAME_PATHS[boundedIndex];
-    };
-
-    setShuttleFrame(0);
-    shuttleShell.classList.add("is-ready");
-
-    const preloadFrames = () => {
-      SHUTTLE_FRAME_PATHS.slice(1).forEach((path) => {
-        const image = new Image();
-        image.decoding = "async";
-        image.src = path;
-      });
-    };
-
-    if (typeof window.requestIdleCallback === "function") {
-      window.requestIdleCallback(preloadFrames);
-    } else {
-      window.setTimeout(preloadFrames, 1);
+    if (currentShuttleFrameIndex === boundedIndex) {
+      return;
     }
+
+    currentShuttleFrameIndex = boundedIndex;
+    shuttleFrame.src = SHUTTLE_FRAME_PATHS[boundedIndex];
+  };
+
+  setShuttleFrame(0);
+  shuttleShell.classList.add("is-ready");
+
+  const preloadFrames = () => {
+    SHUTTLE_FRAME_PATHS.slice(1).forEach((path) => {
+      const image = new Image();
+      image.decoding = "async";
+      image.src = path;
+    });
+  };
+
+  if (typeof window.requestIdleCallback === "function") {
+    window.requestIdleCallback(preloadFrames);
+  } else {
+    window.setTimeout(preloadFrames, 1);
   }
 
   const motion = { progress: readJourneyProgress() };
-  let planetFrameId = 0;
+  let shuttleFrameId = 0;
   const cssState = {
-    "--planet-scale": "",
-    "--planet-shift-y": "",
     "--shuttle-opacity": "",
     "--shuttle-scale": "",
     "--shuttle-shift-y": "",
@@ -161,37 +137,25 @@ const initEmbeddedPlanet = () => {
     rootStyle.setProperty(name, value);
   };
 
-  const applyPlanetState = (progress) => {
-    const narrowScreen = window.innerWidth < 760;
+  const applyShuttleState = (progress) => {
     const shuttleExitRaw = Math.min(Math.max(progress / 0.28, 0), 1);
     const shuttleExit = shuttleExitRaw * shuttleExitRaw * (3 - 2 * shuttleExitRaw);
-    const earthApproachRaw = Math.min(Math.max((progress - 0.18) / 0.82, 0), 1);
-    const earthApproach = earthApproachRaw * earthApproachRaw * (3 - 2 * earthApproachRaw);
-    const baseScale = narrowScreen ? 0.46 : 0.34;
-    const scaleBoost = narrowScreen ? 0.9 : 0.72;
-    const shiftY = narrowScreen ? earthApproach * 18 : earthApproach * 10;
 
-    setCssVar("--planet-scale", (baseScale + earthApproach * scaleBoost).toFixed(3));
-    setCssVar("--planet-shift-y", `${shiftY.toFixed(1)}px`);
     setCssVar("--shuttle-opacity", Math.max(0, 1 - shuttleExit * 1.18).toFixed(3));
-    setCssVar("--shuttle-scale", (1 + shuttleExit * 0.55).toFixed(3));
-    setCssVar("--shuttle-shift-y", `${(shuttleExit * 10).toFixed(1)}px`);
-
-    if (shuttleShell && setShuttleFrame) {
-      const frameIndex = Math.round(shuttleExitRaw * (SHUTTLE_FRAME_COUNT - 1));
-      setShuttleFrame(frameIndex);
-      shuttleShell.classList.toggle("is-hidden", shuttleExitRaw > 0.995);
-    }
+    setCssVar("--shuttle-scale", (1 + shuttleExit * 0.52).toFixed(3));
+    setCssVar("--shuttle-shift-y", `${(shuttleExit * 6).toFixed(1)}px`);
+    setShuttleFrame(Math.round(shuttleExitRaw * (SHUTTLE_FRAME_COUNT - 1)));
+    shuttleShell.classList.toggle("is-hidden", shuttleExitRaw > 0.995);
   };
 
-  const schedulePlanetState = () => {
-    if (planetFrameId) {
+  const scheduleShuttleState = () => {
+    if (shuttleFrameId) {
       return;
     }
 
-    planetFrameId = window.requestAnimationFrame(() => {
-      planetFrameId = 0;
-      applyPlanetState(motion.progress);
+    shuttleFrameId = window.requestAnimationFrame(() => {
+      shuttleFrameId = 0;
+      applyShuttleState(motion.progress);
     });
   };
 
@@ -200,76 +164,49 @@ const initEmbeddedPlanet = () => {
     gsap.to(motion, {
       progress: 1,
       ease: "none",
-      onUpdate: schedulePlanetState,
+      onUpdate: scheduleShuttleState,
       scrollTrigger: {
         trigger: ".journey",
         start: "top top",
         end: "bottom bottom",
-        scrub: 2.6,
+        scrub: 2.2,
       },
     });
   } else {
     const updateScroll = () => {
       motion.progress = readJourneyProgress();
-      schedulePlanetState();
+      scheduleShuttleState();
     };
 
     window.addEventListener("scroll", updateScroll, { passive: true });
     updateScroll();
   }
 
-  window.addEventListener("resize", schedulePlanetState, { passive: true });
-  applyPlanetState(motion.progress);
+  window.addEventListener("resize", scheduleShuttleState, { passive: true });
+  applyShuttleState(motion.progress);
 
   return true;
 };
 
 const THREE_MODULE_URL = "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
-const COLLADA_LOADER_URL = "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/ColladaLoader.js";
-
-const SATURN_ASSETS = {
-  model: "saturn/uploads-files-4052472-Stylized+Planets.dae",
-  textureRoot: "saturn/Textures/Saturn 4K/",
-  saturnBase: "saturn/Textures/Saturn 4K/Saturn2_Saturn_BaseColor.png",
-  saturnNormal: "saturn/Textures/Saturn 4K/Saturn2_Saturn_Normal.png",
-  saturnRoughness: "saturn/Textures/Saturn 4K/Saturn2_Saturn_Roughness.png",
-  saturnMetallic: "saturn/Textures/Saturn 4K/Saturn2_Saturn_Metallic.png",
-  ringsBase: "saturn/Textures/Saturn 4K/Saturn2_Rings_BaseColor.png",
-  ringsNormal: "saturn/Textures/Saturn 4K/Saturn2_Rings_Normal.png",
-  ringsRoughness: "saturn/Textures/Saturn 4K/Saturn2_Rings_Roughness.png",
-  ringsMetallic: "saturn/Textures/Saturn 4K/Saturn2_Rings_Metallic.png",
-  moonBase: "saturn/Textures/Moon 4K/Saturn2_Saturn_BaseColor.png",
-};
-const SATURN_RING_EDGE_ON_TILT = -Math.PI * 0.46;
-const SATURN_RING_LINE_ANGLE = Math.PI * 0.14;
 
 const resolveThreeRuntime = async () => {
   try {
-    const [threeModule, colladaModule] = await Promise.all([
-      import(THREE_MODULE_URL),
-      import(COLLADA_LOADER_URL),
-    ]);
-
-    return {
-      THREE: threeModule,
-      ColladaLoader: colladaModule.ColladaLoader,
-    };
+    const threeModule = await import(THREE_MODULE_URL);
+    return { THREE: threeModule };
   } catch (error) {
-    return {
-      THREE: window.THREE,
-      ColladaLoader: null,
-    };
+    return { THREE: window.THREE };
   }
 };
 
 const initSpaceScene = async () => {
   const canvas = document.getElementById("space-canvas");
 
-  if (!canvas || prefersReducedMotion) {
+  if (!canvas) {
     return;
   }
 
-  const { THREE, ColladaLoader } = await resolveThreeRuntime();
+  const { THREE } = await resolveThreeRuntime();
 
   if (!THREE) {
     return;
@@ -278,31 +215,35 @@ const initSpaceScene = async () => {
   const renderer = new THREE.WebGLRenderer({
     canvas,
     alpha: true,
-    antialias: true,
+    antialias: false,
     powerPreference: "high-performance",
   });
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 100);
+  const camera = new THREE.PerspectiveCamera(34, window.innerWidth / window.innerHeight, 0.1, 120);
   const group = new THREE.Group();
-  const saturnGroup = new THREE.Group();
+  const earthGroup = new THREE.Group();
 
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
-  renderer.setSize(window.innerWidth, window.innerHeight);
+  scene.add(group);
+  group.add(earthGroup);
+
+  const textureLoader = new THREE.TextureLoader();
+  const setRendererSize = () => {
+    const maxDpr = window.innerWidth < 760 ? 1 : 1.12;
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, maxDpr));
+    renderer.setSize(window.innerWidth, window.innerHeight, false);
+  };
+
+  setRendererSize();
+
   if ("outputColorSpace" in renderer && THREE.SRGBColorSpace) {
     renderer.outputColorSpace = THREE.SRGBColorSpace;
   }
   if (THREE.ACESFilmicToneMapping) {
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.48;
+    renderer.toneMappingExposure = 1.9;
   }
-  scene.background = new THREE.Color(0x020713);
-  scene.fog = new THREE.FogExp2(0x020713, 0.026);
-  scene.add(group);
-  camera.position.set(0.18, 0.2, 8.9);
-  group.add(saturnGroup);
 
-  const textureLoader = new THREE.TextureLoader();
-  const maxAnisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 8);
+  const maxAnisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 4);
   const loadTexture = (url, isColorTexture = false) => {
     const texture = textureLoader.load(url);
     texture.anisotropy = maxAnisotropy;
@@ -320,115 +261,42 @@ const initSpaceScene = async () => {
     return texture;
   };
 
-  const textures = {
-    saturnBase: loadTexture(SATURN_ASSETS.saturnBase, true),
-    saturnNormal: loadTexture(SATURN_ASSETS.saturnNormal),
-    saturnRoughness: loadTexture(SATURN_ASSETS.saturnRoughness),
-    saturnMetallic: loadTexture(SATURN_ASSETS.saturnMetallic),
-    ringsBase: loadTexture(SATURN_ASSETS.ringsBase, true),
-    ringsNormal: loadTexture(SATURN_ASSETS.ringsNormal),
-    ringsRoughness: loadTexture(SATURN_ASSETS.ringsRoughness),
-    ringsMetallic: loadTexture(SATURN_ASSETS.ringsMetallic),
-    moonBase: loadTexture(SATURN_ASSETS.moonBase, true),
-  };
-
-  const materials = {
-    saturn: new THREE.MeshStandardMaterial({
-      map: textures.saturnBase,
-      normalMap: textures.saturnNormal,
-      roughnessMap: textures.saturnRoughness,
-      metalnessMap: textures.saturnMetallic,
-      roughness: 0.86,
-      metalness: 0.02,
-      emissive: new THREE.Color(0x1f160b),
-      emissiveIntensity: 0.36,
+  const earth = new THREE.Mesh(
+    new THREE.SphereGeometry(1.56, 72, 72),
+    new THREE.MeshPhongMaterial({
+      map: loadTexture(EARTH_ASSETS.day, true),
+      normalMap: loadTexture(EARTH_ASSETS.normal),
+      normalScale: new THREE.Vector2(0.82, 0.82),
+      specularMap: loadTexture(EARTH_ASSETS.specular),
+      specular: new THREE.Color(0x9ed7ff),
+      shininess: 22,
+      emissiveMap: loadTexture(EARTH_ASSETS.lights, true),
+      emissive: new THREE.Color(0xffddb0),
+      emissiveIntensity: 0.68,
       color: 0xffffff,
-    }),
-    rings: new THREE.MeshStandardMaterial({
-      map: textures.ringsBase,
-      alphaMap: textures.ringsBase,
-      normalMap: textures.ringsNormal,
-      roughnessMap: textures.ringsRoughness,
-      metalnessMap: textures.ringsMetallic,
-      roughness: 0.78,
-      metalness: 0.02,
-      transparent: true,
-      alphaTest: 0.035,
-      opacity: 0.98,
-      side: THREE.DoubleSide,
-      emissive: new THREE.Color(0x241404),
-      emissiveIntensity: 0.22,
-      color: 0xffffff,
-    }),
-    moon: new THREE.MeshStandardMaterial({
-      map: textures.moonBase,
-      roughness: 0.92,
-      metalness: 0,
-      color: 0xf2f5ff,
-    }),
-  };
-
-  const createStarField = (count, baseRadius, depthOffset, verticalSpread) => {
-    const geometry = new THREE.BufferGeometry();
-    const positions = new Float32Array(count * 3);
-
-    for (let i = 0; i < count; i += 1) {
-      const angle = i * 2.399963;
-      const radius = baseRadius + (i % 97) * 0.095;
-      const depth = depthOffset - (i % 41) * 0.55;
-
-      positions[i * 3] = Math.cos(angle) * radius;
-      positions[i * 3 + 1] = ((i % 53) - 26) * verticalSpread;
-      positions[i * 3 + 2] = depth + Math.sin(angle) * 2.6;
-    }
-
-    geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-    return geometry;
-  };
-
-  const deepStars = new THREE.Points(
-    createStarField(1450, 9.2, -12, 0.34),
-    new THREE.PointsMaterial({
-      color: 0xdaf6ff,
-      size: 0.014,
-      transparent: true,
-      opacity: 0.56,
     })
   );
-  group.add(deepStars);
+  earth.rotation.set(0.34, -1.05, 0.12);
+  earthGroup.add(earth);
 
-  const starGeometry = new THREE.BufferGeometry();
-  const starCount = 760;
-  const starPositions = new Float32Array(starCount * 3);
-
-  for (let i = 0; i < starCount; i += 1) {
-    const angle = i * 2.399963;
-    const radius = 6 + (i % 64) * 0.13;
-    const depth = -9 - (i % 28) * 0.8;
-
-    starPositions[i * 3] = Math.cos(angle) * radius;
-    starPositions[i * 3 + 1] = ((i % 37) - 18) * 0.32;
-    starPositions[i * 3 + 2] = depth + Math.sin(angle) * 2.2;
-  }
-
-  starGeometry.setAttribute("position", new THREE.BufferAttribute(starPositions, 3));
-  const stars = new THREE.Points(
-    starGeometry,
-    new THREE.PointsMaterial({
-      color: 0xdaf6ff,
-      size: 0.025,
+  const cloudLayer = new THREE.Mesh(
+    new THREE.SphereGeometry(1.595, 56, 56),
+    new THREE.MeshPhongMaterial({
+      map: loadTexture(EARTH_ASSETS.clouds, true),
       transparent: true,
-      opacity: 0.72,
+      opacity: 0.5,
+      depthWrite: false,
+      color: 0xf8fdff,
     })
   );
-  group.add(stars);
+  earthGroup.add(cloudLayer);
 
-  const glow = new THREE.Mesh(
-    new THREE.SphereGeometry(2.12, 96, 96),
+  const atmosphere = new THREE.Mesh(
+    new THREE.SphereGeometry(1.72, 60, 60),
     new THREE.ShaderMaterial({
       uniforms: {
-        glowColor: { value: new THREE.Color(0x80caff) },
-        intensity: { value: 0.4 },
+        glowColor: { value: new THREE.Color(0x7fd7ff) },
+        intensity: { value: 0.58 },
       },
       vertexShader: `
         varying vec3 vNormal;
@@ -449,7 +317,7 @@ const initSpaceScene = async () => {
 
         void main() {
           float rim = 1.0 - max(dot(normalize(vNormal), normalize(vViewPosition)), 0.0);
-          float glow = pow(rim, 2.6) * intensity;
+          float glow = pow(rim, 2.2) * intensity;
           gl_FragColor = vec4(glowColor, glow);
         }
       `,
@@ -459,143 +327,71 @@ const initSpaceScene = async () => {
       blending: THREE.AdditiveBlending,
     })
   );
-  glow.position.set(0, -0.12, -5.35);
-  group.add(glow);
+  earthGroup.add(atmosphere);
 
-  const chooseMaterial = (sourceName = "") => {
-    const name = sourceName.toLowerCase();
+  const moon = new THREE.Mesh(
+    new THREE.SphereGeometry(0.27, 28, 28),
+    new THREE.MeshStandardMaterial({
+      map: loadTexture(EARTH_ASSETS.moon, true),
+      roughness: 1,
+      metalness: 0,
+      color: 0xf3f7ff,
+    })
+  );
+  moon.position.set(4.8, 1.25, -7.8);
+  group.add(moon);
 
-    if (name.includes("ring")) {
-      return materials.rings;
+  const createStarField = (count, radius, depth, spread, size, opacity) => {
+    const geometry = new THREE.BufferGeometry();
+    const positions = new Float32Array(count * 3);
+
+    for (let index = 0; index < count; index += 1) {
+      const angle = index * 2.399963;
+      const distance = radius + (index % 89) * 0.085;
+
+      positions[index * 3] = Math.cos(angle) * distance;
+      positions[index * 3 + 1] = ((index % 61) - 30) * spread;
+      positions[index * 3 + 2] = depth - (index % 47) * 0.48 + Math.sin(angle) * 2.4;
     }
 
-    if (name.includes("moon")) {
-      return materials.moon;
-    }
-
-    return materials.saturn;
-  };
-
-  const prepareSaturnModel = (model) => {
-    const embeddedLights = [];
-
-    model.traverse((object) => {
-      if (object.isLight) {
-        embeddedLights.push(object);
-        return;
-      }
-
-      if (!object.isMesh) {
-        return;
-      }
-
-      if (object.geometry && !object.geometry.attributes.normal) {
-        object.geometry.computeVertexNormals();
-      }
-
-      if (Array.isArray(object.material)) {
-        object.material = object.material.map((material) => chooseMaterial(material?.name || object.name));
-      } else {
-        object.material = chooseMaterial(object.material?.name || object.name);
-      }
-    });
-
-    embeddedLights.forEach((light) => light.parent?.remove(light));
-    model.updateMatrixWorld(true);
-
-    const box = new THREE.Box3().setFromObject(model);
-    const size = box.getSize(new THREE.Vector3());
-    const center = box.getCenter(new THREE.Vector3());
-    const maxSize = Math.max(size.x, size.y, size.z) || 1;
-
-    model.position.sub(center);
-    model.scale.multiplyScalar(4.8 / maxSize);
-    model.rotation.set(-0.38, -0.48, -0.42);
-
-    return model;
-  };
-
-  const createFallbackSaturn = () => {
-    const fallback = new THREE.Group();
-    const body = new THREE.Mesh(new THREE.SphereGeometry(1.36, 128, 128), materials.saturn);
-    const rings = new THREE.Mesh(new THREE.RingGeometry(1.72, 3.48, 256, 4), materials.rings);
-    const ringLineA = new THREE.Mesh(
-      new THREE.TorusGeometry(2.02, 0.018, 10, 220),
-      new THREE.MeshBasicMaterial({ color: 0xe2c081, transparent: true, opacity: 0.78 })
+    geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    return new THREE.Points(
+      geometry,
+      new THREE.PointsMaterial({
+        color: 0xdff5ff,
+        size,
+        transparent: true,
+        opacity,
+      })
     );
-    const ringLineB = new THREE.Mesh(
-      new THREE.TorusGeometry(2.72, 0.014, 10, 220),
-      new THREE.MeshBasicMaterial({ color: 0xb88d58, transparent: true, opacity: 0.62 })
-    );
-
-    rings.rotation.x = Math.PI * 0.5;
-    ringLineA.rotation.x = Math.PI * 0.5;
-    ringLineB.rotation.x = Math.PI * 0.5;
-    fallback.add(body, rings, ringLineA, ringLineB);
-    fallback.rotation.set(-0.68, -0.2, -0.52);
-
-    return fallback;
   };
 
-  const loadSaturnModel = () =>
-    new Promise((resolve) => {
-      if (!ColladaLoader) {
-        resolve(null);
-        return;
-      }
+  const deepStars = createStarField(980, 8.6, -11.8, 0.35, 0.014, 0.52);
+  const nearStars = createStarField(540, 5.8, -8.2, 0.3, 0.024, 0.76);
+  group.add(deepStars, nearStars);
 
-      const loader = new ColladaLoader();
-      loader.setResourcePath(SATURN_ASSETS.textureRoot);
-      loader.load(
-        SATURN_ASSETS.model,
-        (collada) => resolve(prepareSaturnModel(collada.scene)),
-        undefined,
-        () => resolve(null)
-      );
-    });
-
-  const fallbackSaturn = createFallbackSaturn();
-  saturnGroup.add(fallbackSaturn);
-  saturnGroup.position.set(0, -0.12, -5.35);
-  saturnGroup.scale.setScalar(1.18);
-
-  loadSaturnModel().then((saturnModel) => {
-    if (!saturnModel) {
-      return;
-    }
-
-    saturnGroup.remove(fallbackSaturn);
-    saturnModel.scale.multiplyScalar(1.18);
-    saturnModel.position.set(0, 0, 0);
-    saturnModel.traverse((object) => {
-      if (object.isMesh) {
-        object.renderOrder = 2;
-      }
-    });
-    saturnGroup.add(saturnModel);
-  });
-
-  scene.add(new THREE.AmbientLight(0xffead0, 1.06));
-  const keyLight = new THREE.DirectionalLight(0xffffff, 5.8);
-  keyLight.position.set(5.8, 3.2, 4.8);
+  scene.add(new THREE.AmbientLight(0xe5f3ff, 1.7));
+  const keyLight = new THREE.DirectionalLight(0xffffff, 2.45);
+  keyLight.position.set(5.6, 2.4, 4.8);
   scene.add(keyLight);
-  const fillLight = new THREE.DirectionalLight(0xb6e6ff, 1.9);
-  fillLight.position.set(-3.2, 1.8, 3.4);
+  const fillLight = new THREE.DirectionalLight(0xa8dfff, 1.2);
+  fillLight.position.set(-4.2, 1.4, 3.2);
   scene.add(fillLight);
-  const rimLight = new THREE.DirectionalLight(0x9ce8ff, 2.45);
-  rimLight.position.set(-4, 1.6, -2);
+  const rimLight = new THREE.DirectionalLight(0x8ce1ff, 1.5);
+  rimLight.position.set(-3.2, 2.2, -1.8);
   scene.add(rimLight);
 
-  const motion = { progress: 0 };
-  let autoRotationY = 0;
-  let scrollRotationY = 0;
-  let scrollSpinVelocity = 0;
-  let targetScrollSpinVelocity = 0;
+  const motion = { progress: readJourneyProgress() };
+  let renderedProgress = motion.progress;
+  let frameId = 0;
+  let lastRenderTime = 0;
+  let autoRotation = 0;
+  let scrollRotation = 0;
+  let scrollVelocity = 0;
+  let targetScrollVelocity = 0;
   let lastScrollY = window.scrollY;
-  let renderedProgress = 0;
-  let frameId;
 
-  if (window.gsap && window.ScrollTrigger) {
+  if (window.gsap && window.ScrollTrigger && !prefersReducedMotion) {
     gsap.registerPlugin(ScrollTrigger);
     gsap.to(motion, {
       progress: 1,
@@ -604,7 +400,7 @@ const initSpaceScene = async () => {
         trigger: ".journey",
         start: "top top",
         end: "bottom bottom",
-        scrub: 2.8,
+        scrub: 2,
       },
     });
   } else {
@@ -621,83 +417,91 @@ const initSpaceScene = async () => {
       return;
     }
 
-    targetScrollSpinVelocity += Math.max(-42, Math.min(42, delta)) * 0.00058;
+    targetScrollVelocity += Math.max(-36, Math.min(36, delta)) * 0.00026;
   };
 
-  const updateScrollSpin = () => {
-    const currentScrollY = window.scrollY;
-    const delta = currentScrollY - lastScrollY;
-    lastScrollY = currentScrollY;
-
-    applyScrollSpinInput(delta);
-  };
-
-  window.addEventListener("scroll", updateScrollSpin, { passive: true });
   window.addEventListener(
-    "wheel",
-    (event) => {
-      applyScrollSpinInput(event.deltaY);
+    "scroll",
+    () => {
+      const currentScrollY = window.scrollY;
+      applyScrollSpinInput(currentScrollY - lastScrollY);
+      lastScrollY = currentScrollY;
     },
     { passive: true }
   );
+  window.addEventListener(
+    "wheel",
+    (event) => applyScrollSpinInput(event.deltaY),
+    { passive: true }
+  );
 
-  const render = () => {
-    renderedProgress += (motion.progress - renderedProgress) * 0.025;
+  const render = (time = 0) => {
+    frameId = window.requestAnimationFrame(render);
+
+    if (document.hidden) {
+      return;
+    }
+
+    const frameInterval = window.innerWidth < 760 ? 1000 / 30 : 1000 / 36;
+
+    if (time - lastRenderTime < frameInterval) {
+      return;
+    }
+
+    lastRenderTime = time;
+    renderedProgress += (motion.progress - renderedProgress) * 0.06;
     const eased = renderedProgress * renderedProgress * (3 - 2 * renderedProgress);
-
     const narrowScreen = window.innerWidth < 760;
-    const baseScale = narrowScreen ? 0.9 : 1.18;
-    const scaleBoost = narrowScreen ? 0.62 : 1.08;
+
+    autoRotation += prefersReducedMotion ? 0.00018 : 0.00042;
+    scrollVelocity += (targetScrollVelocity - scrollVelocity) * 0.09;
+    scrollRotation += scrollVelocity;
+    targetScrollVelocity *= 0.84;
+    scrollVelocity *= 0.92;
 
     camera.position.x = 0;
-    camera.position.y = 0.16 - eased * 0.04;
-    camera.position.z = 8.65 - eased * 0.9;
-    camera.lookAt(0, -0.04, -5.3);
+    camera.position.y = 0.18 - eased * 0.1;
+    camera.position.z = (narrowScreen ? 10.4 : 11.2) - eased * (narrowScreen ? 1.65 : 2.1);
+    camera.lookAt(0, -0.04, -0.36);
 
-    autoRotationY += 0.00078;
-    scrollSpinVelocity += (targetScrollSpinVelocity - scrollSpinVelocity) * 0.06;
-    scrollRotationY += scrollSpinVelocity;
-    targetScrollSpinVelocity *= 0.84;
-    scrollSpinVelocity *= 0.95;
+    group.rotation.x = -eased * 0.03;
+    earthGroup.position.set(0, narrowScreen ? -0.12 : -0.05, -4.85 + eased * 0.15);
+    earthGroup.scale.setScalar((narrowScreen ? 0.8 : 0.7) + eased * (narrowScreen ? 0.92 : 1.18));
+    earth.rotation.y = -1.08 + autoRotation + scrollRotation * 0.09 + eased * 0.2;
+    earth.rotation.x = 0.34 + eased * 0.05;
+    cloudLayer.rotation.y = earth.rotation.y + autoRotation * 0.2;
+    cloudLayer.rotation.x = earth.rotation.x + 0.01;
+    atmosphere.rotation.copy(earth.rotation);
+    atmosphere.material.uniforms.intensity.value = 0.58 + eased * 0.14;
 
-    saturnGroup.rotation.y = autoRotationY + scrollRotationY * 0.12;
-    saturnGroup.rotation.x = SATURN_RING_EDGE_ON_TILT + eased * 0.02;
-    saturnGroup.rotation.z = SATURN_RING_LINE_ANGLE - eased * 0.004;
-    saturnGroup.position.x = 0;
-    saturnGroup.position.y = (narrowScreen ? -0.28 : -0.12) + eased * 0.03;
-    saturnGroup.position.z = -5.35 + eased * 0.18;
-    saturnGroup.scale.setScalar(baseScale + eased * scaleBoost);
-    glow.position.x = saturnGroup.position.x;
-    glow.position.y = saturnGroup.position.y;
-    glow.position.z = saturnGroup.position.z;
-    glow.scale.setScalar(narrowScreen ? 0.74 : 0.96);
-    glow.material.uniforms.intensity.value = 0.34 + eased * 0.12;
-
-    deepStars.rotation.y += 0.00012;
-    stars.rotation.y += 0.00025;
-    group.rotation.x = -eased * 0.035;
-
-    deepStars.material.opacity = 0.58 - eased * 0.12;
-    stars.material.opacity = 0.74 - eased * 0.18;
+    moon.position.x = 4.8 - eased * 0.5;
+    moon.position.y = 1.25 + eased * 0.14;
+    deepStars.rotation.y += 0.00005;
+    nearStars.rotation.y += 0.00011;
+    deepStars.material.opacity = 0.52 - eased * 0.08;
+    nearStars.material.opacity = 0.76 - eased * 0.14;
 
     renderer.render(scene, camera);
-    frameId = window.requestAnimationFrame(render);
   };
 
   const resize = () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    setRendererSize();
+    lastRenderTime = 0;
   };
 
-  window.addEventListener("resize", resize);
+  window.addEventListener("resize", resize, { passive: true });
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) {
       window.cancelAnimationFrame(frameId);
+      frameId = 0;
       return;
     }
 
-    render();
+    if (!frameId) {
+      render();
+    }
   });
 
   render();
@@ -777,9 +581,8 @@ const initLeadForm = () => {
 document.addEventListener("DOMContentLoaded", () => {
   initSmoothScroll();
   initRevealAnimations();
-  if (!initEmbeddedPlanet()) {
-    initSpaceScene();
-  }
+  initEmbeddedPlanet();
+  initSpaceScene();
   initJourneyMotion();
   initLeadForm();
 });

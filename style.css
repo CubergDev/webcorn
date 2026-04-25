@@ -45,9 +45,9 @@ body::before {
   z-index: 1;
   pointer-events: none;
   background:
-    linear-gradient(90deg, rgba(2, 4, 10, 0.88) 0%, rgba(2, 4, 10, 0.7) 42%, rgba(2, 4, 10, 0.3) 100%),
-    linear-gradient(180deg, rgba(2, 4, 10, 0.08), rgba(2, 4, 10, 0.5)),
-    radial-gradient(circle at 82% 38%, transparent 0%, rgba(0, 0, 0, 0.3) 72%);
+    linear-gradient(90deg, rgba(2, 4, 10, 0.82) 0%, rgba(2, 4, 10, 0.58) 42%, rgba(2, 4, 10, 0.2) 100%),
+    linear-gradient(180deg, rgba(2, 4, 10, 0.04), rgba(2, 4, 10, 0.4)),
+    radial-gradient(circle at 82% 38%, transparent 0%, rgba(0, 0, 0, 0.22) 72%);
 }
 
 a {
@@ -161,43 +161,6 @@ h3 {
   object-fit: cover;
   object-position: center;
   transform: translateZ(0);
-}
-
-#planet-shell {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  overflow: hidden;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 420ms ease;
-  contain: layout paint style;
-}
-
-#planet-shell.is-ready {
-  opacity: 1;
-}
-
-#planet-shell::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(circle at center, transparent 0 36%, rgba(2, 4, 10, 0.14) 60%, rgba(2, 4, 10, 0.4) 100%);
-}
-
-#planet-frame {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 330vw;
-  height: 330vh;
-  border: 0;
-  transform: translate3d(-50%, calc(-50% + var(--planet-shift-y, 0px)), 0) scale(var(--planet-scale, 1.04));
-  transform-origin: center;
-  will-change: transform;
-  backface-visibility: hidden;
 }
 
 .container {
@@ -934,10 +897,5 @@ h3 {
   .hero-copy__text {
     font-size: 0.58rem;
     letter-spacing: 0.08em;
-  }
-
-  #planet-frame {
-    width: 380vw;
-    height: 380vh;
   }
 }
