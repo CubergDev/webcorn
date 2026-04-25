@@ -39,6 +39,8 @@ public class Main {
     private static final Path ORDERS_DIR = DATA_DIR.resolve("orders");
     private static final Path USERS_DIR = DATA_DIR.resolve("users");
     private static final Path SESSIONS_DIR = DATA_DIR.resolve("sessions");
+    private static final Path TASKS_DIR = DATA_DIR.resolve("tasks");
+    private static final Path COLUMNS_DIR = DATA_DIR.resolve("columns");
     private static final int PORT = readPort();
     private static final String DEFAULT_CURRENCY = "KZT";
     private static final String STATUS_NEW = "Новый";
@@ -47,6 +49,11 @@ public class Main {
     private static final String ORDER_STATUS_FAILED = "Ошибка оплаты";
     private static final String ROLE_CUSTOMER = "customer";
     private static final String ROLE_STAFF = "staff";
+    private static final String STAFF_ROLE_MANAGER = "manager";
+    private static final String STAFF_ROLE_SALES = "sales";
+    private static final String STAFF_ROLE_DEVELOPER = "developer";
+    private static final String TASK_STATUS_OPEN = "open";
+    private static final String TASK_STATUS_DONE = "done";
     private static final String SESSION_COOKIE = "wf_session";
     private static final long SESSION_MAX_AGE_SECONDS = 60L * 60L * 24L * 30L;
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
@@ -69,6 +76,7 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
         ensureStorageDirectories();
+        ensureDefaultColumns();
         ensureStaffAccount();
 
         HttpServer server = HttpServer.create(new InetSocketAddress(PORT), 0);
@@ -168,8 +176,53 @@ public class Main {
                 return;
             }
 
+            if ("/api/crm/bootstrap".equals(path) && "GET".equals(method)) {
+                handleCrmBootstrap(exchange);
+                return;
+            }
+
             if ("/api/crm/leads/update".equals(path) && "POST".equals(method)) {
                 handleUpdateLead(exchange);
+                return;
+            }
+
+            if ("/api/crm/users".equals(path) && "GET".equals(method)) {
+                handleListStaffUsers(exchange);
+                return;
+            }
+
+            if ("/api/crm/users/create".equals(path) && "POST".equals(method)) {
+                handleCreateStaffUser(exchange);
+                return;
+            }
+
+            if ("/api/crm/tasks/create".equals(path) && "POST".equals(method)) {
+                handleCreateTask(exchange);
+                return;
+            }
+
+            if ("/api/crm/tasks/update".equals(path) && "POST".equals(method)) {
+                handleUpdateTask(exchange);
+                return;
+            }
+
+            if ("/api/crm/tasks/delete".equals(path) && "POST".equals(method)) {
+                handleDeleteTask(exchange);
+                return;
+            }
+
+            if ("/api/crm/columns/create".equals(path) && "POST".equals(method)) {
+                handleCreateColumn(exchange);
+                return;
+            }
+
+            if ("/api/crm/columns/update".equals(path) && "POST".equals(method)) {
+                handleUpdateColumn(exchange);
+                return;
+            }
+
+            if ("/api/crm/columns/delete".equals(path) && "POST".equals(method)) {
+                handleDeleteColumn(exchange);
                 return;
             }
 
@@ -359,18 +412,56 @@ public class Main {
         ));
     }
 
+    private static void handleCrmBootstrap(HttpExchange exchange) throws IOException {
+        AuthContext auth = requireAuth(exchange, ROLE_STAFF);
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("success", true);
+        result.put("user", auth.user.toPublicMap());
+        result.put("users", loadStaffUserMaps());
+        result.put("columns", loadColumnMaps());
+        result.put("tasks", loadTaskMaps());
+        result.put("leads", loadAllLeads().stream()
+                .sorted(Comparator.comparing(Main::leadSortInstant).reversed())
+                .map(LeadRecord::toMap)
+                .toList());
+        sendJson(exchange, 200, result);
+    }
+
     private static void handleUpdateLead(HttpExchange exchange) throws IOException {
-        requireAuth(exchange, ROLE_STAFF);
+        AuthContext auth = requireAuth(exchange, ROLE_STAFF);
         FormRequest request = readFormRequest(exchange);
         String id = requireValue(request.params(), "id");
         LeadRecord lead = loadLead(id)
                 .orElseThrow(() -> new HttpError(404, "Лид не найден."));
+        Map<String, String> params = request.params();
 
-        if (request.params().containsKey("status")) {
-            lead.status = valueOrBlank(request.params().get("status"));
+        if (params.containsKey("status") || params.containsKey("columnId")
+                || params.containsKey("assignedToUserId") || params.containsKey("description")) {
+            requireSalesAccess(auth);
         }
-        if (request.params().containsKey("notes")) {
-            lead.notes = valueOrBlank(request.params().get("notes"));
+
+        if (params.containsKey("status")) {
+            lead.status = valueOrBlank(params.get("status"));
+        }
+        if (params.containsKey("columnId")) {
+            String columnId = valueOrBlank(params.get("columnId"));
+            if (!columnId.isBlank()) {
+                requireColumn(columnId);
+            }
+            lead.columnId = columnId;
+        }
+        if (params.containsKey("assignedToUserId")) {
+            String userId = valueOrBlank(params.get("assignedToUserId"));
+            if (!userId.isBlank()) {
+                requireStaffUser(userId);
+            }
+            lead.assignedToUserId = userId;
+        }
+        if (params.containsKey("description")) {
+            lead.description = valueOrBlank(params.get("description"));
+        }
+        if (params.containsKey("notes")) {
+            lead.notes = valueOrBlank(params.get("notes"));
         }
         lead.lastUpdatedAt = now();
         saveLead(lead);
@@ -379,6 +470,189 @@ public class Main {
                 "success", true,
                 "lead", lead.toMap()
         ));
+    }
+
+    private static void handleListStaffUsers(HttpExchange exchange) throws IOException {
+        requireAuth(exchange, ROLE_STAFF);
+        sendJson(exchange, 200, Map.of(
+                "success", true,
+                "users", loadStaffUserMaps()
+        ));
+    }
+
+    private static void handleCreateStaffUser(HttpExchange exchange) throws IOException {
+        AuthContext auth = requireAuth(exchange, ROLE_STAFF);
+        requireManagerAccess(auth);
+        FormRequest request = readFormRequest(exchange);
+        Map<String, String> params = request.params();
+        String fullName = requireValue(params, "fullName");
+        String email = requireEmail(params, "email");
+        String password = requireStrongPassword(params, "password");
+        String staffRole = requireStaffRole(params.get("staffRole"));
+
+        if (findUserByEmail(email).isPresent()) {
+            throw new HttpError(409, "Аккаунт с таким email уже существует.");
+        }
+
+        UserRecord user = UserRecord.newUser(ROLE_STAFF);
+        user.staffRole = staffRole;
+        user.fullName = fullName;
+        user.businessName = "webcorn";
+        user.email = email;
+        user.passwordSalt = generateSalt();
+        user.passwordHash = hashPassword(password, user.passwordSalt);
+        user.createdAt = now();
+        saveUser(user);
+
+        sendJson(exchange, 200, Map.of(
+                "success", true,
+                "user", user.toPublicMap()
+        ));
+    }
+
+    private static void handleCreateTask(HttpExchange exchange) throws IOException {
+        AuthContext auth = requireAuth(exchange, ROLE_STAFF);
+        FormRequest request = readFormRequest(exchange);
+        Map<String, String> params = request.params();
+        String leadId = requireValue(params, "leadId");
+        loadLead(leadId).orElseThrow(() -> new HttpError(404, "Лид не найден."));
+        String assignedToUserId = firstNonBlank(params.get("assignedToUserId"), auth.user.id);
+        requireStaffUser(assignedToUserId);
+
+        if (isDeveloper(auth) && !auth.user.id.equals(assignedToUserId)) {
+            throw new HttpError(403, "Разработчик может создавать задачи только для себя.");
+        }
+
+        TaskRecord task = TaskRecord.newTask();
+        task.leadId = leadId;
+        task.title = requireValue(params, "title");
+        task.description = valueOrBlank(params.get("description"));
+        task.status = TASK_STATUS_OPEN;
+        task.assignedToUserId = assignedToUserId;
+        task.createdByUserId = auth.user.id;
+        task.dueAt = valueOrBlank(params.get("dueAt"));
+        saveTask(task);
+
+        sendJson(exchange, 200, Map.of(
+                "success", true,
+                "task", task.toMap()
+        ));
+    }
+
+    private static void handleUpdateTask(HttpExchange exchange) throws IOException {
+        AuthContext auth = requireAuth(exchange, ROLE_STAFF);
+        FormRequest request = readFormRequest(exchange);
+        Map<String, String> params = request.params();
+        TaskRecord task = loadTask(requireValue(params, "id"))
+                .orElseThrow(() -> new HttpError(404, "Задача не найдена."));
+        requireTaskAccess(auth, task);
+
+        if (params.containsKey("title")) {
+            task.title = requireValue(params, "title");
+        }
+        if (params.containsKey("description")) {
+            task.description = valueOrBlank(params.get("description"));
+        }
+        if (params.containsKey("assignedToUserId")) {
+            if (isDeveloper(auth)) {
+                throw new HttpError(403, "Разработчик не может переназначать задачи.");
+            }
+            task.assignedToUserId = requireStaffUser(valueOrBlank(params.get("assignedToUserId"))).id;
+        }
+        if (params.containsKey("status")) {
+            String status = valueOrBlank(params.get("status"));
+            if (!TASK_STATUS_OPEN.equals(status) && !TASK_STATUS_DONE.equals(status)) {
+                throw new HttpError(400, "Некорректный статус задачи.");
+            }
+            task.status = status;
+            task.completedAt = TASK_STATUS_DONE.equals(status) ? now() : "";
+        }
+        if (params.containsKey("dueAt")) {
+            task.dueAt = valueOrBlank(params.get("dueAt"));
+        }
+        task.lastUpdatedAt = now();
+        saveTask(task);
+
+        sendJson(exchange, 200, Map.of(
+                "success", true,
+                "task", task.toMap()
+        ));
+    }
+
+    private static void handleDeleteTask(HttpExchange exchange) throws IOException {
+        AuthContext auth = requireAuth(exchange, ROLE_STAFF);
+        FormRequest request = readFormRequest(exchange);
+        TaskRecord task = loadTask(requireValue(request.params(), "id"))
+                .orElseThrow(() -> new HttpError(404, "Задача не найдена."));
+
+        if (!isManager(auth) && !isSales(auth) && !auth.user.id.equals(task.createdByUserId)) {
+            throw new HttpError(403, "Недостаточно прав для удаления задачи.");
+        }
+
+        Files.deleteIfExists(TASKS_DIR.resolve(safeFileName(task.id) + ".properties"));
+        sendJson(exchange, 200, Map.of("success", true));
+    }
+
+    private static void handleCreateColumn(HttpExchange exchange) throws IOException {
+        AuthContext auth = requireAuth(exchange, ROLE_STAFF);
+        requireManagerAccess(auth);
+        FormRequest request = readFormRequest(exchange);
+        ColumnRecord column = ColumnRecord.newColumn();
+        column.title = requireValue(request.params(), "title");
+        column.sortOrder = nextColumnSortOrder();
+        saveColumn(column);
+        sendJson(exchange, 200, Map.of(
+                "success", true,
+                "column", column.toMap()
+        ));
+    }
+
+    private static void handleUpdateColumn(HttpExchange exchange) throws IOException {
+        AuthContext auth = requireAuth(exchange, ROLE_STAFF);
+        requireManagerAccess(auth);
+        FormRequest request = readFormRequest(exchange);
+        Map<String, String> params = request.params();
+        ColumnRecord column = requireColumn(requireValue(params, "id"));
+
+        if (params.containsKey("title")) {
+            column.title = requireValue(params, "title");
+        }
+        if (params.containsKey("sortOrder")) {
+            column.sortOrder = parseInteger(params.get("sortOrder"), column.sortOrder);
+        }
+        column.lastUpdatedAt = now();
+        saveColumn(column);
+        sendJson(exchange, 200, Map.of(
+                "success", true,
+                "column", column.toMap()
+        ));
+    }
+
+    private static void handleDeleteColumn(HttpExchange exchange) throws IOException {
+        AuthContext auth = requireAuth(exchange, ROLE_STAFF);
+        requireManagerAccess(auth);
+        FormRequest request = readFormRequest(exchange);
+        ColumnRecord column = requireColumn(requireValue(request.params(), "id"));
+        if (column.isDefault) {
+            throw new HttpError(400, "Базовую колонку нельзя удалить.");
+        }
+
+        String fallbackColumnId = loadAllColumns().stream()
+                .filter((item) -> !item.id.equals(column.id))
+                .min(Comparator.comparingInt((ColumnRecord item) -> item.sortOrder))
+                .map((item) -> item.id)
+                .orElse("");
+
+        for (LeadRecord lead : loadAllLeads()) {
+            if (column.id.equals(lead.columnId)) {
+                lead.columnId = fallbackColumnId;
+                lead.lastUpdatedAt = now();
+                saveLead(lead);
+            }
+        }
+
+        Files.deleteIfExists(COLUMNS_DIR.resolve(safeFileName(column.id) + ".properties"));
+        sendJson(exchange, 200, Map.of("success", true));
     }
 
     private static void handleAuthMe(HttpExchange exchange) throws IOException {
@@ -695,6 +969,39 @@ public class Main {
         return auth;
     }
 
+    private static void requireManagerAccess(AuthContext auth) {
+        if (!isManager(auth)) {
+            throw new HttpError(403, "Это действие доступно только менеджеру CRM.");
+        }
+    }
+
+    private static void requireSalesAccess(AuthContext auth) {
+        if (!isManager(auth) && !isSales(auth)) {
+            throw new HttpError(403, "Это действие доступно менеджеру или продажнику.");
+        }
+    }
+
+    private static void requireTaskAccess(AuthContext auth, TaskRecord task) {
+        if (isManager(auth) || isSales(auth)
+                || auth.user.id.equals(task.assignedToUserId)
+                || auth.user.id.equals(task.createdByUserId)) {
+            return;
+        }
+        throw new HttpError(403, "Недостаточно прав для изменения задачи.");
+    }
+
+    private static boolean isManager(AuthContext auth) {
+        return STAFF_ROLE_MANAGER.equals(normalizeStaffRole(auth.user.staffRole));
+    }
+
+    private static boolean isSales(AuthContext auth) {
+        return STAFF_ROLE_SALES.equals(normalizeStaffRole(auth.user.staffRole));
+    }
+
+    private static boolean isDeveloper(AuthContext auth) {
+        return STAFF_ROLE_DEVELOPER.equals(normalizeStaffRole(auth.user.staffRole));
+    }
+
     private static boolean isAuthorized(HttpExchange exchange, String role) throws IOException {
         Optional<AuthContext> auth = findAuth(exchange);
         return auth.isPresent() && role.equals(auth.get().user.role);
@@ -807,6 +1114,48 @@ public class Main {
         return Optional.of(UserRecord.fromProperties(readProperties(file)));
     }
 
+    private static List<UserRecord> loadAllUsers() throws IOException {
+        if (!Files.exists(USERS_DIR)) {
+            return List.of();
+        }
+
+        List<UserRecord> users = new ArrayList<>();
+        try (Stream<Path> files = Files.list(USERS_DIR)) {
+            files.filter((file) -> file.getFileName().toString().endsWith(".properties"))
+                    .forEach((file) -> {
+                        try {
+                            users.add(UserRecord.fromProperties(readProperties(file)));
+                        } catch (IOException error) {
+                            throw new RuntimeException(error);
+                        }
+                    });
+        } catch (RuntimeException error) {
+            if (error.getCause() instanceof IOException ioError) {
+                throw ioError;
+            }
+            throw error;
+        }
+
+        return users;
+    }
+
+    private static List<Map<String, Object>> loadStaffUserMaps() throws IOException {
+        return loadAllUsers().stream()
+                .filter((user) -> ROLE_STAFF.equals(user.role))
+                .sorted(Comparator.comparing((UserRecord user) -> user.fullName.toLowerCase(Locale.ROOT)))
+                .map(UserRecord::toPublicMap)
+                .toList();
+    }
+
+    private static UserRecord requireStaffUser(String userId) throws IOException {
+        UserRecord user = loadUser(userId)
+                .orElseThrow(() -> new HttpError(404, "Сотрудник не найден."));
+        if (!ROLE_STAFF.equals(user.role)) {
+            throw new HttpError(400, "Можно назначать только сотрудников.");
+        }
+        return user;
+    }
+
     private static Optional<SessionRecord> loadSession(String sessionId) throws IOException {
         Path file = SESSIONS_DIR.resolve(safeFileName(sessionId) + ".properties");
         if (!Files.exists(file)) {
@@ -838,6 +1187,7 @@ public class Main {
         UserRecord user = findUserByEmail(STAFF_BOOTSTRAP_EMAIL)
                 .orElseGet(() -> UserRecord.newUser(ROLE_STAFF));
         user.role = ROLE_STAFF;
+        user.staffRole = STAFF_ROLE_MANAGER;
         user.fullName = firstNonBlank(STAFF_BOOTSTRAP_NAME, user.fullName, "Команда webcorn");
         user.email = STAFF_BOOTSTRAP_EMAIL;
         user.businessName = firstNonBlank(user.businessName, "webcorn");
@@ -986,6 +1336,100 @@ public class Main {
         writeProperties(file, lead.toProperties(), "webcorn CRM lead");
     }
 
+    private static Optional<TaskRecord> loadTask(String taskId) throws IOException {
+        Path file = TASKS_DIR.resolve(safeFileName(taskId) + ".properties");
+        if (!Files.exists(file)) {
+            return Optional.empty();
+        }
+        return Optional.of(TaskRecord.fromProperties(readProperties(file)));
+    }
+
+    private static List<TaskRecord> loadAllTasks() throws IOException {
+        if (!Files.exists(TASKS_DIR)) {
+            return List.of();
+        }
+
+        List<TaskRecord> tasks = new ArrayList<>();
+        try (Stream<Path> files = Files.list(TASKS_DIR)) {
+            files.filter((file) -> file.getFileName().toString().endsWith(".properties"))
+                    .forEach((file) -> {
+                        try {
+                            tasks.add(TaskRecord.fromProperties(readProperties(file)));
+                        } catch (IOException error) {
+                            throw new RuntimeException(error);
+                        }
+                    });
+        } catch (RuntimeException error) {
+            if (error.getCause() instanceof IOException ioError) {
+                throw ioError;
+            }
+            throw error;
+        }
+
+        return tasks;
+    }
+
+    private static List<Map<String, Object>> loadTaskMaps() throws IOException {
+        return loadAllTasks().stream()
+                .sorted(Comparator.comparing(Main::taskSortInstant).reversed())
+                .map(TaskRecord::toMap)
+                .toList();
+    }
+
+    private static void saveTask(TaskRecord task) throws IOException {
+        Path file = TASKS_DIR.resolve(safeFileName(task.id) + ".properties");
+        writeProperties(file, task.toProperties(), "webcorn CRM task");
+    }
+
+    private static ColumnRecord requireColumn(String columnId) throws IOException {
+        return loadColumn(columnId).orElseThrow(() -> new HttpError(404, "Колонка не найдена."));
+    }
+
+    private static Optional<ColumnRecord> loadColumn(String columnId) throws IOException {
+        Path file = COLUMNS_DIR.resolve(safeFileName(columnId) + ".properties");
+        if (!Files.exists(file)) {
+            return Optional.empty();
+        }
+        return Optional.of(ColumnRecord.fromProperties(readProperties(file)));
+    }
+
+    private static List<ColumnRecord> loadAllColumns() throws IOException {
+        if (!Files.exists(COLUMNS_DIR)) {
+            return List.of();
+        }
+
+        List<ColumnRecord> columns = new ArrayList<>();
+        try (Stream<Path> files = Files.list(COLUMNS_DIR)) {
+            files.filter((file) -> file.getFileName().toString().endsWith(".properties"))
+                    .forEach((file) -> {
+                        try {
+                            columns.add(ColumnRecord.fromProperties(readProperties(file)));
+                        } catch (IOException error) {
+                            throw new RuntimeException(error);
+                        }
+                    });
+        } catch (RuntimeException error) {
+            if (error.getCause() instanceof IOException ioError) {
+                throw ioError;
+            }
+            throw error;
+        }
+
+        return columns;
+    }
+
+    private static List<Map<String, Object>> loadColumnMaps() throws IOException {
+        return loadAllColumns().stream()
+                .sorted(Comparator.comparingInt((ColumnRecord column) -> column.sortOrder))
+                .map(ColumnRecord::toMap)
+                .toList();
+    }
+
+    private static void saveColumn(ColumnRecord column) throws IOException {
+        Path file = COLUMNS_DIR.resolve(safeFileName(column.id) + ".properties");
+        writeProperties(file, column.toProperties(), "webcorn CRM column");
+    }
+
     private static void saveOrder(OrderRecord order) throws IOException {
         Path file = ORDERS_DIR.resolve(safeFileName(order.invoiceId) + ".properties");
         writeProperties(file, order.toProperties(), "webcorn CloudPayments order");
@@ -1096,6 +1540,30 @@ public class Main {
         return email;
     }
 
+    private static String requireStaffRole(String value) {
+        String role = normalizeStaffRole(value);
+        if (role.isBlank()) {
+            throw new HttpError(400, "Выберите роль сотрудника.");
+        }
+        return role;
+    }
+
+    private static String normalizeStaffRole(String value) {
+        String role = valueOrBlank(value).toLowerCase(Locale.ROOT);
+        if (List.of(STAFF_ROLE_MANAGER, STAFF_ROLE_SALES, STAFF_ROLE_DEVELOPER).contains(role)) {
+            return role;
+        }
+        return "";
+    }
+
+    private static int parseInteger(String value, int fallback) {
+        try {
+            return Integer.parseInt(valueOrBlank(value));
+        } catch (NumberFormatException error) {
+            return fallback;
+        }
+    }
+
     private static String valueOrBlank(String value) {
         return value == null ? "" : value.trim();
     }
@@ -1168,6 +1636,26 @@ public class Main {
         Files.createDirectories(ORDERS_DIR);
         Files.createDirectories(USERS_DIR);
         Files.createDirectories(SESSIONS_DIR);
+        Files.createDirectories(TASKS_DIR);
+        Files.createDirectories(COLUMNS_DIR);
+    }
+
+    private static void ensureDefaultColumns() throws IOException {
+        if (!loadAllColumns().isEmpty()) {
+            return;
+        }
+
+        String[] titles = {"Новый", "Контакт", "КП отправлено", "В работе", "Успешно", "Закрыт"};
+        for (int index = 0; index < titles.length; index += 1) {
+            ColumnRecord column = ColumnRecord.newColumn();
+            column.id = "col-" + (index + 1);
+            column.title = titles[index];
+            column.sortOrder = (index + 1) * 100;
+            column.isDefault = index == 0;
+            column.createdAt = now();
+            column.lastUpdatedAt = column.createdAt;
+            saveColumn(column);
+        }
     }
 
     private static Properties readProperties(Path file) throws IOException {
@@ -1205,6 +1693,10 @@ public class Main {
         return parseInstant(firstNonBlank(lead.lastUpdatedAt, lead.submittedAt));
     }
 
+    private static Instant taskSortInstant(TaskRecord task) {
+        return parseInstant(firstNonBlank(task.lastUpdatedAt, task.createdAt));
+    }
+
     private static Instant parseInstant(String value) {
         try {
             return Instant.parse(value);
@@ -1234,6 +1726,25 @@ public class Main {
     private static String nextLeadId() {
         long now = System.currentTimeMillis();
         return "WF-" + Long.toString(now, 36).toUpperCase(Locale.ROOT);
+    }
+
+    private static String nextTaskId() {
+        long now = System.currentTimeMillis();
+        return "WF-TASK-" + Long.toString(now, 36).toUpperCase(Locale.ROOT)
+                + "-" + Integer.toHexString((int) (Math.random() * 0xFFFF)).toUpperCase(Locale.ROOT);
+    }
+
+    private static String nextColumnId() {
+        long now = System.currentTimeMillis();
+        return "WF-COL-" + Long.toString(now, 36).toUpperCase(Locale.ROOT)
+                + "-" + Integer.toHexString((int) (Math.random() * 0xFFFF)).toUpperCase(Locale.ROOT);
+    }
+
+    private static int nextColumnSortOrder() throws IOException {
+        return loadAllColumns().stream()
+                .map((column) -> column.sortOrder)
+                .max(Integer::compareTo)
+                .orElse(0) + 100;
     }
 
     private static String nextUserId() {
@@ -1385,6 +1896,8 @@ public class Main {
         private String id = nextLeadId();
         private String userId = "";
         private String status = STATUS_NEW;
+        private String columnId = "";
+        private String assignedToUserId = "";
         private String fullName = "";
         private String businessName = "";
         private String email = "";
@@ -1397,6 +1910,7 @@ public class Main {
         private String budgetRange = "";
         private String timeline = "";
         private String projectDetails = "";
+        private String description = "";
         private String source = "Сайт webcorn";
         private String notes = "";
         private String submittedAt = "";
@@ -1443,6 +1957,8 @@ public class Main {
             lead.id = properties.getProperty("id", nextLeadId());
             lead.userId = properties.getProperty("userId", "");
             lead.status = properties.getProperty("status", STATUS_NEW);
+            lead.columnId = properties.getProperty("columnId", "");
+            lead.assignedToUserId = properties.getProperty("assignedToUserId", "");
             lead.fullName = properties.getProperty("fullName", "");
             lead.businessName = properties.getProperty("businessName", "");
             lead.email = properties.getProperty("email", "");
@@ -1455,6 +1971,7 @@ public class Main {
             lead.budgetRange = properties.getProperty("budgetRange", "");
             lead.timeline = properties.getProperty("timeline", "");
             lead.projectDetails = properties.getProperty("projectDetails", "");
+            lead.description = properties.getProperty("description", "");
             lead.source = properties.getProperty("source", "Сайт webcorn");
             lead.notes = properties.getProperty("notes", "");
             lead.submittedAt = properties.getProperty("submittedAt", "");
@@ -1474,6 +1991,8 @@ public class Main {
             properties.setProperty("id", id);
             properties.setProperty("userId", userId);
             properties.setProperty("status", status);
+            properties.setProperty("columnId", columnId);
+            properties.setProperty("assignedToUserId", assignedToUserId);
             properties.setProperty("fullName", fullName);
             properties.setProperty("businessName", businessName);
             properties.setProperty("email", email);
@@ -1486,6 +2005,7 @@ public class Main {
             properties.setProperty("budgetRange", budgetRange);
             properties.setProperty("timeline", timeline);
             properties.setProperty("projectDetails", projectDetails);
+            properties.setProperty("description", description);
             properties.setProperty("source", source);
             properties.setProperty("notes", notes);
             properties.setProperty("submittedAt", submittedAt);
@@ -1505,6 +2025,8 @@ public class Main {
             result.put("id", id);
             result.put("userId", userId);
             result.put("status", status);
+            result.put("columnId", columnId);
+            result.put("assignedToUserId", assignedToUserId);
             result.put("fullName", fullName);
             result.put("businessName", businessName);
             result.put("email", email);
@@ -1517,6 +2039,7 @@ public class Main {
             result.put("budgetRange", budgetRange);
             result.put("timeline", timeline);
             result.put("projectDetails", projectDetails);
+            result.put("description", description);
             result.put("source", source);
             result.put("notes", notes);
             result.put("submittedAt", submittedAt);
@@ -1532,9 +2055,130 @@ public class Main {
         }
     }
 
+    private static final class TaskRecord {
+        private String id = nextTaskId();
+        private String leadId = "";
+        private String title = "";
+        private String description = "";
+        private String status = TASK_STATUS_OPEN;
+        private String assignedToUserId = "";
+        private String createdByUserId = "";
+        private String dueAt = "";
+        private String completedAt = "";
+        private String createdAt = "";
+        private String lastUpdatedAt = "";
+
+        private static TaskRecord newTask() {
+            TaskRecord task = new TaskRecord();
+            String timestamp = now();
+            task.createdAt = timestamp;
+            task.lastUpdatedAt = timestamp;
+            return task;
+        }
+
+        private static TaskRecord fromProperties(Properties properties) {
+            TaskRecord task = new TaskRecord();
+            task.id = properties.getProperty("id", nextTaskId());
+            task.leadId = properties.getProperty("leadId", "");
+            task.title = properties.getProperty("title", "");
+            task.description = properties.getProperty("description", "");
+            task.status = properties.getProperty("status", TASK_STATUS_OPEN);
+            task.assignedToUserId = properties.getProperty("assignedToUserId", "");
+            task.createdByUserId = properties.getProperty("createdByUserId", "");
+            task.dueAt = properties.getProperty("dueAt", "");
+            task.completedAt = properties.getProperty("completedAt", "");
+            task.createdAt = properties.getProperty("createdAt", "");
+            task.lastUpdatedAt = properties.getProperty("lastUpdatedAt", task.createdAt);
+            return task;
+        }
+
+        private Properties toProperties() {
+            Properties properties = new Properties();
+            properties.setProperty("id", id);
+            properties.setProperty("leadId", leadId);
+            properties.setProperty("title", title);
+            properties.setProperty("description", description);
+            properties.setProperty("status", status);
+            properties.setProperty("assignedToUserId", assignedToUserId);
+            properties.setProperty("createdByUserId", createdByUserId);
+            properties.setProperty("dueAt", dueAt);
+            properties.setProperty("completedAt", completedAt);
+            properties.setProperty("createdAt", createdAt);
+            properties.setProperty("lastUpdatedAt", lastUpdatedAt);
+            return properties;
+        }
+
+        private Map<String, Object> toMap() {
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("id", id);
+            result.put("leadId", leadId);
+            result.put("title", title);
+            result.put("description", description);
+            result.put("status", status);
+            result.put("assignedToUserId", assignedToUserId);
+            result.put("createdByUserId", createdByUserId);
+            result.put("dueAt", dueAt);
+            result.put("completedAt", completedAt);
+            result.put("createdAt", createdAt);
+            result.put("lastUpdatedAt", lastUpdatedAt);
+            return result;
+        }
+    }
+
+    private static final class ColumnRecord {
+        private String id = nextColumnId();
+        private String title = "";
+        private int sortOrder = 0;
+        private boolean isDefault = false;
+        private String createdAt = "";
+        private String lastUpdatedAt = "";
+
+        private static ColumnRecord newColumn() {
+            ColumnRecord column = new ColumnRecord();
+            String timestamp = now();
+            column.createdAt = timestamp;
+            column.lastUpdatedAt = timestamp;
+            return column;
+        }
+
+        private static ColumnRecord fromProperties(Properties properties) {
+            ColumnRecord column = new ColumnRecord();
+            column.id = properties.getProperty("id", nextColumnId());
+            column.title = properties.getProperty("title", "");
+            column.sortOrder = parseInteger(properties.getProperty("sortOrder", "0"), 0);
+            column.isDefault = Boolean.parseBoolean(properties.getProperty("isDefault", "false"));
+            column.createdAt = properties.getProperty("createdAt", "");
+            column.lastUpdatedAt = properties.getProperty("lastUpdatedAt", column.createdAt);
+            return column;
+        }
+
+        private Properties toProperties() {
+            Properties properties = new Properties();
+            properties.setProperty("id", id);
+            properties.setProperty("title", title);
+            properties.setProperty("sortOrder", String.valueOf(sortOrder));
+            properties.setProperty("isDefault", String.valueOf(isDefault));
+            properties.setProperty("createdAt", createdAt);
+            properties.setProperty("lastUpdatedAt", lastUpdatedAt);
+            return properties;
+        }
+
+        private Map<String, Object> toMap() {
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("id", id);
+            result.put("title", title);
+            result.put("sortOrder", sortOrder);
+            result.put("isDefault", isDefault);
+            result.put("createdAt", createdAt);
+            result.put("lastUpdatedAt", lastUpdatedAt);
+            return result;
+        }
+    }
+
     private static final class UserRecord {
         private String id = nextUserId();
         private String role = ROLE_CUSTOMER;
+        private String staffRole = "";
         private String fullName = "";
         private String businessName = "";
         private String email = "";
@@ -1546,6 +2190,7 @@ public class Main {
         private static UserRecord newUser(String role) {
             UserRecord user = new UserRecord();
             user.role = role;
+            user.staffRole = ROLE_STAFF.equals(role) ? STAFF_ROLE_DEVELOPER : "";
             user.createdAt = now();
             return user;
         }
@@ -1554,6 +2199,7 @@ public class Main {
             UserRecord user = new UserRecord();
             user.id = properties.getProperty("id", nextUserId());
             user.role = properties.getProperty("role", ROLE_CUSTOMER);
+            user.staffRole = properties.getProperty("staffRole", ROLE_STAFF.equals(user.role) ? STAFF_ROLE_DEVELOPER : "");
             user.fullName = properties.getProperty("fullName", "");
             user.businessName = properties.getProperty("businessName", "");
             user.email = properties.getProperty("email", "");
@@ -1568,6 +2214,7 @@ public class Main {
             Properties properties = new Properties();
             properties.setProperty("id", id);
             properties.setProperty("role", role);
+            properties.setProperty("staffRole", staffRole);
             properties.setProperty("fullName", fullName);
             properties.setProperty("businessName", businessName);
             properties.setProperty("email", email);
@@ -1582,6 +2229,7 @@ public class Main {
             return Map.of(
                     "id", id,
                     "role", role,
+                    "staffRole", staffRole,
                     "fullName", fullName,
                     "businessName", businessName,
                     "email", email,

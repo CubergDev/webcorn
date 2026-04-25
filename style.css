@@ -327,18 +327,6 @@ h3 {
   text-shadow: 0 18px 48px rgba(0, 0, 0, 0.62);
 }
 
-.hero-copy__text {
-  max-width: none;
-  margin: 0 auto;
-  color: var(--muted);
-  font-size: clamp(0.72rem, 0.92vw, 1rem);
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  line-height: 1;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
 .nowrap {
   white-space: nowrap;
 }
@@ -404,12 +392,64 @@ h3 {
   font-size: clamp(1.05rem, 1.6vw, 1.25rem);
 }
 
-.section-head__lead {
-  max-width: 720px;
+.section-head p.section-head__lead {
+  max-width: 880px;
   color: rgba(247, 251, 255, 0.94);
-  font-size: clamp(1.45rem, 2.5vw, 2rem);
+  font-size: clamp(2.2rem, 4.2vw, 4.7rem);
+  font-weight: 800;
+  line-height: 0.95;
+}
+
+.section-head__subclaim {
+  max-width: 680px;
+  color: var(--muted);
+  font-size: clamp(1.35rem, 2.45vw, 2.65rem);
   font-weight: 700;
-  line-height: 1.12;
+  line-height: 1.08;
+}
+
+.approach-layout {
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+  gap: 34px;
+  text-align: center;
+}
+
+.approach-layout .section-head {
+  justify-items: center;
+  max-width: 980px;
+}
+
+.approach-layout .list-card {
+  width: min(100%, 880px);
+}
+
+.approach-layout .feature-list {
+  justify-items: center;
+}
+
+.approach-layout .feature-list li {
+  display: block;
+  max-width: 760px;
+  color: rgba(247, 251, 255, 0.78);
+  font-size: clamp(0.9rem, 1.35vw, 1.08rem);
+  font-weight: 800;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.approach-layout .feature-list li::before {
+  display: none;
+}
+
+.section-title--single {
+  justify-self: center;
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  text-align: center;
+  white-space: nowrap;
+  font-size: clamp(0.65rem, 2.65vw, 2.35rem);
 }
 
 .section-head--center {
@@ -561,21 +601,6 @@ h3 {
   margin-top: 48px;
 }
 
-.price-title {
-  max-width: none;
-}
-
-.price-title__label,
-.price-title__amount {
-  display: block;
-}
-
-.price-title__amount {
-  margin-top: 12px;
-  font-size: clamp(3rem, 6.6vw, 5.4rem);
-  line-height: 0.92;
-}
-
 .price-main,
 .price-extra {
   border-radius: var(--radius-lg);
@@ -714,6 +739,110 @@ h3 {
   color: #ff9aa2;
 }
 
+.auth-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 18% 16%, rgba(100, 216, 255, 0.16), transparent 30%),
+    radial-gradient(circle at 82% 14%, rgba(142, 123, 255, 0.14), transparent 28%),
+    linear-gradient(180deg, #04101d 0%, #07111f 100%);
+}
+
+.auth-page::before {
+  z-index: 0;
+  background:
+    radial-gradient(circle at 50% 20%, rgba(255, 255, 255, 0.045), transparent 34%),
+    linear-gradient(180deg, rgba(2, 4, 10, 0.12), rgba(2, 4, 10, 0.2));
+}
+
+.auth-main {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  padding: 28px 0;
+}
+
+.staff-login-card {
+  width: min(100%, 560px);
+  margin: 0 auto;
+  padding: clamp(22px, 4vw, 38px);
+  border: 1px solid var(--line);
+  border-radius: 34px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.025)),
+    rgba(5, 13, 25, 0.86);
+  box-shadow: 0 26px 80px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(18px);
+}
+
+.staff-login-card .brand {
+  margin-bottom: 26px;
+}
+
+.staff-login-card .brand__copy {
+  display: grid;
+  gap: 2px;
+}
+
+.staff-login-card .section-head {
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.staff-login-card h1 {
+  max-width: 480px;
+  font-size: clamp(1.9rem, 4.2vw, 2.75rem);
+  line-height: 1.02;
+}
+
+.staff-login-card .section-head p {
+  max-width: 460px;
+  font-size: 1rem;
+}
+
+.staff-login-card .lead-form {
+  gap: 14px;
+}
+
+.staff-login-card .form-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.staff-login-card .lead-form input {
+  min-height: 52px;
+}
+
+.staff-login-card .field {
+  display: grid;
+  gap: 8px;
+}
+
+.button--full {
+  width: 100%;
+}
+
+.account-message {
+  margin-bottom: 18px;
+  padding: 12px 14px;
+  border: 1px solid rgba(100, 216, 255, 0.18);
+  border-radius: 16px;
+  background: rgba(100, 216, 255, 0.08);
+  color: var(--text);
+  font-weight: 700;
+}
+
+.account-message.is-error {
+  border-color: rgba(255, 154, 162, 0.28);
+  background: rgba(255, 154, 162, 0.09);
+}
+
+.account-message.is-success {
+  border-color: rgba(142, 247, 212, 0.28);
+  background: rgba(142, 247, 212, 0.09);
+}
+
 [hidden] {
   display: none !important;
 }
@@ -753,9 +882,8 @@ h3 {
     grid-template-columns: 1fr;
   }
 
-  .hero-copy__text {
-    font-size: clamp(0.62rem, 1.4vw, 0.88rem);
-    letter-spacing: 0.1em;
+  .section-title--single {
+    white-space: nowrap;
   }
 }
 

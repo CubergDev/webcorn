@@ -675,3 +675,383 @@ body.crm-page::after {
     animation: none !important;
   }
 }
+
+.crm-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.035);
+  backdrop-filter: blur(16px);
+}
+
+.crm-tab {
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.crm-tab:hover,
+.crm-tab:focus-visible,
+.crm-tab.is-active {
+  color: var(--text);
+  border-color: rgba(144, 216, 255, 0.18);
+  background: rgba(144, 216, 255, 0.1);
+  outline: none;
+}
+
+.crm-summary {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.crm-view {
+  display: none;
+  margin-top: 18px;
+}
+
+.crm-view.is-active {
+  display: block;
+}
+
+.crm-toolbar {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(220px, 320px);
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.crm-toolbar--compact {
+  grid-template-columns: minmax(220px, 320px);
+}
+
+.crm-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(420px, 0.42fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.crm-kanban {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(300px, 1fr);
+  gap: 14px;
+  overflow-x: auto;
+  padding-bottom: 12px;
+  scroll-snap-type: x proximity;
+}
+
+.kanban-column {
+  min-height: 420px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 26px;
+  background: rgba(255, 255, 255, 0.035);
+  scroll-snap-align: start;
+}
+
+.kanban-column header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.kanban-column header strong {
+  font-family: "Sora", sans-serif;
+  letter-spacing: -0.04em;
+}
+
+.kanban-column header span {
+  display: inline-grid;
+  place-items: center;
+  min-width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: rgba(144, 216, 255, 0.1);
+  color: var(--accent);
+  font-weight: 800;
+}
+
+.kanban-column__body {
+  display: grid;
+  gap: 12px;
+}
+
+.kanban-card,
+.task-card,
+.staff-card,
+.column-card,
+.crm-empty {
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.015)),
+    rgba(8, 13, 24, 0.58);
+}
+
+.kanban-card {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: border-color 180ms ease, transform 180ms ease, background-color 180ms ease;
+}
+
+.kanban-card:hover,
+.kanban-card.is-active {
+  transform: translateY(-2px);
+  border-color: rgba(144, 216, 255, 0.32);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.kanban-card__head,
+.task-card__head,
+.task-card__foot {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.kanban-card__head strong,
+.task-card__head strong,
+.staff-card strong {
+  display: block;
+}
+
+.kanban-card__head span,
+.task-card__head span,
+.task-card__foot span,
+.staff-card span,
+.column-card span {
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.kanban-card p {
+  display: -webkit-box;
+  margin: 0;
+  color: var(--muted);
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.kanban-card__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.kanban-card__actions button,
+.task-card button,
+.column-card button {
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--text);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+button:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled {
+  cursor: not-allowed;
+  opacity: 0.52;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid rgba(144, 216, 255, 0.78);
+  outline-offset: 3px;
+}
+
+.detail-editor-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.crm-task-panel {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.crm-panel__head--inline h3 {
+  margin: 0;
+  font-family: "Sora", sans-serif;
+  letter-spacing: -0.05em;
+}
+
+.crm-form {
+  display: grid;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.crm-form--columns {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: end;
+}
+
+.crm-form--inline {
+  grid-template-columns: minmax(260px, 1fr) auto;
+  align-items: end;
+}
+
+.crm-field--full {
+  grid-column: 1 / -1;
+}
+
+.task-list {
+  display: grid;
+  gap: 12px;
+}
+
+.task-list--wide {
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
+.task-card {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+}
+
+.task-card.is-done {
+  border-color: rgba(132, 218, 187, 0.24);
+  background: rgba(132, 218, 187, 0.055);
+}
+
+.task-card.is-overdue {
+  border-color: rgba(255, 154, 158, 0.3);
+}
+
+.task-card textarea {
+  width: 100%;
+  min-height: 96px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(4, 9, 18, 0.72);
+  color: var(--text);
+  resize: vertical;
+}
+
+.staff-list,
+.column-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.staff-card,
+.column-card,
+.crm-empty {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+}
+
+.staff-card em {
+  width: fit-content;
+  padding: 7px 11px;
+  border-radius: 999px;
+  background: rgba(144, 216, 255, 0.1);
+  color: var(--accent);
+  font-style: normal;
+  font-weight: 800;
+}
+
+.column-card {
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+}
+
+.column-card input {
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(4, 9, 18, 0.72);
+  color: var(--text);
+}
+
+.crm-empty {
+  color: var(--muted);
+}
+
+.crm-empty strong {
+  color: var(--text);
+}
+
+.crm-empty p {
+  margin: 0;
+}
+
+.crm-empty--compact {
+  padding: 14px;
+  box-shadow: none;
+}
+
+.lead-list--grid {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+@media (max-width: 1280px) {
+  .crm-summary {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .crm-workspace {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 860px) {
+  .crm-tabs {
+    border-radius: 24px;
+  }
+
+  .crm-tab {
+    flex: 1 1 calc(50% - 8px);
+  }
+
+  .crm-summary,
+  .crm-toolbar,
+  .detail-editor-grid,
+  .crm-form--columns,
+  .crm-form--inline,
+  .column-card {
+    grid-template-columns: 1fr;
+  }
+
+  .crm-kanban {
+    grid-auto-columns: minmax(84vw, 1fr);
+  }
+
+  .task-card__head,
+  .task-card__foot,
+  .kanban-card__head {
+    flex-direction: column;
+  }
+}
