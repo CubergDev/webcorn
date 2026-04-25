@@ -5,10 +5,7 @@ const SHUTTLE_FRAME_PATHS = Array.from(
   (_, index) => `assets/shuttle/frames/frame-${String(index).padStart(2, "0")}.webp`
 );
 const EARTH_ASSETS = {
-  day: "assets/space/earth-blue-marble-4096.jpg",
-  normal: "assets/space/earth-normal-2048.jpg",
-  specular: "assets/space/earth-specular-2048.jpg",
-  lights: "assets/space/earth-city-lights-4096.jpg",
+  day: "assets/space/earth-optimized-2048.webp",
   clouds: "assets/space/earth-clouds-1024.png",
   moon: "assets/space/moon-1024.jpg",
 };
@@ -228,7 +225,7 @@ const initSpaceScene = async () => {
 
   const textureLoader = new THREE.TextureLoader();
   const setRendererSize = () => {
-    const maxDpr = window.innerWidth < 760 ? 1 : 1.12;
+    const maxDpr = window.innerWidth < 760 ? 0.9 : 1;
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, maxDpr));
     renderer.setSize(window.innerWidth, window.innerHeight, false);
   };
@@ -240,7 +237,7 @@ const initSpaceScene = async () => {
   }
   if (THREE.ACESFilmicToneMapping) {
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.9;
+    renderer.toneMappingExposure = 1.6;
   }
 
   const maxAnisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 4);
@@ -262,29 +259,21 @@ const initSpaceScene = async () => {
   };
 
   const earth = new THREE.Mesh(
-    new THREE.SphereGeometry(1.56, 72, 72),
-    new THREE.MeshPhongMaterial({
+    new THREE.SphereGeometry(1.56, 56, 56),
+    new THREE.MeshBasicMaterial({
       map: loadTexture(EARTH_ASSETS.day, true),
-      normalMap: loadTexture(EARTH_ASSETS.normal),
-      normalScale: new THREE.Vector2(0.82, 0.82),
-      specularMap: loadTexture(EARTH_ASSETS.specular),
-      specular: new THREE.Color(0x9ed7ff),
-      shininess: 22,
-      emissiveMap: loadTexture(EARTH_ASSETS.lights, true),
-      emissive: new THREE.Color(0xffddb0),
-      emissiveIntensity: 0.68,
       color: 0xffffff,
     })
   );
-  earth.rotation.set(0.34, -1.05, 0.12);
+  earth.rotation.set(0.28, 2.2, 0.08);
   earthGroup.add(earth);
 
   const cloudLayer = new THREE.Mesh(
-    new THREE.SphereGeometry(1.595, 56, 56),
-    new THREE.MeshPhongMaterial({
+    new THREE.SphereGeometry(1.595, 42, 42),
+    new THREE.MeshBasicMaterial({
       map: loadTexture(EARTH_ASSETS.clouds, true),
       transparent: true,
-      opacity: 0.5,
+      opacity: 0.42,
       depthWrite: false,
       color: 0xf8fdff,
     })
@@ -331,10 +320,8 @@ const initSpaceScene = async () => {
 
   const moon = new THREE.Mesh(
     new THREE.SphereGeometry(0.27, 28, 28),
-    new THREE.MeshStandardMaterial({
+    new THREE.MeshBasicMaterial({
       map: loadTexture(EARTH_ASSETS.moon, true),
-      roughness: 1,
-      metalness: 0,
       color: 0xf3f7ff,
     })
   );
@@ -366,20 +353,9 @@ const initSpaceScene = async () => {
     );
   };
 
-  const deepStars = createStarField(980, 8.6, -11.8, 0.35, 0.014, 0.52);
-  const nearStars = createStarField(540, 5.8, -8.2, 0.3, 0.024, 0.76);
+  const deepStars = createStarField(720, 8.6, -11.8, 0.35, 0.014, 0.52);
+  const nearStars = createStarField(320, 5.8, -8.2, 0.3, 0.024, 0.76);
   group.add(deepStars, nearStars);
-
-  scene.add(new THREE.AmbientLight(0xe5f3ff, 1.7));
-  const keyLight = new THREE.DirectionalLight(0xffffff, 2.45);
-  keyLight.position.set(5.6, 2.4, 4.8);
-  scene.add(keyLight);
-  const fillLight = new THREE.DirectionalLight(0xa8dfff, 1.2);
-  fillLight.position.set(-4.2, 1.4, 3.2);
-  scene.add(fillLight);
-  const rimLight = new THREE.DirectionalLight(0x8ce1ff, 1.5);
-  rimLight.position.set(-3.2, 2.2, -1.8);
-  scene.add(rimLight);
 
   const motion = { progress: readJourneyProgress() };
   let renderedProgress = motion.progress;
