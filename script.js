@@ -1,4 +1,5 @@
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const SKETCHFAB_EARTH_UID = "37249acae18b406d8c1c160d7c0bc8e6";
 
 const setRevealFallback = () => {
   document.querySelectorAll("[data-reveal]").forEach((item) => {
@@ -60,6 +61,89 @@ const initRevealAnimations = () => {
       }
     );
   });
+};
+
+const readJourneyProgress = () => {
+  const journey = document.querySelector(".journey");
+  const top = journey?.offsetTop || 0;
+  const max = Math.max((journey?.offsetHeight || window.innerHeight) - window.innerHeight, 1);
+  return Math.min(Math.max((window.scrollY - top) / max, 0), 1);
+};
+
+const initEmbeddedPlanet = () => {
+  const shell = document.getElementById("planet-shell");
+  const frame = document.getElementById("planet-frame");
+  const canvas = document.getElementById("space-canvas");
+
+  if (!shell || !frame) {
+    return false;
+  }
+
+  const params = new URLSearchParams({
+    autostart: "1",
+    preload: "1",
+    camera: "0",
+    autospin: "0.08",
+    ui_controls: "0",
+    ui_infos: "0",
+    ui_inspector: "0",
+    ui_stop: "0",
+    ui_watermark: "0",
+    ui_watermark_link: "0",
+    dnt: "1",
+  });
+
+  frame.src = `https://sketchfab.com/models/${SKETCHFAB_EARTH_UID}/embed?${params.toString()}`;
+  frame.addEventListener("load", () => shell.classList.add("is-ready"), { once: true });
+
+  if (canvas) {
+    canvas.style.display = "none";
+  }
+
+  const motion = { progress: readJourneyProgress() };
+  let renderedProgress = motion.progress;
+
+  const applyPlanetState = (progress) => {
+    const narrowScreen = window.innerWidth < 760;
+    const baseScale = narrowScreen ? 1.08 : 1.04;
+    const scaleBoost = narrowScreen ? 1.55 : 2.2;
+    const shiftY = narrowScreen ? progress * 26 : progress * 14;
+
+    document.documentElement.style.setProperty("--planet-scale", (baseScale + progress * scaleBoost).toFixed(3));
+    document.documentElement.style.setProperty("--planet-shift-y", `${shiftY.toFixed(1)}px`);
+  };
+
+  if (window.gsap && window.ScrollTrigger && !prefersReducedMotion) {
+    gsap.registerPlugin(ScrollTrigger);
+    gsap.to(motion, {
+      progress: 1,
+      ease: "none",
+      scrollTrigger: {
+        trigger: ".journey",
+        start: "top top",
+        end: "bottom bottom",
+        scrub: 2.6,
+      },
+    });
+  } else {
+    const updateScroll = () => {
+      motion.progress = readJourneyProgress();
+    };
+
+    window.addEventListener("scroll", updateScroll, { passive: true });
+    updateScroll();
+  }
+
+  const renderPlanetState = () => {
+    renderedProgress += (motion.progress - renderedProgress) * 0.045;
+    applyPlanetState(renderedProgress);
+    window.requestAnimationFrame(renderPlanetState);
+  };
+
+  applyPlanetState(renderedProgress);
+  renderPlanetState();
+
+  return true;
 };
 
 const THREE_MODULE_URL = "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
@@ -433,13 +517,6 @@ const initSpaceScene = async () => {
   let renderedProgress = 0;
   let frameId;
 
-  const readScrollProgress = () => {
-    const journey = document.querySelector(".journey");
-    const max = Math.max((journey?.offsetHeight || window.innerHeight) - window.innerHeight, 1);
-    const top = journey?.offsetTop || 0;
-    return Math.min(Math.max((window.scrollY - top) / max, 0), 1);
-  };
-
   if (window.gsap && window.ScrollTrigger) {
     gsap.registerPlugin(ScrollTrigger);
     gsap.to(motion, {
@@ -454,7 +531,7 @@ const initSpaceScene = async () => {
     });
   } else {
     const updateScroll = () => {
-      motion.progress = readScrollProgress();
+      motion.progress = readJourneyProgress();
     };
 
     window.addEventListener("scroll", updateScroll, { passive: true });
@@ -622,7 +699,9 @@ const initLeadForm = () => {
 document.addEventListener("DOMContentLoaded", () => {
   initSmoothScroll();
   initRevealAnimations();
-  initSpaceScene();
+  if (!initEmbeddedPlanet()) {
+    initSpaceScene();
+  }
   initJourneyMotion();
   initLeadForm();
 });
