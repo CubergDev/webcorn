@@ -186,12 +186,13 @@ h3 {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 176vw;
-  height: 176vh;
+  width: 360vw;
+  height: 360vh;
   border: 0;
   transform: translate(-50%, calc(-50% + var(--planet-shift-y, 0px))) scale(var(--planet-scale, 1.04));
   transform-origin: center;
   filter: saturate(1.08) brightness(1.08);
+  will-change: transform;
 }
 
 .container {
@@ -931,7 +932,7 @@ h3 {
   }
 
   #planet-frame {
-    width: 240vw;
-    height: 240vh;
+    width: 460vw;
+    height: 460vh;
   }
 }
