@@ -106,13 +106,13 @@ const initEmbeddedPlanet = () => {
 
   const applyPlanetState = (progress) => {
     const narrowScreen = window.innerWidth < 760;
-    const exitRaw = Math.min(Math.max(progress / 0.28, 0), 1);
+    const exitRaw = Math.min(Math.max(progress / 0.34, 0), 1);
     const exitProgress = exitRaw * exitRaw * (3 - 2 * exitRaw);
-    const approachRaw = Math.min(Math.max((progress - 0.18) / 0.82, 0), 1);
+    const approachRaw = Math.min(Math.max((progress - 0.28) / 0.72, 0), 1);
     const approachProgress = approachRaw * approachRaw * (3 - 2 * approachRaw);
-    const baseScale = narrowScreen ? 0.78 : 0.62;
-    const scaleBoost = narrowScreen ? 0.36 : 0.44;
-    const shiftY = narrowScreen ? approachProgress * 18 : approachProgress * 10;
+    const baseScale = narrowScreen ? 0.56 : 0.42;
+    const scaleBoost = narrowScreen ? 0.24 : 0.2;
+    const shiftY = narrowScreen ? approachProgress * 12 : approachProgress * 6;
 
     document.documentElement.style.setProperty("--planet-scale", (baseScale + approachProgress * scaleBoost).toFixed(3));
     document.documentElement.style.setProperty("--planet-shift-y", `${shiftY.toFixed(1)}px`);
