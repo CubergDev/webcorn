@@ -1,6 +1,10 @@
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const SKETCHFAB_EARTH_UID = "37249acae18b406d8c1c160d7c0bc8e6";
-const SHUTTLE_VIDEO_PATH = "assets/shuttle/shuttle-intro.mp4";
+const SHUTTLE_FRAME_COUNT = 16;
+const SHUTTLE_FRAME_PATHS = Array.from(
+  { length: SHUTTLE_FRAME_COUNT },
+  (_, index) => `assets/shuttle/frames/frame-${String(index).padStart(2, "0")}.webp`
+);
 
 const setRevealFallback = () => {
   document.querySelectorAll("[data-reveal]").forEach((item) => {
@@ -75,8 +79,7 @@ const initEmbeddedPlanet = () => {
   const shell = document.getElementById("planet-shell");
   const frame = document.getElementById("planet-frame");
   const shuttleShell = document.getElementById("shuttle-shell");
-  const shuttleVideo = document.getElementById("shuttle-video");
-  const shuttleCanvas = document.getElementById("shuttle-canvas");
+  const shuttleFrame = document.getElementById("shuttle-frame");
   const canvas = document.getElementById("space-canvas");
   const rootStyle = document.documentElement.style;
 
@@ -105,86 +108,38 @@ const initEmbeddedPlanet = () => {
     canvas.style.display = "none";
   }
 
-  if (shuttleShell && shuttleVideo && shuttleCanvas) {
-    const context = shuttleCanvas.getContext("2d", { willReadFrequently: true });
-    const sourceCanvas = document.createElement("canvas");
-    const sourceContext = sourceCanvas.getContext("2d", { willReadFrequently: true });
-    let sourceReady = false;
+  let setShuttleFrame = null;
 
-    const drawCover = (targetWidth, targetHeight) => {
-      if (!sourceReady || !context) {
+  if (shuttleShell && shuttleFrame) {
+    let currentShuttleFrameIndex = -1;
+
+    setShuttleFrame = (index) => {
+      const boundedIndex = Math.max(0, Math.min(SHUTTLE_FRAME_COUNT - 1, index));
+
+      if (currentShuttleFrameIndex === boundedIndex) {
         return;
       }
 
-      const sourceWidth = sourceCanvas.width;
-      const sourceHeight = sourceCanvas.height;
-      const scale = Math.max(targetWidth / sourceWidth, targetHeight / sourceHeight);
-      const drawWidth = sourceWidth * scale;
-      const drawHeight = sourceHeight * scale;
-      const offsetX = (targetWidth - drawWidth) * 0.5;
-      const offsetY = (targetHeight - drawHeight) * 0.5;
-
-      context.clearRect(0, 0, targetWidth, targetHeight);
-      context.drawImage(sourceCanvas, offsetX, offsetY, drawWidth, drawHeight);
+      currentShuttleFrameIndex = boundedIndex;
+      shuttleFrame.src = SHUTTLE_FRAME_PATHS[boundedIndex];
     };
 
-    const resizeShuttleCanvas = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-      shuttleCanvas.width = Math.round(window.innerWidth * dpr);
-      shuttleCanvas.height = Math.round(window.innerHeight * dpr);
-      if (context) {
-        context.setTransform(1, 0, 0, 1, 0, 0);
-        context.scale(dpr, dpr);
-        drawCover(window.innerWidth, window.innerHeight);
-      }
+    setShuttleFrame(0);
+    shuttleShell.classList.add("is-ready");
+
+    const preloadFrames = () => {
+      SHUTTLE_FRAME_PATHS.slice(1).forEach((path) => {
+        const image = new Image();
+        image.decoding = "async";
+        image.src = path;
+      });
     };
 
-    const prepareShuttleFrame = () => {
-      if (!context || !sourceContext || !shuttleVideo.videoWidth || !shuttleVideo.videoHeight) {
-        return;
-      }
-
-      sourceCanvas.width = shuttleVideo.videoWidth;
-      sourceCanvas.height = shuttleVideo.videoHeight;
-      sourceContext.clearRect(0, 0, sourceCanvas.width, sourceCanvas.height);
-      sourceContext.drawImage(shuttleVideo, 0, 0, sourceCanvas.width, sourceCanvas.height);
-
-      const frameData = sourceContext.getImageData(0, 0, sourceCanvas.width, sourceCanvas.height);
-      const pixels = frameData.data;
-
-      for (let index = 0; index < pixels.length; index += 4) {
-        const red = pixels[index];
-        const green = pixels[index + 1];
-        const blue = pixels[index + 2];
-        const dominantGreen = green - Math.max(red, blue);
-
-        if (green > 74 && dominantGreen > 24) {
-          const alphaFactor = Math.min(1, (dominantGreen - 24) / 52);
-          pixels[index + 1] = Math.round((red + blue) * 0.5);
-          pixels[index + 3] = Math.max(0, Math.round(pixels[index + 3] * (1 - alphaFactor)));
-        }
-      }
-
-      sourceContext.putImageData(frameData, 0, 0);
-      sourceReady = true;
-      shuttleShell.classList.add("is-ready");
-      resizeShuttleCanvas();
-    };
-
-    shuttleVideo.src = SHUTTLE_VIDEO_PATH;
-    shuttleVideo.muted = true;
-    shuttleVideo.loop = true;
-    shuttleVideo.playsInline = true;
-    shuttleVideo.addEventListener(
-      "loadeddata",
-      () => {
-        shuttleVideo.currentTime = Math.min(0.04, shuttleVideo.duration || 0.04);
-      },
-      { once: true }
-    );
-    shuttleVideo.addEventListener("seeked", prepareShuttleFrame);
-    shuttleVideo.load();
-    window.addEventListener("resize", resizeShuttleCanvas);
+    if (typeof window.requestIdleCallback === "function") {
+      window.requestIdleCallback(preloadFrames);
+    } else {
+      window.setTimeout(preloadFrames, 1);
+    }
   }
 
   const motion = { progress: readJourneyProgress() };
@@ -221,6 +176,12 @@ const initEmbeddedPlanet = () => {
     setCssVar("--shuttle-opacity", Math.max(0, 1 - shuttleExit * 1.18).toFixed(3));
     setCssVar("--shuttle-scale", (1 + shuttleExit * 0.55).toFixed(3));
     setCssVar("--shuttle-shift-y", `${(shuttleExit * 10).toFixed(1)}px`);
+
+    if (shuttleShell && setShuttleFrame) {
+      const frameIndex = Math.round(shuttleExitRaw * (SHUTTLE_FRAME_COUNT - 1));
+      setShuttleFrame(frameIndex);
+      shuttleShell.classList.toggle("is-hidden", shuttleExitRaw > 0.995);
+    }
   };
 
   const schedulePlanetState = () => {

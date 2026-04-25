@@ -128,6 +128,10 @@ h3 {
   opacity: var(--shuttle-opacity, 1);
 }
 
+#shuttle-shell.is-hidden {
+  visibility: hidden;
+}
+
 #shuttle-shell::before,
 #shuttle-shell::after {
   content: "";
@@ -148,16 +152,15 @@ h3 {
     linear-gradient(180deg, rgba(2, 4, 10, 0.3), rgba(2, 4, 10, 0) 22%, rgba(2, 4, 10, 0) 78%, rgba(2, 4, 10, 0.42));
 }
 
-#shuttle-video {
-  display: none;
-}
-
-#shuttle-canvas {
+#shuttle-frame {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   display: block;
+  object-fit: cover;
+  object-position: center;
+  transform: translateZ(0);
 }
 
 #planet-shell {
