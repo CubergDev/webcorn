@@ -4,21 +4,7 @@ const SHUTTLE_FRAME_PATHS = Array.from(
   { length: SHUTTLE_FRAME_COUNT },
   (_, index) => `assets/shuttle/frames/frame-${String(index).padStart(2, "0")}.webp`
 );
-const SATURN_ASSETS = {
-  model: "saturn/uploads-files-4052472-Stylized+Planets.dae",
-  textureRoot: "saturn/Textures/Saturn 4K/",
-  saturnBase: "assets/saturn/saturn-base.png",
-  saturnNormal: "assets/saturn/saturn-normal.png",
-  saturnRoughness: "assets/saturn/saturn-roughness.png",
-  saturnMetallic: "assets/saturn/saturn-metallic.png",
-  ringsBase: "assets/saturn/saturn-rings-base.png",
-  ringsNormal: "assets/saturn/saturn-rings-normal.png",
-  ringsRoughness: "assets/saturn/saturn-rings-roughness.png",
-  ringsMetallic: "assets/saturn/saturn-rings-metallic.png",
-  moonBase: "assets/saturn/saturn-moon-base.png",
-};
 const THREE_MODULE_URL = "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
-const COLLADA_LOADER_URL = "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/ColladaLoader.js";
 const shouldUsePlanetFallback = () => window.location.protocol === "file:";
 
 const setRevealFallback = () => {
@@ -268,16 +254,18 @@ const initPlanetFallback = () => {
     renderedProgress += (currentProgress - renderedProgress) * 0.08;
     spin += (targetSpin - spin) * 0.14;
     targetSpin *= 0.84;
-    autoRotation += deltaSeconds * (prefersReducedMotion ? 4 : 10);
+    autoRotation += deltaSeconds * (prefersReducedMotion ? 8 : 18);
 
     const narrowScreen = window.innerWidth < 760;
-    const scale = (narrowScreen ? 0.78 : 0.82) + renderedProgress * (narrowScreen ? 0.32 : 0.42);
-    const shiftY = renderedProgress * (narrowScreen ? 18 : 10);
-    const rotation = autoRotation + spin * 28 + renderedProgress * 16;
+    const scale = (narrowScreen ? 0.74 : 0.82) + renderedProgress * (narrowScreen ? 0.24 : 0.36);
+    const shiftY = renderedProgress * (narrowScreen ? 18 : 8);
+    const bodyRotation = autoRotation * 0.24 + spin * 18;
+    const ringRotation = -18 + autoRotation * 0.9 + spin * 28 + renderedProgress * 12;
 
     shell.style.setProperty("--planet-scale", scale.toFixed(3));
     shell.style.setProperty("--planet-shift-y", `${shiftY.toFixed(1)}px`);
-    shell.style.setProperty("--planet-rotation", `${rotation.toFixed(2)}deg`);
+    shell.style.setProperty("--planet-rotation", `${bodyRotation.toFixed(2)}deg`);
+    shell.style.setProperty("--ring-rotation", `${ringRotation.toFixed(2)}deg`);
   };
 
   document.addEventListener("visibilitychange", () => {
@@ -299,11 +287,83 @@ const initPlanetFallback = () => {
 
 const resolveThreeRuntime = async () => {
   try {
-    const [threeModule, colladaModule] = await Promise.all([import(THREE_MODULE_URL), import(COLLADA_LOADER_URL)]);
-    return { THREE: threeModule, ColladaLoader: colladaModule.ColladaLoader };
+    const threeModule = await import(THREE_MODULE_URL);
+    return { THREE: threeModule };
   } catch (error) {
-    return { THREE: window.THREE, ColladaLoader: null };
+    return { THREE: window.THREE };
   }
+};
+
+const createAccretionTexture = (THREE, size = 1024) => {
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const context = canvas.getContext("2d");
+
+  if (!context) {
+    return null;
+  }
+
+  const center = size / 2;
+  const outerRadius = size * 0.48;
+  const innerRadius = size * 0.24;
+  const gradient = typeof context.createConicGradient === "function"
+    ? context.createConicGradient(0, center, center)
+    : context.createRadialGradient(center, center, innerRadius, center, center, outerRadius);
+
+  gradient.addColorStop(0, "rgba(255, 224, 148, 0.96)");
+  gradient.addColorStop(0.15, "rgba(255, 142, 82, 0.98)");
+  gradient.addColorStop(0.36, "rgba(126, 95, 255, 0.94)");
+  gradient.addColorStop(0.62, "rgba(77, 213, 255, 0.54)");
+  gradient.addColorStop(0.82, "rgba(255, 188, 96, 0.94)");
+  gradient.addColorStop(1, "rgba(255, 224, 148, 0.96)");
+
+  context.clearRect(0, 0, size, size);
+  context.beginPath();
+  context.arc(center, center, outerRadius, 0, Math.PI * 2);
+  context.arc(center, center, innerRadius, 0, Math.PI * 2, true);
+  context.closePath();
+  context.fillStyle = gradient;
+  context.fill();
+
+  context.save();
+  context.globalCompositeOperation = "source-atop";
+  for (let index = 0; index < 220; index += 1) {
+    const angle = (Math.PI * 2 * index) / 220;
+    const radius = innerRadius + (outerRadius - innerRadius) * ((index % 21) / 21);
+    const streakLength = outerRadius * (0.22 + (index % 8) / 13);
+    const x = center + Math.cos(angle) * radius;
+    const y = center + Math.sin(angle) * radius;
+    const alpha = 0.03 + (index % 6) * 0.012;
+
+    context.strokeStyle = `rgba(255, ${120 + (index % 80)}, ${90 + (index % 70)}, ${alpha})`;
+    context.lineWidth = 2 + (index % 3);
+    context.beginPath();
+    context.moveTo(x, y);
+    context.lineTo(x + Math.cos(angle) * streakLength, y + Math.sin(angle) * streakLength);
+    context.stroke();
+  }
+  context.restore();
+
+  const vignette = context.createRadialGradient(center, center, innerRadius * 0.7, center, center, outerRadius);
+  vignette.addColorStop(0, "rgba(0, 0, 0, 0)");
+  vignette.addColorStop(0.56, "rgba(16, 10, 26, 0.08)");
+  vignette.addColorStop(0.82, "rgba(8, 5, 16, 0.28)");
+  vignette.addColorStop(1, "rgba(0, 0, 0, 0.82)");
+  context.fillStyle = vignette;
+  context.beginPath();
+  context.arc(center, center, outerRadius, 0, Math.PI * 2);
+  context.arc(center, center, innerRadius, 0, Math.PI * 2, true);
+  context.closePath();
+  context.fill();
+
+  const texture = new THREE.CanvasTexture(canvas);
+  if ("colorSpace" in texture && THREE.SRGBColorSpace) {
+    texture.colorSpace = THREE.SRGBColorSpace;
+  }
+  texture.needsUpdate = true;
+
+  return texture;
 };
 
 const initSpaceScene = async () => {
@@ -313,7 +373,7 @@ const initSpaceScene = async () => {
     return false;
   }
 
-  const { THREE, ColladaLoader } = await resolveThreeRuntime();
+  const { THREE } = await resolveThreeRuntime();
 
   if (!THREE) {
     return false;
@@ -328,13 +388,11 @@ const initSpaceScene = async () => {
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(34, window.innerWidth / window.innerHeight, 0.1, 120);
   const group = new THREE.Group();
-  const saturnGroup = new THREE.Group();
+  const blackHoleGroup = new THREE.Group();
 
   scene.add(group);
-  group.add(saturnGroup);
-  camera.position.set(0, 0.12, 10.2);
-
-  const textureLoader = new THREE.TextureLoader();
+  group.add(blackHoleGroup);
+  camera.position.set(0, 0.08, 10.6);
   const setRendererSize = () => {
     const maxDpr = window.innerWidth < 760 ? 1 : 1.12;
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, maxDpr));
@@ -348,81 +406,10 @@ const initSpaceScene = async () => {
   }
   if (THREE.ACESFilmicToneMapping) {
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.18;
+    renderer.toneMappingExposure = 1.08;
   }
   scene.background = new THREE.Color(0x020713);
   scene.fog = new THREE.FogExp2(0x020713, 0.026);
-
-  const maxAnisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 4);
-  const loadTexture = (url, isColorTexture = false) => {
-    const texture = textureLoader.load(url);
-    texture.anisotropy = maxAnisotropy;
-    texture.minFilter = THREE.LinearMipmapLinearFilter;
-    texture.magFilter = THREE.LinearFilter;
-
-    if (isColorTexture) {
-      if ("colorSpace" in texture && THREE.SRGBColorSpace) {
-        texture.colorSpace = THREE.SRGBColorSpace;
-      } else if (THREE.sRGBEncoding) {
-        texture.encoding = THREE.sRGBEncoding;
-      }
-    }
-
-    return texture;
-  };
-
-  const textures = {
-    saturnBase: loadTexture(SATURN_ASSETS.saturnBase, true),
-    saturnNormal: loadTexture(SATURN_ASSETS.saturnNormal),
-    saturnRoughness: loadTexture(SATURN_ASSETS.saturnRoughness),
-    saturnMetallic: loadTexture(SATURN_ASSETS.saturnMetallic),
-    ringsBase: loadTexture(SATURN_ASSETS.ringsBase, true),
-    ringsNormal: loadTexture(SATURN_ASSETS.ringsNormal),
-    ringsRoughness: loadTexture(SATURN_ASSETS.ringsRoughness),
-    ringsMetallic: loadTexture(SATURN_ASSETS.ringsMetallic),
-    moonBase: loadTexture(SATURN_ASSETS.moonBase, true),
-  };
-
-  const materials = {
-    saturn: new THREE.MeshStandardMaterial({
-      map: textures.saturnBase,
-      normalMap: textures.saturnNormal,
-      roughnessMap: textures.saturnRoughness,
-      metalnessMap: textures.saturnMetallic,
-      roughness: 0.86,
-      metalness: 0.02,
-      emissive: new THREE.Color(0x1f160b),
-      emissiveIntensity: 0.18,
-      color: 0xffffff,
-    }),
-    rings: new THREE.MeshStandardMaterial({
-      map: textures.ringsBase,
-      alphaMap: textures.ringsBase,
-      normalMap: textures.ringsNormal,
-      roughnessMap: textures.ringsRoughness,
-      metalnessMap: textures.ringsMetallic,
-      roughness: 0.78,
-      metalness: 0.02,
-      transparent: true,
-      alphaTest: 0.035,
-      opacity: 0.98,
-      side: THREE.DoubleSide,
-      color: 0xffffff,
-    }),
-    moon: new THREE.MeshStandardMaterial({
-      map: textures.moonBase,
-      roughness: 0.92,
-      metalness: 0,
-      color: 0xf2f5ff,
-    }),
-  };
-
-  const moon = new THREE.Mesh(
-    new THREE.SphereGeometry(0.27, 28, 28),
-    materials.moon
-  );
-  moon.position.set(4.8, 1.25, -7.6);
-  group.add(moon);
 
   const createStarField = (count, radius, depth, spread, size, opacity) => {
     const geometry = new THREE.BufferGeometry();
@@ -453,12 +440,64 @@ const initSpaceScene = async () => {
   const nearStars = createStarField(540, 5.8, -8.2, 0.3, 0.024, 0.76);
   group.add(deepStars, nearStars);
 
+  const diskTexture = createAccretionTexture(THREE);
+  const accretionDisk = new THREE.Mesh(
+    new THREE.RingGeometry(1.2, 3.28, 192, 6),
+    new THREE.MeshBasicMaterial({
+      map: diskTexture,
+      transparent: true,
+      opacity: 0.94,
+      side: THREE.DoubleSide,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      color: 0xffffff,
+    })
+  );
+  accretionDisk.rotation.x = Math.PI * 0.5 - 0.22;
+  blackHoleGroup.add(accretionDisk);
+
+  const accretionDiskInner = new THREE.Mesh(
+    new THREE.RingGeometry(1.04, 2.46, 160, 4),
+    new THREE.MeshBasicMaterial({
+      map: diskTexture,
+      transparent: true,
+      opacity: 0.42,
+      side: THREE.DoubleSide,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      color: 0xffddaa,
+    })
+  );
+  accretionDiskInner.rotation.x = Math.PI * 0.5 - 0.18;
+  accretionDiskInner.rotation.z = 0.24;
+  blackHoleGroup.add(accretionDiskInner);
+
+  const photonRing = new THREE.Mesh(
+    new THREE.TorusGeometry(1.18, 0.06, 12, 220),
+    new THREE.MeshBasicMaterial({
+      color: 0xffc36b,
+      transparent: true,
+      opacity: 0.72,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    })
+  );
+  blackHoleGroup.add(photonRing);
+
+  const blackCore = new THREE.Mesh(
+    new THREE.SphereGeometry(1.02, 96, 96),
+    new THREE.MeshBasicMaterial({
+      color: 0x010102,
+    })
+  );
+  blackHoleGroup.add(blackCore);
+
   const glow = new THREE.Mesh(
-    new THREE.SphereGeometry(2.12, 96, 96),
+    new THREE.SphereGeometry(2.24, 96, 96),
     new THREE.ShaderMaterial({
       uniforms: {
-        glowColor: { value: new THREE.Color(0x80caff) },
-        intensity: { value: 0.24 },
+        glowColor: { value: new THREE.Color(0xff8a54) },
+        intensity: { value: 0.22 },
       },
       vertexShader: `
         varying vec3 vNormal;
@@ -489,105 +528,17 @@ const initSpaceScene = async () => {
       blending: THREE.AdditiveBlending,
     })
   );
-  group.add(glow);
+  blackHoleGroup.add(glow);
 
-  const chooseMaterial = (sourceName = "") => {
-    const name = sourceName.toLowerCase();
-
-    if (name.includes("ring")) {
-      return materials.rings;
-    }
-
-    if (name.includes("moon")) {
-      return materials.moon;
-    }
-
-    return materials.saturn;
-  };
-
-  const prepareSaturnModel = (model) => {
-    model.traverse((object) => {
-      if (!object.isMesh) {
-        return;
-      }
-
-      if (object.geometry && !object.geometry.attributes.normal) {
-        object.geometry.computeVertexNormals();
-      }
-
-      if (Array.isArray(object.material)) {
-        object.material = object.material.map((material) => chooseMaterial(material?.name || object.name));
-      } else {
-        object.material = chooseMaterial(object.material?.name || object.name);
-      }
-    });
-
-    model.updateMatrixWorld(true);
-
-    const box = new THREE.Box3().setFromObject(model);
-    const size = box.getSize(new THREE.Vector3());
-    const center = box.getCenter(new THREE.Vector3());
-    const maxSize = Math.max(size.x, size.y, size.z) || 1;
-
-    model.position.sub(center);
-    model.scale.multiplyScalar(4.8 / maxSize);
-    model.rotation.set(-0.34, -0.18, -0.34);
-
-    return model;
-  };
-
-  const createFallbackSaturn = () => {
-    const fallback = new THREE.Group();
-    const body = new THREE.Mesh(new THREE.SphereGeometry(1.36, 96, 96), materials.saturn);
-    const rings = new THREE.Mesh(new THREE.RingGeometry(1.72, 3.48, 192, 4), materials.rings);
-
-    rings.rotation.x = Math.PI * 0.5;
-    fallback.add(body, rings);
-    fallback.rotation.set(-0.34, -0.18, -0.34);
-
-    return fallback;
-  };
-
-  const loadSaturnModel = () =>
-    new Promise((resolve) => {
-      if (!ColladaLoader) {
-        resolve(createFallbackSaturn());
-        return;
-      }
-
-      const loader = new ColladaLoader();
-      loader.setResourcePath(SATURN_ASSETS.textureRoot);
-      loader.load(
-        SATURN_ASSETS.model,
-        (collada) => resolve(prepareSaturnModel(collada.scene)),
-        undefined,
-        () => resolve(createFallbackSaturn())
-      );
-    });
-
-  const fallbackSaturn = createFallbackSaturn();
-  saturnGroup.add(fallbackSaturn);
-
-  loadSaturnModel().then((saturnModel) => {
-    saturnModel.scale.multiplyScalar(1.18);
-    saturnModel.position.set(0, 0, 0);
-    saturnModel.traverse((object) => {
-      if (object.isMesh) {
-        object.renderOrder = 2;
-      }
-    });
-    saturnGroup.add(saturnModel);
-  });
-
-  scene.add(new THREE.AmbientLight(0xffead0, 0.72));
-  const keyLight = new THREE.DirectionalLight(0xffffff, 4.2);
-  keyLight.position.set(5.6, 2.4, 4.8);
+  scene.add(new THREE.AmbientLight(0x221e33, 0.42));
+  const keyLight = new THREE.DirectionalLight(0xffc37a, 1.64);
+  keyLight.position.set(4.2, 1.8, 4.8);
   scene.add(keyLight);
-  const fillLight = new THREE.DirectionalLight(0x84cfff, 1.08);
-  fillLight.position.set(-3.2, 1.8, 3.4);
+  const fillLight = new THREE.DirectionalLight(0x7e6cff, 0.78);
+  fillLight.position.set(-3.2, 1.4, 2.6);
   scene.add(fillLight);
-  const rimLight = new THREE.DirectionalLight(0x65d8ff, 1.55);
-  rimLight.position.set(-4, 1.6, -2);
+  const rimLight = new THREE.DirectionalLight(0x52d2ff, 0.62);
+  rimLight.position.set(-4, 1.6, -1.4);
   scene.add(rimLight);
 
   const motion = { progress: readJourneyProgress() };
@@ -669,21 +620,21 @@ const initSpaceScene = async () => {
     scrollVelocity *= 0.92;
 
     camera.position.x = 0;
-    camera.position.y = 0.1 - eased * 0.08;
-    camera.position.z = (narrowScreen ? 9.8 : 10.4) - eased * (narrowScreen ? 1.2 : 1.5);
-    camera.lookAt(0, -0.03, -0.3);
+    camera.position.y = 0.06 - eased * 0.06;
+    camera.position.z = (narrowScreen ? 9.9 : 10.6) - eased * (narrowScreen ? 1.45 : 1.9);
+    camera.lookAt(0, -0.02, -0.42);
 
-    group.rotation.x = -eased * 0.02;
-    saturnGroup.position.set(0, narrowScreen ? -0.1 : -0.04, -4.7 + eased * 0.1);
-    saturnGroup.scale.setScalar((narrowScreen ? 1.06 : 0.96) + eased * (narrowScreen ? 0.3 : 0.42));
-    saturnGroup.rotation.y = autoRotation + scrollRotation * 0.07 + eased * 0.12;
-    saturnGroup.rotation.x = -0.02 + eased * 0.03;
-    saturnGroup.rotation.z = -0.015 - eased * 0.025;
-    glow.position.copy(saturnGroup.position);
-    glow.material.uniforms.intensity.value = 0.18 + eased * 0.08;
-
-    moon.position.x = 4.8 - eased * 0.36;
-    moon.position.y = 1.25 + eased * 0.14;
+    group.rotation.x = -eased * 0.018;
+    blackHoleGroup.position.set(0, narrowScreen ? -0.08 : -0.02, -4.92 + eased * 0.18);
+    blackHoleGroup.scale.setScalar((narrowScreen ? 0.88 : 0.94) + eased * (narrowScreen ? 0.24 : 0.34));
+    blackHoleGroup.rotation.y = scrollRotation * 0.015;
+    accretionDisk.rotation.z = -0.22 + autoRotation * 0.56 + scrollRotation * 0.08;
+    accretionDisk.rotation.x = Math.PI * 0.5 - 0.22 + eased * 0.05;
+    accretionDiskInner.rotation.z = 0.24 - autoRotation * 0.84 + scrollRotation * 0.02;
+    accretionDiskInner.rotation.x = Math.PI * 0.5 - 0.18 + eased * 0.04;
+    photonRing.rotation.z = autoRotation * 0.22 - scrollRotation * 0.05;
+    photonRing.scale.setScalar(1 + eased * 0.06);
+    glow.material.uniforms.intensity.value = 0.22 + eased * 0.14;
     deepStars.rotation.y += 0.00005;
     nearStars.rotation.y += 0.00011;
     deepStars.material.opacity = 0.52 - eased * 0.08;
