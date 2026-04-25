@@ -147,7 +147,7 @@ h3 {
   aspect-ratio: 1;
   background:
     radial-gradient(circle at center, rgba(255, 255, 255, 0.12), transparent 55%),
-    url("saturn/Textures/Saturn 4K/Saturn2_Rings_BaseColor.png") center / cover no-repeat;
+    url("assets/saturn/saturn-rings-base.png") center / cover no-repeat;
   opacity: 0.92;
   transform: translate3d(0, var(--planet-shift-y, 0px), 0)
     scale(calc(var(--planet-scale, 0.8) * 1.18))
@@ -163,10 +163,10 @@ h3 {
   background:
     radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.3), transparent 28%),
     radial-gradient(circle at 65% 70%, rgba(72, 18, 120, 0.18), transparent 34%),
-    url("saturn/Textures/Saturn 4K/Saturn2_Rings_BaseColor.png") center / cover no-repeat,
-    url("saturn/Textures/Saturn 4K/Saturn2_Saturn_BaseColor.png") center / 140% auto no-repeat;
+    url("assets/saturn/saturn-rings-base.png") center / cover no-repeat,
+    url("assets/saturn/saturn-base.png") center / 140% auto no-repeat;
   box-shadow:
-    inset -34px -34px 60px rgba(15, 18, 32, 0.26),
+    inset -24px -24px 44px rgba(15, 18, 32, 0.16),
     inset 22px 18px 36px rgba(255, 255, 255, 0.12),
     0 28px 72px rgba(126, 82, 255, 0.18);
   transform: translate3d(0, var(--planet-shift-y, 0px), 0)

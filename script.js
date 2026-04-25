@@ -7,18 +7,19 @@ const SHUTTLE_FRAME_PATHS = Array.from(
 const SATURN_ASSETS = {
   model: "saturn/uploads-files-4052472-Stylized+Planets.dae",
   textureRoot: "saturn/Textures/Saturn 4K/",
-  saturnBase: "saturn/Textures/Saturn 4K/Saturn2_Saturn_BaseColor.png",
-  saturnNormal: "saturn/Textures/Saturn 4K/Saturn2_Saturn_Normal.png",
-  saturnRoughness: "saturn/Textures/Saturn 4K/Saturn2_Saturn_Roughness.png",
-  saturnMetallic: "saturn/Textures/Saturn 4K/Saturn2_Saturn_Metallic.png",
-  ringsBase: "saturn/Textures/Saturn 4K/Saturn2_Rings_BaseColor.png",
-  ringsNormal: "saturn/Textures/Saturn 4K/Saturn2_Rings_Normal.png",
-  ringsRoughness: "saturn/Textures/Saturn 4K/Saturn2_Rings_Roughness.png",
-  ringsMetallic: "saturn/Textures/Saturn 4K/Saturn2_Rings_Metallic.png",
-  moonBase: "saturn/Textures/Moon 4K/Saturn2_Saturn_BaseColor.png",
+  saturnBase: "assets/saturn/saturn-base.png",
+  saturnNormal: "assets/saturn/saturn-normal.png",
+  saturnRoughness: "assets/saturn/saturn-roughness.png",
+  saturnMetallic: "assets/saturn/saturn-metallic.png",
+  ringsBase: "assets/saturn/saturn-rings-base.png",
+  ringsNormal: "assets/saturn/saturn-rings-normal.png",
+  ringsRoughness: "assets/saturn/saturn-rings-roughness.png",
+  ringsMetallic: "assets/saturn/saturn-rings-metallic.png",
+  moonBase: "assets/saturn/saturn-moon-base.png",
 };
 const THREE_MODULE_URL = "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
 const COLLADA_LOADER_URL = "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/ColladaLoader.js";
+const shouldUsePlanetFallback = () => window.location.protocol === "file:";
 
 const setRevealFallback = () => {
   document.querySelectorAll("[data-reveal]").forEach((item) => {
@@ -790,10 +791,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   initSmoothScroll();
   initRevealAnimations();
   initEmbeddedPlanet();
-  const started = await initSpaceScene().catch(() => false);
-
-  if (!started) {
+  if (shouldUsePlanetFallback()) {
     initPlanetFallback();
+  } else {
+    const started = await initSpaceScene().catch(() => false);
+
+    if (!started) {
+      initPlanetFallback();
+    }
   }
   initJourneyMotion();
   initLeadForm();
