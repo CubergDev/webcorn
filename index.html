@@ -24,6 +24,12 @@
     </script>
   </head>
   <body>
+    <div id="shuttle-shell" aria-hidden="true">
+      <video id="shuttle-video" muted playsinline preload="auto">
+        <source src="assets/shuttle/shuttle-intro.mp4" type="video/mp4" />
+      </video>
+      <canvas id="shuttle-canvas"></canvas>
+    </div>
     <div id="planet-shell" aria-hidden="true">
       <iframe
         id="planet-frame"

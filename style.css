@@ -110,6 +110,55 @@ h3 {
   pointer-events: none;
 }
 
+#shuttle-shell {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: #02040a;
+  opacity: 1;
+  transform: translate3d(0, var(--shuttle-shift-y, 0px), 0) scale(var(--shuttle-scale, 1));
+  filter: blur(var(--shuttle-blur, 0px));
+  transition: opacity 280ms ease;
+}
+
+#shuttle-shell.is-ready {
+  background: transparent;
+  opacity: var(--shuttle-opacity, 1);
+}
+
+#shuttle-shell::before,
+#shuttle-shell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+#shuttle-shell::before {
+  background:
+    radial-gradient(circle at center, transparent 0 18%, rgba(2, 4, 10, 0.08) 34%, rgba(2, 4, 10, 0.26) 56%, rgba(2, 4, 10, 0.62) 100%),
+    linear-gradient(90deg, rgba(2, 4, 10, 0.68) 0%, transparent 16%, transparent 84%, rgba(2, 4, 10, 0.68) 100%);
+}
+
+#shuttle-shell::after {
+  background:
+    radial-gradient(circle at center, rgba(146, 220, 255, 0.05), transparent 42%),
+    linear-gradient(180deg, rgba(2, 4, 10, 0.3), rgba(2, 4, 10, 0) 22%, rgba(2, 4, 10, 0) 78%, rgba(2, 4, 10, 0.42));
+}
+
+#shuttle-video {
+  display: none;
+}
+
+#shuttle-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
 #planet-shell {
   position: fixed;
   inset: 0;
