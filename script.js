@@ -257,11 +257,11 @@ const initPlanetFallback = () => {
     autoRotation += deltaSeconds * (prefersReducedMotion ? 8 : 18);
 
     const narrowScreen = window.innerWidth < 760;
-    const scale = (narrowScreen ? 0.72 : 0.84) + renderedProgress * (narrowScreen ? 0.18 : 0.26);
-    const shiftY = renderedProgress * (narrowScreen ? 16 : 6);
-    const bodyRotation = autoRotation * 0.08 + spin * 10;
-    const ringRotation = -6 + autoRotation * 0.18 + spin * 3;
-    const streamRotation = -32 + autoRotation * 0.48 + spin * 8;
+    const scale = (narrowScreen ? 0.7 : 0.88) + renderedProgress * (narrowScreen ? 0.1 : 0.14);
+    const shiftY = (narrowScreen ? 38 : 42) + renderedProgress * (narrowScreen ? 8 : 10);
+    const bodyRotation = autoRotation * 0.02 + spin * 2;
+    const ringRotation = -6 + autoRotation * 0.05 + spin * 0.8;
+    const streamRotation = -31 + autoRotation * 0.08 + spin * 1.4;
 
     shell.style.setProperty("--planet-scale", scale.toFixed(3));
     shell.style.setProperty("--planet-shift-y", `${shiftY.toFixed(1)}px`);
@@ -307,18 +307,18 @@ const createAccretionTexture = (THREE, size = 1024) => {
   }
 
   const center = size / 2;
-  const outerRadius = size * 0.48;
-  const innerRadius = size * 0.24;
+  const outerRadius = size * 0.46;
+  const innerRadius = size * 0.36;
   const gradient = typeof context.createConicGradient === "function"
     ? context.createConicGradient(0, center, center)
     : context.createRadialGradient(center, center, innerRadius, center, center, outerRadius);
 
-  gradient.addColorStop(0, "rgba(255, 241, 220, 0.98)");
-  gradient.addColorStop(0.14, "rgba(255, 210, 152, 0.98)");
-  gradient.addColorStop(0.34, "rgba(255, 167, 98, 0.96)");
-  gradient.addColorStop(0.56, "rgba(255, 132, 69, 0.88)");
-  gradient.addColorStop(0.8, "rgba(255, 188, 108, 0.94)");
-  gradient.addColorStop(1, "rgba(255, 241, 220, 0.98)");
+  gradient.addColorStop(0, "rgba(255, 245, 228, 0.98)");
+  gradient.addColorStop(0.18, "rgba(255, 216, 154, 0.98)");
+  gradient.addColorStop(0.42, "rgba(255, 170, 96, 0.96)");
+  gradient.addColorStop(0.64, "rgba(255, 134, 69, 0.86)");
+  gradient.addColorStop(0.84, "rgba(255, 196, 118, 0.94)");
+  gradient.addColorStop(1, "rgba(255, 245, 228, 0.98)");
 
   context.clearRect(0, 0, size, size);
   context.beginPath();
@@ -333,7 +333,7 @@ const createAccretionTexture = (THREE, size = 1024) => {
   for (let index = 0; index < 220; index += 1) {
     const angle = (Math.PI * 2 * index) / 220;
     const radius = innerRadius + (outerRadius - innerRadius) * ((index % 21) / 21);
-    const streakLength = outerRadius * (0.22 + (index % 8) / 13);
+    const streakLength = outerRadius * (0.08 + (index % 7) / 26);
     const x = center + Math.cos(angle) * radius;
     const y = center + Math.sin(angle) * radius;
     const alpha = 0.03 + (index % 6) * 0.012;
@@ -509,7 +509,7 @@ const initSpaceScene = async () => {
     })
   );
   accretionDisk.rotation.x = Math.PI * 0.5 - 0.22;
-  accretionDisk.scale.set(1.78, 0.52, 1);
+  accretionDisk.scale.set(2.08, 0.22, 1);
   blackHoleGroup.add(accretionDisk);
 
   const accretionDiskInner = new THREE.Mesh(
@@ -526,7 +526,7 @@ const initSpaceScene = async () => {
   );
   accretionDiskInner.rotation.x = Math.PI * 0.5 - 0.18;
   accretionDiskInner.rotation.z = 0.24;
-  accretionDiskInner.scale.set(1.36, 0.44, 1);
+  accretionDiskInner.scale.set(1.58, 0.16, 1);
   blackHoleGroup.add(accretionDiskInner);
 
   const streamMaterial = new THREE.MeshBasicMaterial({
@@ -538,7 +538,7 @@ const initSpaceScene = async () => {
     depthWrite: false,
     color: 0xffffff,
   });
-  const streamGeometry = new THREE.PlaneGeometry(9.6, 1.6, 1, 1);
+  const streamGeometry = new THREE.PlaneGeometry(8.4, 0.72, 1, 1);
   const accretionStreamFront = new THREE.Mesh(streamGeometry, streamMaterial);
   accretionStreamFront.rotation.z = -0.62;
   accretionStreamFront.position.z = 0.18;
@@ -548,7 +548,7 @@ const initSpaceScene = async () => {
   accretionStreamBack.material.opacity = 0.54;
   accretionStreamBack.rotation.z = -0.62;
   accretionStreamBack.position.z = -0.22;
-  accretionStreamBack.scale.set(0.92, 0.84, 1);
+  accretionStreamBack.scale.set(0.92, 0.72, 1);
   blackHoleGroup.add(accretionStreamBack);
 
   const photonRing = new THREE.Mesh(
@@ -564,7 +564,7 @@ const initSpaceScene = async () => {
   blackHoleGroup.add(photonRing);
 
   const blackCore = new THREE.Mesh(
-    new THREE.SphereGeometry(1.02, 96, 96),
+    new THREE.SphereGeometry(1.1, 96, 96),
     new THREE.MeshBasicMaterial({
       color: 0x010102,
     })
@@ -699,13 +699,13 @@ const initSpaceScene = async () => {
     scrollVelocity *= 0.92;
 
     camera.position.x = 0;
-    camera.position.y = 0.06 - eased * 0.06;
-    camera.position.z = (narrowScreen ? 9.9 : 10.6) - eased * (narrowScreen ? 1.45 : 1.9);
-    camera.lookAt(0, -0.02, -0.42);
+  camera.position.y = 0.04 - eased * 0.04;
+  camera.position.z = (narrowScreen ? 10.1 : 10.9) - eased * (narrowScreen ? 1.1 : 1.4);
+  camera.lookAt(0, -0.02, -0.4);
 
     group.rotation.x = -eased * 0.018;
-    blackHoleGroup.position.set(0, narrowScreen ? -0.08 : -0.02, -4.92 + eased * 0.18);
-    blackHoleGroup.scale.setScalar((narrowScreen ? 0.88 : 0.94) + eased * (narrowScreen ? 0.24 : 0.34));
+    blackHoleGroup.position.set(0, narrowScreen ? -0.04 : 0.02, -4.92 + eased * 0.12);
+    blackHoleGroup.scale.setScalar((narrowScreen ? 0.82 : 0.88) + eased * (narrowScreen ? 0.12 : 0.18));
     blackHoleGroup.rotation.y = scrollRotation * 0.015;
     accretionDisk.rotation.z = -0.22 + autoRotation * 0.56 + scrollRotation * 0.08;
     accretionDisk.rotation.x = Math.PI * 0.5 - 0.22 + eased * 0.05;
