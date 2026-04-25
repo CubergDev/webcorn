@@ -10,10 +10,8 @@ const EARTH_FALLBACK_FRAME_PATHS = Array.from(
   (_, index) => `assets/space/earth-frames/earth-${String(index).padStart(2, "0")}.webp`
 );
 const EARTH_ASSETS = {
-  day: "assets/space/earth-blue-marble-4096.jpg",
-  normal: "assets/space/earth-normal-2048.jpg",
+  day: "assets/space/earth-blue-marble-3072.jpg",
   specular: "assets/space/earth-specular-2048.jpg",
-  lights: "assets/space/earth-city-lights-4096.jpg",
   clouds: "assets/space/earth-clouds-1024.png",
   moon: "assets/space/moon-1024.jpg",
 };
@@ -400,14 +398,9 @@ const initSpaceScene = async () => {
     new THREE.SphereGeometry(1.56, 72, 72),
     new THREE.MeshPhongMaterial({
       map: loadTexture(EARTH_ASSETS.day, true),
-      normalMap: loadTexture(EARTH_ASSETS.normal),
-      normalScale: new THREE.Vector2(0.82, 0.82),
       specularMap: loadTexture(EARTH_ASSETS.specular),
-      specular: new THREE.Color(0x9ed7ff),
-      shininess: 22,
-      emissiveMap: loadTexture(EARTH_ASSETS.lights, true),
-      emissive: new THREE.Color(0xffddb0),
-      emissiveIntensity: 0.68,
+      specular: new THREE.Color(0x2c7fff),
+      shininess: 18,
       color: 0xffffff,
     })
   );
@@ -419,7 +412,7 @@ const initSpaceScene = async () => {
     new THREE.MeshPhongMaterial({
       map: loadTexture(EARTH_ASSETS.clouds, true),
       transparent: true,
-      opacity: 0.5,
+      opacity: 0.36,
       depthWrite: false,
       color: 0xf8fdff,
     })
@@ -505,15 +498,12 @@ const initSpaceScene = async () => {
   const nearStars = createStarField(540, 5.8, -8.2, 0.3, 0.024, 0.76);
   group.add(deepStars, nearStars);
 
-  scene.add(new THREE.AmbientLight(0xe5f3ff, 1.7));
-  const keyLight = new THREE.DirectionalLight(0xffffff, 2.45);
+  scene.add(new THREE.AmbientLight(0x9fcfff, 0.5));
+  const keyLight = new THREE.DirectionalLight(0xffffff, 2.2);
   keyLight.position.set(5.6, 2.4, 4.8);
   scene.add(keyLight);
-  const fillLight = new THREE.DirectionalLight(0xa8dfff, 1.2);
-  fillLight.position.set(-4.2, 1.4, 3.2);
-  scene.add(fillLight);
-  const rimLight = new THREE.DirectionalLight(0x8ce1ff, 1.5);
-  rimLight.position.set(-3.2, 2.2, -1.8);
+  const rimLight = new THREE.DirectionalLight(0x65d8ff, 0.9);
+  rimLight.position.set(-4, 1.6, -2);
   scene.add(rimLight);
 
   const motion = { progress: readJourneyProgress() };
