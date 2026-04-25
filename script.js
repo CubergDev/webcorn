@@ -313,12 +313,12 @@ const createAccretionTexture = (THREE, size = 1024) => {
     ? context.createConicGradient(0, center, center)
     : context.createRadialGradient(center, center, innerRadius, center, center, outerRadius);
 
-  gradient.addColorStop(0, "rgba(255, 224, 148, 0.96)");
-  gradient.addColorStop(0.15, "rgba(255, 142, 82, 0.98)");
-  gradient.addColorStop(0.36, "rgba(126, 95, 255, 0.94)");
-  gradient.addColorStop(0.62, "rgba(77, 213, 255, 0.54)");
-  gradient.addColorStop(0.82, "rgba(255, 188, 96, 0.94)");
-  gradient.addColorStop(1, "rgba(255, 224, 148, 0.96)");
+  gradient.addColorStop(0, "rgba(255, 241, 220, 0.98)");
+  gradient.addColorStop(0.14, "rgba(255, 210, 152, 0.98)");
+  gradient.addColorStop(0.34, "rgba(255, 167, 98, 0.96)");
+  gradient.addColorStop(0.56, "rgba(255, 132, 69, 0.88)");
+  gradient.addColorStop(0.8, "rgba(255, 188, 108, 0.94)");
+  gradient.addColorStop(1, "rgba(255, 241, 220, 0.98)");
 
   context.clearRect(0, 0, size, size);
   context.beginPath();
@@ -349,8 +349,8 @@ const createAccretionTexture = (THREE, size = 1024) => {
 
   const vignette = context.createRadialGradient(center, center, innerRadius * 0.7, center, center, outerRadius);
   vignette.addColorStop(0, "rgba(0, 0, 0, 0)");
-  vignette.addColorStop(0.56, "rgba(16, 10, 26, 0.08)");
-  vignette.addColorStop(0.82, "rgba(8, 5, 16, 0.28)");
+  vignette.addColorStop(0.56, "rgba(18, 10, 6, 0.06)");
+  vignette.addColorStop(0.82, "rgba(8, 5, 4, 0.24)");
   vignette.addColorStop(1, "rgba(0, 0, 0, 0.82)");
   context.fillStyle = vignette;
   context.beginPath();
@@ -402,7 +402,7 @@ const createStreamTexture = (THREE, width = 2048, height = 384) => {
     const length = width * (0.08 + (index % 9) / 60);
     const alpha = 0.03 + (index % 6) * 0.015;
 
-    context.strokeStyle = `rgba(255, ${190 + (index % 55)}, ${150 + (index % 70)}, ${alpha})`;
+    context.strokeStyle = `rgba(255, ${190 + (index % 55)}, ${150 + (index % 45)}, ${alpha})`;
     context.lineWidth = 2 + (index % 3);
     context.beginPath();
     context.moveTo(x, y);
@@ -575,8 +575,8 @@ const initSpaceScene = async () => {
     new THREE.SphereGeometry(2.24, 96, 96),
     new THREE.ShaderMaterial({
       uniforms: {
-        glowColor: { value: new THREE.Color(0xff8a54) },
-        intensity: { value: 0.22 },
+        glowColor: { value: new THREE.Color(0xffc27d) },
+        intensity: { value: 0.24 },
       },
       vertexShader: `
         varying vec3 vNormal;
@@ -609,14 +609,14 @@ const initSpaceScene = async () => {
   );
   blackHoleGroup.add(glow);
 
-  scene.add(new THREE.AmbientLight(0x221e33, 0.42));
-  const keyLight = new THREE.DirectionalLight(0xffc37a, 1.64);
+  scene.add(new THREE.AmbientLight(0x1a120d, 0.38));
+  const keyLight = new THREE.DirectionalLight(0xffe6bf, 1.92);
   keyLight.position.set(4.2, 1.8, 4.8);
   scene.add(keyLight);
-  const fillLight = new THREE.DirectionalLight(0x7e6cff, 0.78);
+  const fillLight = new THREE.DirectionalLight(0xffa86a, 0.82);
   fillLight.position.set(-3.2, 1.4, 2.6);
   scene.add(fillLight);
-  const rimLight = new THREE.DirectionalLight(0x52d2ff, 0.62);
+  const rimLight = new THREE.DirectionalLight(0xffd39a, 0.48);
   rimLight.position.set(-4, 1.6, -1.4);
   scene.add(rimLight);
 

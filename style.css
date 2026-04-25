@@ -31,8 +31,8 @@ body {
   font-family: "Manrope", Inter, sans-serif;
   color: var(--text);
   background:
-    radial-gradient(circle at 68% 16%, rgba(100, 216, 255, 0.12), transparent 28%),
-    radial-gradient(circle at 22% 22%, rgba(142, 123, 255, 0.13), transparent 28%),
+    radial-gradient(circle at 62% 18%, rgba(255, 174, 103, 0.08), transparent 24%),
+    radial-gradient(circle at 26% 22%, rgba(255, 255, 255, 0.03), transparent 18%),
     linear-gradient(180deg, #02040a 0%, #07111f 48%, #02040a 100%);
   line-height: 1.5;
   overflow-x: hidden;
@@ -130,7 +130,7 @@ h3 {
   width: min(92vw, 1180px);
   aspect-ratio: 1;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 154, 94, 0.22) 0%, rgba(131, 97, 255, 0.16) 36%, rgba(67, 11, 14, 0) 72%);
+  background: radial-gradient(circle, rgba(255, 173, 92, 0.22) 0%, rgba(255, 127, 64, 0.14) 34%, rgba(67, 11, 14, 0) 72%);
   transform: translate3d(0, var(--planet-shift-y, 0px), 0) scale(calc(var(--planet-scale, 0.84) * 1.2));
   filter: blur(52px);
 }
@@ -148,9 +148,9 @@ h3 {
   aspect-ratio: 2.5 / 1;
   border-radius: 50% / 44%;
   background:
-    radial-gradient(ellipse at center, transparent 0 28%, rgba(255, 208, 138, 0.62) 35%, rgba(255, 142, 82, 0.94) 46%, rgba(123, 89, 255, 0.84) 59%, rgba(23, 18, 30, 0.44) 69%, transparent 77%),
-    linear-gradient(90deg, rgba(50, 87, 183, 0.18), rgba(255, 177, 111, 0.62) 18%, rgba(255, 154, 93, 0.92) 46%, rgba(111, 98, 255, 0.82) 80%, rgba(62, 91, 182, 0.28));
-  opacity: 0.9;
+    radial-gradient(ellipse at center, transparent 0 28%, rgba(255, 240, 214, 0.56) 35%, rgba(255, 196, 122, 0.82) 44%, rgba(255, 132, 67, 0.96) 52%, rgba(72, 34, 22, 0.36) 66%, transparent 77%),
+    linear-gradient(90deg, rgba(255, 160, 96, 0.04), rgba(255, 214, 157, 0.38) 18%, rgba(255, 187, 112, 0.92) 46%, rgba(255, 146, 72, 0.82) 82%, rgba(255, 160, 96, 0.06));
+  opacity: 0.94;
   transform: translate3d(0, var(--planet-shift-y, 0px), 0)
     scale(calc(var(--planet-scale, 0.84) * 1.14))
     rotateZ(var(--ring-rotation, -6deg));
@@ -162,7 +162,7 @@ h3 {
   mask-position: center;
   -webkit-mask-size: 100% 100%;
   mask-size: 100% 100%;
-  filter: blur(10px) drop-shadow(0 20px 56px rgba(192, 120, 255, 0.22));
+  filter: blur(10px) drop-shadow(0 20px 56px rgba(255, 152, 88, 0.24));
 }
 
 #planet-fallback-stream {
@@ -170,13 +170,13 @@ h3 {
   aspect-ratio: 4.4 / 1;
   border-radius: 999px;
   background:
-    linear-gradient(90deg, rgba(255, 177, 111, 0) 0%, rgba(255, 213, 157, 0.24) 8%, rgba(255, 247, 228, 0.98) 18%, rgba(255, 207, 139, 0.94) 28%, rgba(255, 143, 83, 0.86) 38%, rgba(125, 95, 255, 0.34) 50%, rgba(255, 145, 92, 0.88) 62%, rgba(255, 240, 218, 0.98) 74%, rgba(255, 194, 126, 0.18) 90%, rgba(255, 177, 111, 0) 100%);
-  opacity: 0.94;
+    linear-gradient(90deg, rgba(255, 177, 111, 0) 0%, rgba(255, 220, 170, 0.2) 10%, rgba(255, 248, 236, 0.98) 22%, rgba(255, 216, 146, 0.94) 34%, rgba(255, 146, 82, 0.88) 50%, rgba(255, 214, 146, 0.94) 66%, rgba(255, 248, 236, 0.98) 78%, rgba(255, 194, 126, 0.18) 90%, rgba(255, 177, 111, 0) 100%);
+  opacity: 0.98;
   mix-blend-mode: screen;
   transform: translate3d(0, calc(var(--planet-shift-y, 0px) - 6px), 0)
     scale(calc(var(--planet-scale, 0.84) * 1.02))
     rotate(var(--stream-rotation, -32deg));
-  filter: blur(6px) drop-shadow(0 0 18px rgba(255, 184, 116, 0.32));
+  filter: blur(5px) drop-shadow(0 0 20px rgba(255, 211, 151, 0.34));
 }
 
 #planet-fallback-body {
@@ -185,12 +185,11 @@ h3 {
   position: absolute;
   border-radius: 50%;
   background:
-    radial-gradient(circle at center, #010102 0 40%, rgba(5, 6, 10, 0.98) 54%, rgba(0, 0, 0, 0.98) 63%, rgba(248, 190, 116, 0.48) 67%, rgba(146, 116, 255, 0.4) 71%, rgba(0, 0, 0, 0) 79%),
-    radial-gradient(circle at 50% 48%, rgba(91, 164, 255, 0.08), transparent 60%);
+    radial-gradient(circle at center, #010102 0 42%, rgba(4, 4, 7, 0.99) 56%, rgba(0, 0, 0, 0.99) 64%, rgba(255, 216, 158, 0.44) 68%, rgba(255, 149, 86, 0.22) 72%, rgba(0, 0, 0, 0) 79%);
   box-shadow:
     0 0 0 1px rgba(255, 216, 162, 0.12),
-    0 0 42px rgba(255, 131, 84, 0.24),
-    0 0 92px rgba(118, 87, 255, 0.14);
+    0 0 42px rgba(255, 131, 84, 0.28),
+    0 0 92px rgba(255, 208, 146, 0.12);
   transform: translate3d(0, var(--planet-shift-y, 0px), 0)
     scale(var(--planet-scale, 0.8))
     rotate(var(--planet-rotation, 0deg));
@@ -205,7 +204,7 @@ h3 {
 }
 
 #planet-fallback-body::before {
-  background: radial-gradient(circle, transparent 48%, rgba(255, 171, 95, 0.62) 58%, rgba(139, 97, 255, 0.44) 66%, transparent 76%);
+  background: radial-gradient(circle, transparent 48%, rgba(255, 228, 188, 0.34) 56%, rgba(255, 168, 96, 0.56) 62%, transparent 74%);
   filter: blur(12px);
 }
 
