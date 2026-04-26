@@ -6,6 +6,7 @@ import javax.crypto.Mac;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.SecretKeySpec;
 import javax.crypto.spec.PBEKeySpec;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -31,6 +32,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.stream.Stream;
+import java.util.zip.GZIPOutputStream;
 
 public class Main {
     private static final Path ROOT_DIR = Path.of("").toAbsolutePath().normalize();
@@ -849,11 +851,29 @@ public class Main {
         }
 
         byte[] body = Files.readAllBytes(file);
-        exchange.getResponseHeaders().set("Content-Type", detectContentType(file));
-        exchange.sendResponseHeaders(200, "HEAD".equals(method) ? -1 : body.length);
+        Headers headers = exchange.getResponseHeaders();
+        String etag = buildStaticEtag(file);
+        boolean useGzip = acceptsGzip(exchange) && isCompressibleAsset(file);
+        byte[] responseBody = useGzip ? gzip(body) : body;
+
+        headers.set("Content-Type", detectContentType(file));
+        headers.set("Cache-Control", cacheControlFor(file));
+        headers.set("ETag", etag);
+
+        if (useGzip) {
+            headers.set("Content-Encoding", "gzip");
+            headers.set("Vary", "Accept-Encoding");
+        }
+
+        if (etag.equals(exchange.getRequestHeaders().getFirst("If-None-Match"))) {
+            exchange.sendResponseHeaders(304, -1);
+            return;
+        }
+
+        exchange.sendResponseHeaders(200, "HEAD".equals(method) ? -1 : responseBody.length);
 
         if (!"HEAD".equals(method)) {
-            exchange.getResponseBody().write(body);
+            exchange.getResponseBody().write(responseBody);
         }
     }
 
@@ -1607,6 +1627,18 @@ public class Main {
         if (name.endsWith(".json")) {
             return "application/json; charset=UTF-8";
         }
+        if (name.endsWith(".glb")) {
+            return "model/gltf-binary";
+        }
+        if (name.endsWith(".webm")) {
+            return "video/webm";
+        }
+        if (name.endsWith(".wasm")) {
+            return "application/wasm";
+        }
+        if (name.endsWith(".woff2")) {
+            return "font/woff2";
+        }
         if (name.endsWith(".dae")) {
             return "model/vnd.collada+xml; charset=UTF-8";
         }
@@ -1629,6 +1661,49 @@ public class Main {
             return "image/x-icon";
         }
         return "text/plain; charset=UTF-8";
+    }
+
+    private static boolean acceptsGzip(HttpExchange exchange) {
+        String acceptEncoding = Optional.ofNullable(exchange.getRequestHeaders().getFirst("Accept-Encoding"))
+                .orElse("")
+                .toLowerCase(Locale.ROOT);
+        return acceptEncoding.contains("gzip");
+    }
+
+    private static boolean isCompressibleAsset(Path file) {
+        String name = file.getFileName().toString().toLowerCase(Locale.ROOT);
+        return name.endsWith(".html")
+                || name.endsWith(".css")
+                || name.endsWith(".js")
+                || name.endsWith(".json")
+                || name.endsWith(".svg")
+                || name.endsWith(".xml")
+                || name.endsWith(".txt");
+    }
+
+    private static String cacheControlFor(Path file) {
+        String name = file.getFileName().toString().toLowerCase(Locale.ROOT);
+        if (name.endsWith(".html")) {
+            return "no-cache";
+        }
+
+        if (name.endsWith(".css") || name.endsWith(".js") || name.endsWith(".json")) {
+            return "public, max-age=86400";
+        }
+
+        return "public, max-age=31536000";
+    }
+
+    private static String buildStaticEtag(Path file) throws IOException {
+        return "\"" + Files.size(file) + "-" + Files.getLastModifiedTime(file).toMillis() + "\"";
+    }
+
+    private static byte[] gzip(byte[] body) throws IOException {
+        ByteArrayOutputStream output = new ByteArrayOutputStream(body.length);
+        try (GZIPOutputStream gzip = new GZIPOutputStream(output)) {
+            gzip.write(body);
+        }
+        return output.toByteArray();
     }
 
     private static void ensureStorageDirectories() throws IOException {

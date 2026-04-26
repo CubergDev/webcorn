@@ -15,7 +15,7 @@
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="style.css?v=20260426-orbit-stars" />
     <script type="importmap">
       {
         "imports": {
@@ -24,7 +24,15 @@
       }
     </script>
   </head>
-  <body>
+  <body class="is-loading">
+    <div class="page-loader" data-page-loader role="status" aria-live="polite" aria-label="Загрузка сайта">
+      <div class="page-loader__inner">
+        <span class="page-loader__mark">W</span>
+        <span class="page-loader__brand">WEBCORN</span>
+        <span class="page-loader__bar" aria-hidden="true"><span></span></span>
+        <span class="page-loader__text">Загружаем 3D-сцену</span>
+      </div>
+    </div>
     <canvas id="space-canvas" aria-hidden="true"></canvas>
 
     <header class="header">
@@ -212,7 +220,7 @@
 
               <label>
                 <span>Контакт (WhatsApp / Email)</span>
-                <input name="contact" type="text" autocomplete="email" required />
+                <input name="contact" type="text" inputmode="email" autocomplete="email" required />
               </label>
 
               <label>
@@ -235,6 +243,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollToPlugin.min.js"></script>
-    <script src="script.js"></script>
+    <script src="script.js?v=20260426-orbit-stars"></script>
   </body>
 </html>
