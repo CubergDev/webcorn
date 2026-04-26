@@ -80,6 +80,54 @@ const initSmoothScroll = () => {
   });
 };
 
+const initScrollAssist = () => {
+  const button = document.querySelector("[data-scroll-assist]");
+  const label = document.querySelector("[data-scroll-assist-label]");
+  const sections = Array.from(document.querySelectorAll("main > section[id]"));
+  const contactSection = document.getElementById("contact");
+
+  if (!button || !label || !sections.length || !contactSection) {
+    return;
+  }
+
+  const getShouldScrollUp = () => {
+    const contactRect = contactSection.getBoundingClientRect();
+
+    return contactRect.top <= 120;
+  };
+
+  const updateState = () => {
+    const shouldScrollUp = getShouldScrollUp();
+
+    button.classList.toggle("is-up", shouldScrollUp);
+    label.textContent = shouldScrollUp ? "Вверх" : "Вниз";
+    button.setAttribute(
+      "aria-label",
+      shouldScrollUp ? "Прокрутить наверх" : "Прокрутить ниже",
+    );
+  };
+
+  button.addEventListener("click", () => {
+    if (getShouldScrollUp()) {
+      window.scrollTo({ top: 0, behavior: prefersReducedMotion ? "auto" : "smooth" });
+      return;
+    }
+
+    const nextSection = sections.find(
+      (section) => section.offsetTop > window.scrollY + window.innerHeight * 0.28,
+    );
+
+    (nextSection || contactSection).scrollIntoView({
+      behavior: prefersReducedMotion ? "auto" : "smooth",
+      block: "start",
+    });
+  });
+
+  window.addEventListener("scroll", updateState, { passive: true });
+  window.addEventListener("resize", updateState);
+  updateState();
+};
+
 const initRevealAnimations = () => {
   const items = Array.from(document.querySelectorAll("[data-reveal]"));
 
@@ -1071,6 +1119,7 @@ const initLeadForm = () => {
 
 document.addEventListener("DOMContentLoaded", async () => {
   initSmoothScroll();
+  initScrollAssist();
   initLeadForm();
 
   const sceneReady = initSpaceScene().catch((error) => {
