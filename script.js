@@ -120,6 +120,8 @@ const getKeyframedVideoTime = (progress, duration) => {
 
   return Math.min(lastFrame.time, Math.max(duration - 0.04, 0));
 };
+const SATURN_RING_EDGE_ON_TILT = -Math.PI * 0.46;
+const SATURN_RING_LINE_ANGLE = Math.PI * 0.14;
 
 const resolveThreeRuntime = async () => {
   try {
