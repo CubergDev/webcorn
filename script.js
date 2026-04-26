@@ -1,4 +1,6 @@
-const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const prefersReducedMotion = window.matchMedia(
+  "(prefers-reduced-motion: reduce)",
+).matches;
 
 const setRevealFallback = () => {
   document.querySelectorAll("[data-reveal]").forEach((item) => {
@@ -28,7 +30,9 @@ const initSmoothScroll = () => {
         return;
       }
 
-      target.scrollIntoView({ behavior: prefersReducedMotion ? "auto" : "smooth" });
+      target.scrollIntoView({
+        behavior: prefersReducedMotion ? "auto" : "smooth",
+      });
     });
   });
 };
@@ -57,43 +61,84 @@ const initRevealAnimations = () => {
           start: "top 84%",
           once: true,
         },
-      }
+      },
     );
   });
 };
 
-const THREE_MODULE_URL = "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
-const COLLADA_LOADER_URL = "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/ColladaLoader.js";
+const THREE_MODULE_URL =
+  "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
+const GLTF_LOADER_URL =
+  "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js";
+const DRACO_LOADER_URL =
+  "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/DRACOLoader.js";
+const DRACO_DECODER_PATH =
+  "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/libs/draco/";
+const EARTH_MODEL_URL = "earth/earth.glb";
+const SHUTTLE_VIDEO_URL = "earth/video.webm";
+const SHUTTLE_SCROLL_KEYFRAMES = [
+  { progress: 0, time: 0.01 },
+  { progress: 0.025, time: 0.8 },
+  { progress: 0.05, time: 1.8 },
+  { progress: 0.085, time: 3.5 },
+  { progress: 0.13, time: 6.6 },
+  { progress: 0.22, time: 10.6 },
+  { progress: 0.32, time: 14.1 },
+];
 
-const SATURN_ASSETS = {
-  model: "saturn/uploads-files-4052472-Stylized+Planets.dae",
-  textureRoot: "saturn/Textures/Saturn 4K/",
-  saturnBase: "saturn/Textures/Saturn 4K/Saturn2_Saturn_BaseColor.png",
-  saturnNormal: "saturn/Textures/Saturn 4K/Saturn2_Saturn_Normal.png",
-  saturnRoughness: "saturn/Textures/Saturn 4K/Saturn2_Saturn_Roughness.png",
-  saturnMetallic: "saturn/Textures/Saturn 4K/Saturn2_Saturn_Metallic.png",
-  ringsBase: "saturn/Textures/Saturn 4K/Saturn2_Rings_BaseColor.png",
-  ringsNormal: "saturn/Textures/Saturn 4K/Saturn2_Rings_Normal.png",
-  ringsRoughness: "saturn/Textures/Saturn 4K/Saturn2_Rings_Roughness.png",
-  ringsMetallic: "saturn/Textures/Saturn 4K/Saturn2_Rings_Metallic.png",
-  moonBase: "saturn/Textures/Moon 4K/Saturn2_Saturn_BaseColor.png",
+const getKeyframedVideoTime = (progress, duration) => {
+  const clampedProgress = Math.min(Math.max(progress, 0), 1);
+  const lastFrame =
+    SHUTTLE_SCROLL_KEYFRAMES[SHUTTLE_SCROLL_KEYFRAMES.length - 1];
+
+  if (clampedProgress <= SHUTTLE_SCROLL_KEYFRAMES[0].progress) {
+    return SHUTTLE_SCROLL_KEYFRAMES[0].time;
+  }
+
+  if (clampedProgress >= lastFrame.progress) {
+    return Math.min(lastFrame.time, Math.max(duration - 0.04, 0));
+  }
+
+  for (let i = 1; i < SHUTTLE_SCROLL_KEYFRAMES.length; i += 1) {
+    const previousFrame = SHUTTLE_SCROLL_KEYFRAMES[i - 1];
+    const nextFrame = SHUTTLE_SCROLL_KEYFRAMES[i];
+
+    if (clampedProgress <= nextFrame.progress) {
+      const frameProgress =
+        (clampedProgress - previousFrame.progress) /
+        (nextFrame.progress - previousFrame.progress);
+      const easedFrameProgress =
+        frameProgress * frameProgress * (3 - 2 * frameProgress);
+
+      return Math.min(
+        previousFrame.time +
+          (nextFrame.time - previousFrame.time) * easedFrameProgress,
+        Math.max(duration - 0.04, 0),
+      );
+    }
+  }
+
+  return Math.min(lastFrame.time, Math.max(duration - 0.04, 0));
 };
 
 const resolveThreeRuntime = async () => {
   try {
-    const [threeModule, colladaModule] = await Promise.all([
+    const [threeModule, gltfModule, dracoModule] = await Promise.all([
       import(THREE_MODULE_URL),
-      import(COLLADA_LOADER_URL),
+      import(GLTF_LOADER_URL),
+      import(DRACO_LOADER_URL),
     ]);
 
     return {
       THREE: threeModule,
-      ColladaLoader: colladaModule.ColladaLoader,
+      GLTFLoader: gltfModule.GLTFLoader,
+      DRACOLoader: dracoModule.DRACOLoader,
     };
   } catch (error) {
     return {
       THREE: window.THREE,
-      ColladaLoader: null,
+      GLTFLoader: null,
+      DRACOLoader: null,
     };
   }
 };
@@ -105,9 +150,9 @@ const initSpaceScene = async () => {
     return;
   }
 
-  const { THREE, ColladaLoader } = await resolveThreeRuntime();
+  const { THREE, GLTFLoader, DRACOLoader } = await resolveThreeRuntime();
 
-  if (!THREE) {
+  if (!THREE || !GLTFLoader || !DRACOLoader) {
     return;
   }
 
@@ -118,91 +163,136 @@ const initSpaceScene = async () => {
     powerPreference: "high-performance",
   });
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 100);
+  const camera = new THREE.PerspectiveCamera(
+    42,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    100,
+  );
   const group = new THREE.Group();
-  const saturnGroup = new THREE.Group();
+  const earthGroup = new THREE.Group();
 
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.6));
   renderer.setSize(window.innerWidth, window.innerHeight);
   if ("outputColorSpace" in renderer && THREE.SRGBColorSpace) {
     renderer.outputColorSpace = THREE.SRGBColorSpace;
   }
   if (THREE.ACESFilmicToneMapping) {
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.48;
+    renderer.toneMappingExposure = 1.46;
   }
-  scene.background = new THREE.Color(0x020713);
-  scene.fog = new THREE.FogExp2(0x020713, 0.026);
+  renderer.autoClear = false;
+  scene.background = new THREE.Color(0x000000);
   scene.add(group);
-  camera.position.set(0.18, 0.2, 8.9);
-  group.add(saturnGroup);
+  camera.position.set(0, 0.18, 9.6);
+  group.add(earthGroup);
 
-  const textureLoader = new THREE.TextureLoader();
-  const maxAnisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 8);
-  const loadTexture = (url, isColorTexture = false) => {
-    const texture = textureLoader.load(url);
-    texture.anisotropy = maxAnisotropy;
-    texture.minFilter = THREE.LinearMipmapLinearFilter;
-    texture.magFilter = THREE.LinearFilter;
+  const shuttleScene = new THREE.Scene();
+  const shuttleCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 10);
+  const shuttleVideo = document.createElement("video");
+  shuttleVideo.src = SHUTTLE_VIDEO_URL;
+  shuttleVideo.preload = "auto";
+  shuttleVideo.muted = true;
+  shuttleVideo.playsInline = true;
+  shuttleVideo.crossOrigin = "anonymous";
+  shuttleVideo.playbackRate = 1;
+  shuttleVideo.pause();
+  shuttleVideo.load();
 
-    if (isColorTexture) {
-      if ("colorSpace" in texture && THREE.SRGBColorSpace) {
-        texture.colorSpace = THREE.SRGBColorSpace;
-      } else if (THREE.sRGBEncoding) {
-        texture.encoding = THREE.sRGBEncoding;
+  let shuttleVideoReady = false;
+  let shuttleVideoDuration = 14.2;
+  let shuttleVideoAspect = 16 / 9;
+
+  const shuttleTexture = new THREE.VideoTexture(shuttleVideo);
+  shuttleTexture.minFilter = THREE.LinearFilter;
+  shuttleTexture.magFilter = THREE.LinearFilter;
+  shuttleTexture.generateMipmaps = false;
+  if ("colorSpace" in shuttleTexture && THREE.SRGBColorSpace) {
+    shuttleTexture.colorSpace = THREE.SRGBColorSpace;
+  }
+
+  const shuttleMaterial = new THREE.ShaderMaterial({
+    uniforms: {
+      map: { value: shuttleTexture },
+      opacity: { value: 1 },
+      brightness: { value: 1.82 },
+      contrast: { value: 1.14 },
+    },
+    vertexShader: `
+      varying vec2 vUv;
+
+      void main() {
+        vUv = uv;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
       }
+    `,
+    fragmentShader: `
+      uniform sampler2D map;
+      uniform float opacity;
+      uniform float brightness;
+      uniform float contrast;
+      varying vec2 vUv;
+
+      void main() {
+        vec4 color = texture2D(map, vUv);
+        float alpha = opacity;
+        color.rgb = (color.rgb - 0.5) * contrast + 0.5;
+        color.rgb *= brightness;
+        color.rgb = clamp(color.rgb, 0.0, 1.0);
+
+        if (alpha < 0.025) {
+          discard;
+        }
+
+        gl_FragColor = vec4(color.rgb, alpha);
+      }
+    `,
+    transparent: true,
+    depthWrite: false,
+  });
+  const shuttlePlane = new THREE.Mesh(
+    new THREE.PlaneGeometry(2, 2),
+    shuttleMaterial,
+  );
+  shuttlePlane.position.set(-0.12, 0, -1);
+  shuttleScene.add(shuttlePlane);
+
+  const resizeShuttleOverlay = () => {
+    const viewportAspect = window.innerWidth / window.innerHeight;
+    const shuttleScale = 1.12;
+
+    if (shuttleVideoAspect > viewportAspect) {
+      shuttlePlane.scale.set(
+        (shuttleVideoAspect / viewportAspect) * shuttleScale,
+        shuttleScale,
+        1,
+      );
+      return;
     }
 
-    return texture;
+    shuttlePlane.scale.set(
+      shuttleScale,
+      (viewportAspect / shuttleVideoAspect) * shuttleScale,
+      1,
+    );
   };
 
-  const textures = {
-    saturnBase: loadTexture(SATURN_ASSETS.saturnBase, true),
-    saturnNormal: loadTexture(SATURN_ASSETS.saturnNormal),
-    saturnRoughness: loadTexture(SATURN_ASSETS.saturnRoughness),
-    saturnMetallic: loadTexture(SATURN_ASSETS.saturnMetallic),
-    ringsBase: loadTexture(SATURN_ASSETS.ringsBase, true),
-    ringsNormal: loadTexture(SATURN_ASSETS.ringsNormal),
-    ringsRoughness: loadTexture(SATURN_ASSETS.ringsRoughness),
-    ringsMetallic: loadTexture(SATURN_ASSETS.ringsMetallic),
-    moonBase: loadTexture(SATURN_ASSETS.moonBase, true),
-  };
-
-  const materials = {
-    saturn: new THREE.MeshStandardMaterial({
-      map: textures.saturnBase,
-      normalMap: textures.saturnNormal,
-      roughnessMap: textures.saturnRoughness,
-      metalnessMap: textures.saturnMetallic,
-      roughness: 0.86,
-      metalness: 0.02,
-      emissive: new THREE.Color(0x1f160b),
-      emissiveIntensity: 0.36,
-      color: 0xffffff,
-    }),
-    rings: new THREE.MeshStandardMaterial({
-      map: textures.ringsBase,
-      alphaMap: textures.ringsBase,
-      normalMap: textures.ringsNormal,
-      roughnessMap: textures.ringsRoughness,
-      metalnessMap: textures.ringsMetallic,
-      roughness: 0.78,
-      metalness: 0.02,
-      transparent: true,
-      alphaTest: 0.035,
-      opacity: 0.98,
-      side: THREE.DoubleSide,
-      emissive: new THREE.Color(0x241404),
-      emissiveIntensity: 0.22,
-      color: 0xffffff,
-    }),
-    moon: new THREE.MeshStandardMaterial({
-      map: textures.moonBase,
-      roughness: 0.92,
-      metalness: 0,
-      color: 0xf2f5ff,
-    }),
-  };
+  shuttleVideo.addEventListener("loadedmetadata", () => {
+    shuttleVideoDuration = Number.isFinite(shuttleVideo.duration)
+      ? shuttleVideo.duration
+      : shuttleVideoDuration;
+    shuttleVideoAspect =
+      shuttleVideo.videoWidth && shuttleVideo.videoHeight
+        ? shuttleVideo.videoWidth / shuttleVideo.videoHeight
+        : shuttleVideoAspect;
+    shuttleVideoReady = true;
+    shuttleVideo.currentTime = 0.01;
+    resizeShuttleOverlay();
+  });
+  shuttleVideo.addEventListener("seeked", () => {
+    shuttleTexture.needsUpdate = true;
+  });
+  resizeShuttleOverlay();
 
   const createStarField = (count, baseRadius, depthOffset, verticalSpread) => {
     const geometry = new THREE.BufferGeometry();
@@ -229,7 +319,7 @@ const initSpaceScene = async () => {
       size: 0.014,
       transparent: true,
       opacity: 0.56,
-    })
+    }),
   );
   group.add(deepStars);
 
@@ -247,7 +337,10 @@ const initSpaceScene = async () => {
     starPositions[i * 3 + 2] = depth + Math.sin(angle) * 2.2;
   }
 
-  starGeometry.setAttribute("position", new THREE.BufferAttribute(starPositions, 3));
+  starGeometry.setAttribute(
+    "position",
+    new THREE.BufferAttribute(starPositions, 3),
+  );
   const stars = new THREE.Points(
     starGeometry,
     new THREE.PointsMaterial({
@@ -255,7 +348,7 @@ const initSpaceScene = async () => {
       size: 0.025,
       transparent: true,
       opacity: 0.72,
-    })
+    }),
   );
   group.add(stars);
 
@@ -284,8 +377,8 @@ const initSpaceScene = async () => {
         varying vec3 vViewPosition;
 
         void main() {
-          float rim = 1.0 - max(dot(normalize(vNormal), normalize(vViewPosition)), 0.0);
-          float glow = pow(rim, 2.6) * intensity;
+          float rim = 1.0 - abs(dot(normalize(vNormal), normalize(vViewPosition)));
+          float glow = smoothstep(0.38, 1.0, rim) * intensity;
           gl_FragColor = vec4(glowColor, glow);
         }
       `,
@@ -293,31 +386,97 @@ const initSpaceScene = async () => {
       depthWrite: false,
       side: THREE.BackSide,
       blending: THREE.AdditiveBlending,
-    })
+    }),
   );
   glow.position.set(0, -0.12, -5.35);
   group.add(glow);
 
-  const chooseMaterial = (sourceName = "") => {
-    const name = sourceName.toLowerCase();
-
-    if (name.includes("ring")) {
-      return materials.rings;
-    }
-
-    if (name.includes("moon")) {
-      return materials.moon;
-    }
-
-    return materials.saturn;
+  const earthParts = {
+    surface: null,
+    clouds: null,
+    atmosphere: null,
   };
 
-  const prepareSaturnModel = (model) => {
-    const embeddedLights = [];
+  const getObjectIdentity = (object) => {
+    const materialNames = (
+      Array.isArray(object.material) ? object.material : [object.material]
+    )
+      .map((material) => material?.name || "")
+      .join(" ");
+
+    return `${object.name} ${materialNames}`.toLowerCase();
+  };
+
+  const tuneMaterial = (object) => {
+    const name = getObjectIdentity(object);
+    const materials = Array.isArray(object.material)
+      ? object.material
+      : [object.material];
+
+    if (name.includes("atmo")) {
+      object.material = new THREE.ShaderMaterial({
+        uniforms: {
+          glowColor: { value: new THREE.Color(0x72caff) },
+          intensity: { value: 0.12 },
+        },
+        vertexShader: `
+          varying vec3 vNormal;
+          varying vec3 vViewPosition;
+          varying vec3 vLocalPosition;
+
+          void main() {
+            vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+            vNormal = normalize(normalMatrix * normal);
+            vViewPosition = -mvPosition.xyz;
+            vLocalPosition = normalize(position.xyz);
+            gl_Position = projectionMatrix * mvPosition;
+          }
+        `,
+        fragmentShader: `
+          uniform vec3 glowColor;
+          uniform float intensity;
+          varying vec3 vNormal;
+          varying vec3 vViewPosition;
+          varying vec3 vLocalPosition;
+
+          void main() {
+            float rim = 1.0 - abs(dot(normalize(vNormal), normalize(vViewPosition)));
+            float longitude = atan(vLocalPosition.z, vLocalPosition.x);
+            float latitude = asin(vLocalPosition.y);
+            float bands = sin(longitude * 9.0 + latitude * 5.0) * 0.5 + 0.5;
+            float wisps = smoothstep(0.54, 1.0, bands) * 0.45;
+            float alpha = smoothstep(0.64, 1.0, rim) * intensity * (0.62 + wisps);
+            gl_FragColor = vec4(glowColor, alpha);
+          }
+        `,
+        transparent: true,
+        depthWrite: false,
+        side: THREE.BackSide,
+        blending: THREE.AdditiveBlending,
+      });
+      return;
+    }
+
+    materials.forEach((material) => {
+      if (!material) {
+        return;
+      }
+
+      if (name.includes("clouds") || name.includes("atmo")) {
+        material.transparent = true;
+        material.depthWrite = false;
+      }
+
+      material.needsUpdate = true;
+    });
+  };
+
+  const prepareEarthModel = (model) => {
+    const removable = [];
 
     model.traverse((object) => {
-      if (object.isLight) {
-        embeddedLights.push(object);
+      if (object.isLight || object.isCamera) {
+        removable.push(object);
         return;
       }
 
@@ -329,14 +488,23 @@ const initSpaceScene = async () => {
         object.geometry.computeVertexNormals();
       }
 
-      if (Array.isArray(object.material)) {
-        object.material = object.material.map((material) => chooseMaterial(material?.name || object.name));
-      } else {
-        object.material = chooseMaterial(object.material?.name || object.name);
+      const name = getObjectIdentity(object);
+
+      if (name.includes("clouds")) {
+        earthParts.clouds = object;
+        object.renderOrder = 3;
+      } else if (name.includes("atmo")) {
+        earthParts.atmosphere = object;
+        object.renderOrder = 4;
+      } else if (name.includes("earth")) {
+        earthParts.surface = object;
+        object.renderOrder = 2;
       }
+
+      tuneMaterial(object);
     });
 
-    embeddedLights.forEach((light) => light.parent?.remove(light));
+    removable.forEach((object) => object.parent?.remove(object));
     model.updateMatrixWorld(true);
 
     const box = new THREE.Box3().setFromObject(model);
@@ -345,81 +513,50 @@ const initSpaceScene = async () => {
     const maxSize = Math.max(size.x, size.y, size.z) || 1;
 
     model.position.sub(center);
-    model.scale.multiplyScalar(4.8 / maxSize);
-    model.rotation.set(-0.38, -0.48, -0.42);
+    model.scale.multiplyScalar(4.2 / maxSize);
 
     return model;
   };
 
-  const createFallbackSaturn = () => {
-    const fallback = new THREE.Group();
-    const body = new THREE.Mesh(new THREE.SphereGeometry(1.36, 128, 128), materials.saturn);
-    const rings = new THREE.Mesh(new THREE.RingGeometry(1.72, 3.48, 256, 4), materials.rings);
-    const ringLineA = new THREE.Mesh(
-      new THREE.TorusGeometry(2.02, 0.018, 10, 220),
-      new THREE.MeshBasicMaterial({ color: 0xe2c081, transparent: true, opacity: 0.78 })
-    );
-    const ringLineB = new THREE.Mesh(
-      new THREE.TorusGeometry(2.72, 0.014, 10, 220),
-      new THREE.MeshBasicMaterial({ color: 0xb88d58, transparent: true, opacity: 0.62 })
-    );
-
-    rings.rotation.x = Math.PI * 0.5;
-    ringLineA.rotation.x = Math.PI * 0.5;
-    ringLineB.rotation.x = Math.PI * 0.5;
-    fallback.add(body, rings, ringLineA, ringLineB);
-    fallback.rotation.set(-0.68, -0.2, -0.52);
-
-    return fallback;
-  };
-
-  const loadSaturnModel = () =>
+  const loadEarthModel = () =>
     new Promise((resolve) => {
-      if (!ColladaLoader) {
-        resolve(null);
-        return;
-      }
+      const loader = new GLTFLoader();
+      const dracoLoader = new DRACOLoader();
 
-      const loader = new ColladaLoader();
-      loader.setResourcePath(SATURN_ASSETS.textureRoot);
+      dracoLoader.setDecoderPath(DRACO_DECODER_PATH);
+      loader.setDRACOLoader(dracoLoader);
+
       loader.load(
-        SATURN_ASSETS.model,
-        (collada) => resolve(prepareSaturnModel(collada.scene)),
+        EARTH_MODEL_URL,
+        (gltf) => resolve(prepareEarthModel(gltf.scene)),
         undefined,
-        () => resolve(null)
+        (error) => {
+          console.warn("Failed to load Earth GLB", error);
+          resolve(null);
+        },
       );
     });
 
-  const fallbackSaturn = createFallbackSaturn();
-  saturnGroup.add(fallbackSaturn);
-  saturnGroup.position.set(0, -0.12, -5.35);
-  saturnGroup.scale.setScalar(1.18);
+  earthGroup.position.set(0, -0.08, -5.6);
+  earthGroup.scale.setScalar(0.48);
 
-  loadSaturnModel().then((saturnModel) => {
-    if (!saturnModel) {
+  loadEarthModel().then((earthModel) => {
+    if (!earthModel) {
       return;
     }
 
-    saturnGroup.remove(fallbackSaturn);
-    saturnModel.scale.multiplyScalar(1.18);
-    saturnModel.position.set(0, 0, 0);
-    saturnModel.traverse((object) => {
-      if (object.isMesh) {
-        object.renderOrder = 2;
-      }
-    });
-    saturnGroup.add(saturnModel);
+    earthGroup.add(earthModel);
   });
 
-  scene.add(new THREE.AmbientLight(0xffead0, 1.06));
-  const keyLight = new THREE.DirectionalLight(0xffffff, 5.8);
-  keyLight.position.set(5.8, 3.2, 4.8);
+  scene.add(new THREE.AmbientLight(0x1e2d48, 0.58));
+  const keyLight = new THREE.DirectionalLight(0xffffff, 6.7);
+  keyLight.position.set(5.6, 2.9, 4.4);
   scene.add(keyLight);
-  const fillLight = new THREE.DirectionalLight(0xb6e6ff, 1.9);
-  fillLight.position.set(-3.2, 1.8, 3.4);
+  const fillLight = new THREE.DirectionalLight(0x7fb8ff, 1.12);
+  fillLight.position.set(-4.8, 1.2, 2.1);
   scene.add(fillLight);
-  const rimLight = new THREE.DirectionalLight(0x9ce8ff, 2.45);
-  rimLight.position.set(-4, 1.6, -2);
+  const rimLight = new THREE.DirectionalLight(0xb5ecff, 3.0);
+  rimLight.position.set(-3.4, 2.4, -4.6);
   scene.add(rimLight);
 
   const motion = { progress: 0 };
@@ -429,11 +566,17 @@ const initSpaceScene = async () => {
   let targetScrollSpinVelocity = 0;
   let lastScrollY = window.scrollY;
   let renderedProgress = 0;
+  let shuttleRenderedProgress = 0;
+  let lastShuttleScrollY = window.scrollY;
+  let shuttleIdleFrames = 0;
   let frameId;
 
   const readScrollProgress = () => {
     const journey = document.querySelector(".journey");
-    const max = Math.max((journey?.offsetHeight || window.innerHeight) - window.innerHeight, 1);
+    const max = Math.max(
+      (journey?.offsetHeight || window.innerHeight) - window.innerHeight,
+      1,
+    );
     const top = journey?.offsetTop || 0;
     return Math.min(Math.max((window.scrollY - top) / max, 0), 1);
   };
@@ -464,7 +607,7 @@ const initSpaceScene = async () => {
       return;
     }
 
-    targetScrollSpinVelocity += Math.max(-42, Math.min(42, delta)) * 0.00058;
+    targetScrollSpinVelocity += Math.max(-26, Math.min(26, delta)) * 0.00022;
   };
 
   const updateScrollSpin = () => {
@@ -481,49 +624,143 @@ const initSpaceScene = async () => {
     (event) => {
       applyScrollSpinInput(event.deltaY);
     },
-    { passive: true }
+    { passive: true },
   );
 
   const render = () => {
-    renderedProgress += (motion.progress - renderedProgress) * 0.025;
-    const eased = renderedProgress * renderedProgress * (3 - 2 * renderedProgress);
+    renderedProgress += (motion.progress - renderedProgress) * 0.032;
+    const eased =
+      renderedProgress * renderedProgress * (3 - 2 * renderedProgress);
+    const approachProgress = Math.min(renderedProgress / 0.78, 1);
+    const smoothApproachProgress =
+      approachProgress * approachProgress * (3 - 2 * approachProgress);
+    const approachEased =
+      approachProgress * 0.36 + smoothApproachProgress * 0.64;
+    const cruiseProgress = Math.max((eased - 0.88) / 0.12, 0);
+    shuttleRenderedProgress +=
+      (motion.progress - shuttleRenderedProgress) * 0.18;
+    const shuttleProgress = Math.min(shuttleRenderedProgress / 0.32, 1);
+    const shuttleFadeProgress = Math.min(
+      Math.max((shuttleRenderedProgress - 0.24) / 0.16, 0),
+      1,
+    );
+    const shuttleFadeEased =
+      shuttleFadeProgress * shuttleFadeProgress * (3 - 2 * shuttleFadeProgress);
+    const shuttleOpacity = shuttleVideoReady
+      ? (1 - shuttleFadeEased) * 0.72
+      : 0;
+    const shuttleScrollDelta = window.scrollY - lastShuttleScrollY;
+    const shuttleScrollSpeed = Math.abs(shuttleScrollDelta);
+    const shuttleIsAdvancing = shuttleScrollDelta > 0.05;
+    lastShuttleScrollY = window.scrollY;
+
+    if (shuttleIsAdvancing) {
+      shuttleIdleFrames = 0;
+    } else {
+      shuttleIdleFrames += 1;
+    }
 
     const narrowScreen = window.innerWidth < 760;
-    const baseScale = narrowScreen ? 0.9 : 1.18;
-    const scaleBoost = narrowScreen ? 0.24 : 0.42;
+    const baseScale = narrowScreen ? 0.34 : 0.42;
+    const peakScale = narrowScreen ? 2.78 : 3.42;
+    const finalY = narrowScreen ? -3.34 : -4.05;
+    const finalZ = narrowScreen ? -4.58 : -4.48;
 
     camera.position.x = 0;
-    camera.position.y = 0.16 - eased * 0.04;
-    camera.position.z = 8.65 - eased * 0.58;
-    camera.lookAt(0, -0.04, -5.3);
+    camera.position.y = 0.18 - approachEased * 0.045;
+    camera.position.z = 9.1 - approachEased * 0.56;
+    camera.lookAt(0, -0.1 - approachEased * 0.48, -5.25);
 
-    autoRotationY += 0.00078;
-    scrollSpinVelocity += (targetScrollSpinVelocity - scrollSpinVelocity) * 0.06;
+    autoRotationY += 0.00034;
+    scrollSpinVelocity +=
+      (targetScrollSpinVelocity - scrollSpinVelocity) * 0.035;
     scrollRotationY += scrollSpinVelocity;
-    targetScrollSpinVelocity *= 0.84;
-    scrollSpinVelocity *= 0.95;
+    targetScrollSpinVelocity *= 0.88;
+    scrollSpinVelocity *= 0.965;
 
-    saturnGroup.rotation.y = autoRotationY + scrollRotationY;
-    saturnGroup.rotation.x = -0.16 + eased * 0.02;
-    saturnGroup.rotation.z = -0.115 - eased * 0.012;
-    saturnGroup.position.x = 0;
-    saturnGroup.position.y = (narrowScreen ? -0.28 : -0.12) + eased * 0.03;
-    saturnGroup.position.z = -5.35 + eased * 0.1;
-    saturnGroup.scale.setScalar(baseScale + eased * scaleBoost);
-    glow.position.x = saturnGroup.position.x;
-    glow.position.y = saturnGroup.position.y;
-    glow.position.z = saturnGroup.position.z;
-    glow.scale.setScalar(narrowScreen ? 0.74 : 0.96);
-    glow.material.uniforms.intensity.value = 0.34 + eased * 0.12;
+    const earthRotation =
+      autoRotationY + scrollRotationY + cruiseProgress * 0.24;
+    earthGroup.rotation.y = earthRotation;
+    earthGroup.rotation.x = 0;
+    earthGroup.rotation.z = 0;
+    earthGroup.position.x = 0;
+    earthGroup.position.y = -0.08 + (finalY + 0.08) * approachEased;
+    earthGroup.position.z = -5.6 + (finalZ + 5.6) * approachEased;
+    earthGroup.scale.setScalar(
+      baseScale + (peakScale - baseScale) * approachEased,
+    );
+
+    if (earthParts.surface) {
+      earthParts.surface.rotation.y += 0.00005;
+    }
+
+    if (earthParts.clouds) {
+      earthParts.clouds.rotation.y +=
+        0.00018 + Math.abs(scrollSpinVelocity) * 0.01;
+    }
+
+    if (earthParts.atmosphere) {
+      earthParts.atmosphere.rotation.y +=
+        0.1 + Math.abs(scrollSpinVelocity) * 0.19;
+    }
+
+    glow.position.x = earthGroup.position.x;
+    glow.position.y = earthGroup.position.y;
+    glow.position.z = earthGroup.position.z;
+    glow.scale.setScalar(
+      (narrowScreen ? 0.42 : 0.5) +
+        approachEased * (narrowScreen ? 1.34 : 1.58),
+    );
+    glow.material.uniforms.intensity.value = 0.045 + approachEased * 0.08;
+
+    if (shuttleVideoReady) {
+      const shuttleTargetTime = getKeyframedVideoTime(
+        shuttleRenderedProgress,
+        shuttleVideoDuration,
+      );
+      const shuttleTimeGap = shuttleTargetTime - shuttleVideo.currentTime;
+
+      if (motion.progress < 0.004 && shuttleVideo.currentTime > 0.04) {
+        shuttleVideo.currentTime = 0.01;
+      }
+
+      if (
+        shuttleOpacity > 0.01 &&
+        shuttleTimeGap > 0.018 &&
+        (shuttleIsAdvancing || shuttleIdleFrames < 10)
+      ) {
+        shuttleVideo.playbackRate = Math.min(
+          Math.max(shuttleTimeGap * 8 + shuttleScrollSpeed * 0.26, 0.5),
+          12,
+        );
+
+        if (shuttleVideo.paused) {
+          shuttleVideo.play().catch(() => {});
+        }
+      } else {
+        if (!shuttleVideo.paused) {
+          shuttleVideo.pause();
+        }
+      }
+    }
+
+    shuttleMaterial.uniforms.opacity.value = shuttleOpacity;
 
     deepStars.rotation.y += 0.00012;
     stars.rotation.y += 0.00025;
-    group.rotation.x = -eased * 0.035;
+    group.rotation.x = -approachEased * 0.022;
 
-    deepStars.material.opacity = 0.58 - eased * 0.12;
-    stars.material.opacity = 0.74 - eased * 0.18;
+    deepStars.material.opacity = 0.62 - approachEased * 0.1;
+    stars.material.opacity = 0.78 - approachEased * 0.16;
 
+    renderer.clear();
     renderer.render(scene, camera);
+
+    if (shuttleOpacity > 0.01) {
+      renderer.clearDepth();
+      renderer.render(shuttleScene, shuttleCamera);
+    }
+
     frameId = window.requestAnimationFrame(render);
   };
 
@@ -531,6 +768,7 @@ const initSpaceScene = async () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
+    resizeShuttleOverlay();
   };
 
   window.addEventListener("resize", resize);
@@ -607,10 +845,12 @@ const initLeadForm = () => {
 
       form.reset();
       status.classList.add("is-success");
-      status.textContent = "Заявка отправлена. Мы свяжемся с вами после изучения проекта.";
+      status.textContent =
+        "Заявка отправлена. Мы свяжемся с вами после изучения проекта.";
     } catch (error) {
       status.classList.add("is-error");
-      status.textContent = "Не удалось отправить заявку. Напишите нам напрямую: florencya08090@gmail.com";
+      status.textContent =
+        "Не удалось отправить заявку. Напишите нам напрямую: florencya08090@gmail.com";
     } finally {
       submitButton.disabled = false;
     }

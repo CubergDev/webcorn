@@ -30,10 +30,7 @@ body {
   min-height: 100vh;
   font-family: "Manrope", Inter, sans-serif;
   color: var(--text);
-  background:
-    radial-gradient(circle at 68% 16%, rgba(100, 216, 255, 0.12), transparent 28%),
-    radial-gradient(circle at 22% 22%, rgba(142, 123, 255, 0.13), transparent 28%),
-    linear-gradient(180deg, #02040a 0%, #07111f 48%, #02040a 100%);
+  background: #000;
   line-height: 1.5;
   overflow-x: hidden;
 }
@@ -45,9 +42,8 @@ body::before {
   z-index: 1;
   pointer-events: none;
   background:
-    linear-gradient(90deg, rgba(2, 4, 10, 0.88) 0%, rgba(2, 4, 10, 0.7) 42%, rgba(2, 4, 10, 0.3) 100%),
-    linear-gradient(180deg, rgba(2, 4, 10, 0.08), rgba(2, 4, 10, 0.5)),
-    radial-gradient(circle at 82% 38%, transparent 0%, rgba(0, 0, 0, 0.3) 72%);
+    linear-gradient(90deg, rgba(0, 0, 0, 0.82) 0%, rgba(0, 0, 0, 0.46) 44%, rgba(0, 0, 0, 0.16) 100%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.62));
 }
 
 a {
@@ -213,7 +209,7 @@ h3 {
 .journey {
   position: relative;
   z-index: 2;
-  height: 390vh;
+  height: 450vh;
 }
 
 .journey__sticky {
@@ -757,11 +753,11 @@ h3 {
   }
 
   .journey {
-    height: auto;
+    height: 380vh;
   }
 
   .journey__sticky {
-    position: relative;
+    position: sticky;
     padding-top: 128px;
   }
 
